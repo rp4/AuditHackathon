@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -351,7 +351,8 @@ MIT License - Free to use, modify, and distribute with attribution.
   ]
 }
 
-export default function AgentDetailPage({ params }: { params: { id: string } }) {
+export default function AgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [isUpvoted, setIsUpvoted] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
   const [copied, setCopied] = useState(false)

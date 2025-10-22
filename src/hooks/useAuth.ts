@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 import * as auth from '@/lib/supabase/auth'
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateUserMetadata: auth.updateUserMetadata,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return React.createElement(AuthContext.Provider, { value }, children)
 }
 
 export function useAuth() {
@@ -101,8 +101,8 @@ export function useProfile(userId?: string) {
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase
+        .from('profiles') as any)
         .select('*')
         .eq('id', id)
         .single()
@@ -124,13 +124,13 @@ export function useProfile(userId?: string) {
     }
   }, [userId, fetchProfile])
 
-  const updateProfile = useCallback(async (updates: any) => {
+  const updateProfile = useCallback(async (updates: Record<string, any>) => {
     try {
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase
+        .from('profiles') as any)
         .update(updates)
         .eq('id', userId)
         .select()
