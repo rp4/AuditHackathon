@@ -8,14 +8,11 @@ import {
   MessageSquare,
   Share2,
   Star,
-  ThumbsUp,
-  ChevronRight,
-  Copy,
-  Check,
+  ArrowLeft,
+  Download,
   Flag,
   ExternalLink
 } from "lucide-react"
-import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
@@ -355,110 +352,79 @@ export default function AgentDetailPage({ params }: { params: Promise<{ id: stri
   const { id } = use(params)
   const [isUpvoted, setIsUpvoted] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
-  const [copied, setCopied] = useState(false)
 
-  const handleCopyMarkdown = () => {
-    navigator.clipboard.writeText(agentData.markdownContent)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleDownloadDocument = () => {
+    const blob = new Blob([agentData.markdownContent], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${agentData.name.replace(/\s+/g, '-').toLowerCase()}.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-        <Link href="/" className="hover:text-primary">Home</Link>
-        <ChevronRight className="h-4 w-4" />
-        <Link href="/browse" className="hover:text-primary">Browse</Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground">{agentData.name}</span>
+      {/* Back Button */}
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
       </div>
 
       {/* Header */}
-      <div className="flex flex-col lg:flex-row gap-8 mb-8">
-        <div className="flex-1">
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{agentData.name}</h1>
-              <p className="text-muted-foreground">{agentData.description}</p>
-            </div>
+      <div className="mb-8">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-medium px-2 py-1 rounded-md bg-primary/10 text-primary">
+              {agentData.platform}
+            </span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-xs text-muted-foreground">v{agentData.version}</span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-xs text-muted-foreground">Updated {agentData.lastUpdated}</span>
           </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {agentData.tags.map((tag) => (
-              <span key={tag} className="text-xs bg-muted px-2 py-1 rounded">
-                #{tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="flex flex-wrap gap-4 text-sm mb-6">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium">{agentData.rating}</span>
-              <span className="text-muted-foreground">({agentData.totalRatings} reviews)</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => setIsFavorited(!isFavorited)}
-            >
-              <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current text-red-500" : ""}`} />
-              {isFavorited ? "Saved" : "Save"}
-            </Button>
-            <Button variant="outline" size="lg" onClick={handleCopyMarkdown}>
-              {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-              {copied ? "Copied!" : "Copy Markdown"}
-            </Button>
-            <Button variant="outline" size="lg">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="lg">
-              <Flag className="h-4 w-4 mr-2" />
-              Report Issue
-            </Button>
-          </div>
+          <h1 className="text-4xl font-bold mb-3">{agentData.name}</h1>
+          <p className="text-lg text-muted-foreground leading-relaxed">{agentData.description}</p>
         </div>
 
-        {/* Author Card */}
-        <Card className="w-full lg:w-80">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-semibold">
-                {agentData.author.avatar}
-              </div>
-              <div>
-                <CardTitle className="text-base">{agentData.author.name}</CardTitle>
-                <CardDescription>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs">{agentData.author.reputation}</span>
-                    <span className="text-xs">• {agentData.author.agentsPublished} agents</span>
-                  </div>
-                </CardDescription>
-              </div>
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {agentData.tags.map((tag) => (
+            <span key={tag} className="text-xs bg-muted px-3 py-1.5 rounded-full hover:bg-muted/80 transition-colors">
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Stats */}
+        <div className="flex flex-wrap items-center gap-4 text-sm pb-6 border-b">
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+            <span className="font-semibold text-base">{agentData.rating}</span>
+            <span className="text-muted-foreground">({agentData.totalRatings} reviews)</span>
+          </div>
+          <span className="text-muted-foreground">•</span>
+          <a
+            href={`/profile/${agentData.author.name.toLowerCase().replace(/\s+/g, '-')}`}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-xs">
+              {agentData.author.avatar}
             </div>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" size="sm">
-              View Profile
-            </Button>
-          </CardContent>
-        </Card>
+            <span className="font-medium hover:underline">{agentData.author.name}</span>
+          </a>
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto">
         {/* Markdown Content */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 max-h-[600px] overflow-y-auto">
             <div className="prose prose-sm max-w-none dark:prose-invert
               prose-headings:font-bold prose-headings:text-foreground
               prose-h1:text-3xl prose-h1:mb-4 prose-h1:mt-8 prose-h1:border-b prose-h1:pb-2
@@ -483,6 +449,34 @@ export default function AgentDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           </CardContent>
         </Card>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 my-6">
+          <Button
+            size="lg"
+            onClick={handleDownloadDocument}
+            className="font-semibold"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Document
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setIsFavorited(!isFavorited)}
+          >
+            <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current text-red-500" : ""}`} />
+            {isFavorited ? "Saved" : "Save"}
+          </Button>
+          <Button variant="outline" size="lg">
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </Button>
+          <Button variant="ghost" size="lg">
+            <Flag className="h-4 w-4 mr-2" />
+            Report
+          </Button>
+        </div>
 
         {/* Comments Section */}
         <Card className="mt-6">

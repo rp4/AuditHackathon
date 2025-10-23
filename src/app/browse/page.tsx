@@ -100,8 +100,9 @@ const platforms = [
 
 export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All Categories")
-  const [selectedPlatform, setSelectedPlatform] = useState("All Platforms")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [minRating, setMinRating] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(true)
@@ -110,11 +111,12 @@ export default function BrowsePage() {
   const filteredAgents = mockAgents.filter(agent => {
     const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          agent.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "All Categories" || agent.category === selectedCategory
-    const matchesPlatform = selectedPlatform === "All Platforms" ||
-                           agent.platforms.includes(selectedPlatform)
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(agent.category)
+    const matchesPlatform = selectedPlatforms.length === 0 ||
+                           agent.platforms.some(platform => selectedPlatforms.includes(platform))
+    const matchesRating = minRating === null || agent.rating >= minRating
 
-    return matchesSearch && matchesCategory && matchesPlatform
+    return matchesSearch && matchesCategory && matchesPlatform && matchesRating
   })
 
   // Sort agents
@@ -189,14 +191,19 @@ export default function BrowsePage() {
             <div>
               <h3 className="font-semibold mb-3">Category</h3>
               <div className="space-y-2">
-                {categories.map((category) => (
+                {categories.filter(c => c !== "All Categories").map((category) => (
                   <label key={category} className="flex items-center cursor-pointer">
                     <input
-                      type="radio"
-                      name="category"
+                      type="checkbox"
                       value={category}
-                      checked={selectedCategory === category}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      checked={selectedCategories.includes(category)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCategories([...selectedCategories, category])
+                        } else {
+                          setSelectedCategories(selectedCategories.filter(c => c !== category))
+                        }
+                      }}
                       className="mr-2"
                     />
                     <span className="text-sm">{category}</span>
@@ -209,14 +216,19 @@ export default function BrowsePage() {
             <div>
               <h3 className="font-semibold mb-3">Platform</h3>
               <div className="space-y-2">
-                {platforms.map((platform) => (
+                {platforms.filter(p => p !== "All Platforms").map((platform) => (
                   <label key={platform} className="flex items-center cursor-pointer">
                     <input
-                      type="radio"
-                      name="platform"
+                      type="checkbox"
                       value={platform}
-                      checked={selectedPlatform === platform}
-                      onChange={(e) => setSelectedPlatform(e.target.value)}
+                      checked={selectedPlatforms.includes(platform)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedPlatforms([...selectedPlatforms, platform])
+                        } else {
+                          setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform))
+                        }
+                      }}
                       className="mr-2"
                     />
                     <span className="text-sm">{platform}</span>
@@ -229,9 +241,25 @@ export default function BrowsePage() {
             <div>
               <h3 className="font-semibold mb-3">Minimum Rating</h3>
               <div className="space-y-2">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="rating"
+                    checked={minRating === null}
+                    onChange={() => setMinRating(null)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">All Ratings</span>
+                </label>
                 {[4, 3, 2, 1].map((rating) => (
                   <label key={rating} className="flex items-center cursor-pointer">
-                    <input type="checkbox" className="mr-2" />
+                    <input
+                      type="radio"
+                      name="rating"
+                      checked={minRating === rating}
+                      onChange={() => setMinRating(rating)}
+                      className="mr-2"
+                    />
                     <div className="flex items-center">
                       {Array.from({ length: rating }).map((_, i) => (
                         <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />

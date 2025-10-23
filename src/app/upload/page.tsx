@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { DocumentEditor } from "@/components/ui/DocumentEditor"
-import { Upload } from "lucide-react"
+import { Upload, Linkedin } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 const platforms = ["OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "Other"]
 
@@ -16,9 +18,90 @@ export default function UploadPage() {
     platforms: [] as string[],
     documentContent: null as any,
   })
+  const [user, setUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setIsLoading(false)
+    }
+
+    checkUser()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
+
+  const handleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/upload`,
+      },
+    })
+
+    if (error) {
+      console.error('Error logging in with LinkedIn:', error.message)
+    }
+  }
 
   const handleDocumentChange = (content: any) => {
     setFormData({ ...formData, documentContent: content })
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show sign-in prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md w-full">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">Sign In Required</CardTitle>
+              <CardDescription>
+                You need to be signed in to upload an agent
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center text-sm text-gray-600 mb-4">
+                Join the community to share your AI agents with auditors worldwide
+              </div>
+              <Button
+                onClick={handleSignIn}
+                className="w-full h-12 bg-[#0A66C2] hover:bg-[#004182] text-white font-semibold"
+              >
+                <Linkedin className="h-5 w-5 mr-2" />
+                Continue with LinkedIn
+              </Button>
+              <p className="text-xs text-center text-gray-500">
+                You'll be redirected back to this page after signing in
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (

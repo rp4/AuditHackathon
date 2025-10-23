@@ -103,9 +103,11 @@ git push origin main
 The application follows a user-centric model with these core relationships:
 - **Users** → **Profiles** (1:1) - Extended user information
 - **Users** → **Agents** (1:many) - Users create multiple agents
-- **Users** → **Upvotes/Ratings/Downloads** (many:many with Agents) - Interaction tracking
+- **Users** → **Favorites/Ratings/Downloads** (many:many with Agents) - Interaction tracking
 - **Agents** → **Comments** (1:many) - Threaded discussions
 - **Users** → **Collections** → **Agents** (many:many) - Curated agent lists
+
+**Note**: The platform uses **favorites** (saves) instead of upvotes for user engagement.
 
 ### Key Application Flows
 
@@ -121,9 +123,9 @@ The application follows a user-centric model with these core relationships:
    - Sorting algorithms factor in recency, popularity, and quality
 
 3. **Authentication Flow**
-   - Supabase Auth handles user management
+   - Supabase Auth with LinkedIn OAuth (OIDC) for professional networking
    - Guest users can browse but not interact
-   - Registered users get personalized features
+   - Registered users can save favorites, rate, comment, and create agents
    - RLS policies enforce access control at database level
 
 ### Frontend Structure

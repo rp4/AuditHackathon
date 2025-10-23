@@ -1,9 +1,18 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, Sparkles, Star, TrendingUp, Users, ChevronRight } from "lucide-react"
+import { createClient } from "@/lib/supabase/server"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Redirect logged-in users to browse page
+  if (user) {
+    redirect('/browse')
+  }
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -251,7 +260,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
               <Button size="lg" className="min-w-[240px] h-14 text-lg font-semibold bg-white text-purple-600 hover:bg-gray-100">
-                Start Free Today
+                Start Now
               </Button>
             </Link>
           </div>
