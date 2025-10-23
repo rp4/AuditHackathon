@@ -1,137 +1,65 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ChevronDown, Filter, Grid, List, Search, Star, Download, ArrowUpDown } from "lucide-react"
-import Link from "next/link"
-
-// Mock data for agents
-const mockAgents = [
-  {
-    id: "1",
-    name: "Financial Statement Analyzer",
-    description: "Automatically analyze financial statements for anomalies and compliance issues with advanced pattern recognition",
-    platforms: ["OpenAI", "Claude"],
-    category: "Financial Audit",
-    rating: 4.9,
-    downloads: 234,
-    author: "John Doe",
-    updated: "2 days ago"
-  },
-  {
-    id: "2",
-    name: "SOX Compliance Checker",
-    description: "Verify SOX compliance requirements and generate comprehensive audit reports",
-    platforms: ["Gemini", "LangChain"],
-    category: "Compliance",
-    rating: 4.7,
-    downloads: 189,
-    author: "Jane Smith",
-    updated: "1 week ago"
-  },
-  {
-    id: "3",
-    name: "Risk Assessment Matrix",
-    description: "Create comprehensive risk assessments with automated scoring and heat map visualization",
-    platforms: ["Claude", "Copilot"],
-    category: "Risk Assessment",
-    rating: 4.8,
-    downloads: 312,
-    author: "Mike Johnson",
-    updated: "3 days ago"
-  },
-  {
-    id: "4",
-    name: "Internal Control Tester",
-    description: "Automated testing of internal controls with detailed documentation",
-    platforms: ["OpenAI"],
-    category: "Internal Controls",
-    rating: 4.6,
-    downloads: 156,
-    author: "Sarah Wilson",
-    updated: "5 days ago"
-  },
-  {
-    id: "5",
-    name: "Fraud Detection Agent",
-    description: "Advanced fraud detection using pattern analysis and machine learning",
-    platforms: ["Claude", "Gemini"],
-    category: "Risk Assessment",
-    rating: 4.9,
-    downloads: 421,
-    author: "Alex Brown",
-    updated: "1 day ago"
-  },
-  {
-    id: "6",
-    name: "Audit Report Generator",
-    description: "Generate professional audit reports with customizable templates",
-    platforms: ["OpenAI", "LangChain"],
-    category: "Report Generation",
-    rating: 4.5,
-    downloads: 278,
-    author: "Emily Davis",
-    updated: "2 weeks ago"
-  }
-]
-
-const categories = [
-  "All Categories",
-  "Financial Audit",
-  "Compliance",
-  "Risk Assessment",
-  "Internal Controls",
-  "Data Analysis",
-  "Report Generation",
-  "Process Automation",
-  "Document Review"
-]
-
-const platforms = [
-  "All Platforms",
-  "OpenAI",
-  "Claude",
-  "Gemini",
-  "LangChain",
-  "Copilot"
-]
+import { useState, useEffect, useMemo } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Filter, Grid, List, Search, Star } from 'lucide-react'
+import { useAgents } from '@/hooks/useAgents'
+import { getCategories, getPlatforms } from '@/lib/supabase/queries'
+import { AgentCard } from '@/components/agents/AgentCard'
+import type { Category, Platform } from '@/types/database'
 
 export default function BrowsePage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
+  const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([])
   const [minRating, setMinRating] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [sortBy, setSortBy] = useState("popular")
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'favorites'>('popular')
   const [showFilters, setShowFilters] = useState(true)
 
-  // Filter agents based on search and filters
-  const filteredAgents = mockAgents.filter(agent => {
-    const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         agent.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(agent.category)
-    const matchesPlatform = selectedPlatforms.length === 0 ||
-                           agent.platforms.some(platform => selectedPlatforms.includes(platform))
-    const matchesRating = minRating === null || agent.rating >= minRating
+  // Fetch categories and platforms
+  const [categories, setCategories] = useState<Category[]>([])
+  const [platforms, setPlatforms] = useState<Platform[]>([])
 
-    return matchesSearch && matchesCategory && matchesPlatform && matchesRating
-  })
+  useEffect(() => {
+    getCategories().then(setCategories).catch(console.error)
+    getPlatforms().then(setPlatforms).catch(console.error)
+  }, [])
 
-  // Sort agents
-  const sortedAgents = [...filteredAgents].sort((a, b) => {
-    switch (sortBy) {
-      case "popular":
-        return b.downloads - a.downloads
-      case "rating":
-        return b.rating - a.rating
-      case "recent":
-        return 0 // Would use actual dates in production
-      default:
-        return 0
-    }
-  })
+  // Build query params for agents
+  const queryParams = useMemo(
+    () => ({
+      search: searchQuery || undefined,
+      categoryId: selectedCategoryIds[0] || undefined, // Currently supporting single category
+      platformIds: selectedPlatformIds.length > 0 ? selectedPlatformIds : undefined,
+      minRating: minRating || undefined,
+      sortBy,
+      limit: 20,
+    }),
+    [searchQuery, selectedCategoryIds, selectedPlatformIds, minRating, sortBy]
+  )
+
+  // Fetch agents with real-time filtering
+  const { data: agents = [], isLoading, error } = useAgents(queryParams)
+
+  // Handle category toggle
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [categoryId] // Single selection for now
+    )
+  }
+
+  // Handle platform toggle
+  const togglePlatform = (platformId: string) => {
+    setSelectedPlatformIds((prev) =>
+      prev.includes(platformId)
+        ? prev.filter((id) => id !== platformId)
+        : [...prev, platformId]
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -167,74 +95,69 @@ export default function BrowsePage() {
           <select
             className="px-4 py-2 border rounded-md text-sm"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => setSortBy(e.target.value as any)}
           >
             <option value="popular">Most Popular</option>
             <option value="rating">Highest Rated</option>
             <option value="recent">Most Recent</option>
+            <option value="favorites">Most Favorited</option>
           </select>
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
           >
-            {viewMode === "grid" ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+            {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
           </Button>
         </div>
       </div>
 
       <div className="flex gap-8">
         {/* Filters Sidebar */}
-        <aside className={`w-64 flex-shrink-0 ${showFilters ? "block" : "hidden"} lg:block`}>
+        <aside className={`w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden'} lg:block`}>
           <div className="space-y-6">
             {/* Category Filter */}
             <div>
               <h3 className="font-semibold mb-3">Category</h3>
-              <div className="space-y-2">
-                {categories.filter(c => c !== "All Categories").map((category) => (
-                  <label key={category} className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      value={category}
-                      checked={selectedCategories.includes(category)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedCategories([...selectedCategories, category])
-                        } else {
-                          setSelectedCategories(selectedCategories.filter(c => c !== category))
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{category}</span>
-                  </label>
-                ))}
-              </div>
+              {categories.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Loading...</div>
+              ) : (
+                <div className="space-y-2">
+                  {categories.map((category) => (
+                    <label key={category.id} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategoryIds.includes(category.id)}
+                        onChange={() => toggleCategory(category.id)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{category.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Platform Filter */}
             <div>
               <h3 className="font-semibold mb-3">Platform</h3>
-              <div className="space-y-2">
-                {platforms.filter(p => p !== "All Platforms").map((platform) => (
-                  <label key={platform} className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      value={platform}
-                      checked={selectedPlatforms.includes(platform)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedPlatforms([...selectedPlatforms, platform])
-                        } else {
-                          setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform))
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{platform}</span>
-                  </label>
-                ))}
-              </div>
+              {platforms.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Loading...</div>
+              ) : (
+                <div className="space-y-2">
+                  {platforms.map((platform) => (
+                    <label key={platform.id} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedPlatformIds.includes(platform.id)}
+                        onChange={() => togglePlatform(platform.id)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{platform.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Rating Filter */}
@@ -270,91 +193,77 @@ export default function BrowsePage() {
                 ))}
               </div>
             </div>
+
+            {/* Clear Filters */}
+            {(selectedCategoryIds.length > 0 ||
+              selectedPlatformIds.length > 0 ||
+              minRating !== null ||
+              searchQuery) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedCategoryIds([])
+                  setSelectedPlatformIds([])
+                  setMinRating(null)
+                  setSearchQuery('')
+                }}
+                className="w-full"
+              >
+                Clear All Filters
+              </Button>
+            )}
           </div>
         </aside>
 
         {/* Agents Grid/List */}
         <div className="flex-1">
           <div className="mb-4 text-sm text-muted-foreground">
-            Showing {sortedAgents.length} agents
+            {isLoading ? (
+              'Loading agents...'
+            ) : error ? (
+              'Error loading agents'
+            ) : (
+              `Showing ${agents.length} agent${agents.length !== 1 ? 's' : ''}`
+            )}
           </div>
 
-          {viewMode === "grid" ? (
+          {isLoading ? (
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {sortedAgents.map((agent) => (
-                <Link key={agent.id} href={`/agents/${agent.id}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{agent.name}</CardTitle>
-                      <CardDescription className="line-clamp-2">
-                        {agent.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {agent.platforms.map((platform) => (
-                          <span key={platform} className="text-xs bg-muted px-2 py-1 rounded">
-                            {platform}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-medium">{agent.rating}</span>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        by {agent.author} • {agent.updated}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-64 bg-muted rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">Failed to load agents</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-2">No agents found</p>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your filters or search query
+              </p>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {agents.map((agent) => (
+                <AgentCard key={agent.id} agent={agent} />
               ))}
             </div>
           ) : (
             <div className="space-y-4">
-              {sortedAgents.map((agent) => (
-                <Link key={agent.id} href={`/agents/${agent.id}`}>
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">{agent.name}</CardTitle>
-                          <CardDescription className="mt-1">
-                            {agent.description}
-                          </CardDescription>
-                        </div>
-                        <div className="ml-4 text-right">
-                          <div className="flex items-center space-x-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-medium">{agent.rating}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-wrap gap-2">
-                          {agent.platforms.map((platform) => (
-                            <span key={platform} className="text-xs bg-muted px-2 py-1 rounded">
-                              {platform}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          by {agent.author} • {agent.updated}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+              {agents.map((agent) => (
+                <AgentCard key={agent.id} agent={agent} />
               ))}
             </div>
           )}
 
-          {/* Pagination */}
-          <div className="mt-8 flex justify-center">
+          {/* Pagination - Future Enhancement */}
+          {/* <div className="mt-8 flex justify-center">
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled>
                 Previous
@@ -363,16 +272,10 @@ export default function BrowsePage() {
                 1
               </Button>
               <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                3
-              </Button>
-              <Button variant="outline" size="sm">
                 Next
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

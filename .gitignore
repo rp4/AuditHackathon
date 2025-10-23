@@ -138,3 +138,6 @@ jspm_packages/
 # Temporary files
 tmp/
 temp/
+
+# Documentation (generated/development docs)
+docs/

@@ -1,294 +1,306 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { use, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { useQuery } from "@tanstack/react-query"
+import { getUserProfile, getUserAgents, getUserFavorites } from "@/lib/supabase/queries"
 import { Button } from "@/components/ui/button"
-import { LogOut, Settings, Star, Upload as UploadIcon } from "lucide-react"
-import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { AgentCard } from "@/components/agents/AgentCard"
+import { LogOut, Upload as UploadIcon, Heart, Edit } from "lucide-react"
 
-type Profile = {
-  id: string
-  username: string
-  full_name: string | null
-  bio: string | null
-  avatar_url: string | null
-  reputation_score: number
-  created_at: string
-}
-
-type Agent = {
-  id: string
-  name: string
-  slug: string
-  description: string
-  upvotes_count: number
-  downloads_count: number
-  avg_rating: number
-  created_at: string
-}
-
-export default function ProfilePage() {
-  const params = useParams()
+export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = use(params)
   const router = useRouter()
-  const username = params.username as string
   const supabase = createClient()
 
-  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [createdAgents, setCreatedAgents] = useState<Agent[]>([])
-  const [favoritedAgents, setFavoritedAgents] = useState<Agent[]>([])
-  const [activeTab, setActiveTab] = useState<"created" | "favorited">("created")
-  const [loading, setLoading] = useState(true)
-  const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<"created" | "favorites">("created")
+  const [isLoading, setIsLoading] = useState(true)
 
+  // Fetch current user
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession()
-      setCurrentUser(session?.user ?? null)
-
-      // Fetch profile by username
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("username", username)
-        .single<Profile>()
-
-      if (profileError || !profileData) {
-        console.error("Error fetching profile:", profileError)
-        setLoading(false)
-        return
-      }
-
-      setProfile(profileData)
-      setIsOwnProfile(session?.user?.id === profileData.id)
-
-      // Fetch created agents
-      const { data: agentsData, error: agentsError } = await supabase
-        .from("agents")
-        .select("id, name, slug, description, upvotes_count, downloads_count, avg_rating, created_at")
-        .eq("user_id", profileData.id)
-        .eq("is_public", true)
-        .order("created_at", { ascending: false })
-
-      if (!agentsError && agentsData) {
-        setCreatedAgents(agentsData)
-      }
-
-      // Fetch favorited agents (upvoted by this user) - only for own profile
-      if (session?.user?.id === profileData.id) {
-        const { data: upvotesData, error: upvotesError } = await supabase
-          .from("upvotes")
-          .select(`
-            agent_id,
-            agents (
-              id,
-              name,
-              slug,
-              description,
-              upvotes_count,
-              downloads_count,
-              avg_rating,
-              created_at
-            )
-          `)
-          .eq("user_id", profileData.id)
-
-        if (!upvotesError && upvotesData) {
-          const favorites = upvotesData
-            .map((upvote: any) => upvote.agents)
-            .filter((agent: any) => agent !== null)
-          setFavoritedAgents(favorites)
-        }
-      }
-
-      setLoading(false)
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+      setIsLoading(false)
     }
+    fetchUser()
 
-    fetchData()
-  }, [username, supabase])
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
+
+  // Fetch profile data
+  const { data: profile, isLoading: loadingProfile } = useQuery({
+    queryKey: ['profile', username],
+    queryFn: () => getUserProfile(username),
+    enabled: !!username,
+  })
+
+  // Fetch user's created agents
+  const { data: createdAgents = [], isLoading: loadingAgents } = useQuery({
+    queryKey: ['user-agents', profile?.id],
+    queryFn: () => getUserAgents(profile!.id),
+    enabled: !!profile?.id,
+  })
+
+  // Fetch user's favorites (only for own profile)
+  const isOwnProfile = currentUser?.id === profile?.id
+  const { data: favoritedAgents = [], isLoading: loadingFavorites } = useQuery({
+    queryKey: ['user-favorites', profile?.id],
+    queryFn: () => getUserFavorites(profile!.id),
+    enabled: !!profile?.id && isOwnProfile,
+  })
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push("/")
   }
 
-  if (loading) {
+  // Loading state
+  if (isLoading || loadingProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading profile...</p>
+          </div>
         </div>
       </div>
     )
   }
 
+  // Profile not found
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile not found</h1>
-          <p className="text-gray-600 mb-4">The user you're looking for doesn't exist.</p>
-          <Link href="/">
-            <Button>Go Home</Button>
-          </Link>
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile not found</h1>
+            <p className="text-gray-600 mb-4">The user you're looking for doesn't exist.</p>
+            <Link href="/browse">
+              <Button>Browse Agents</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )
   }
 
   const agents = activeTab === "created" ? createdAgents : favoritedAgents
+  const totalFavorites = favoritedAgents.length
+  const totalDownloads = createdAgents.reduce((sum, agent) => sum + (agent.downloads_count || 0), 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <div className="container mx-auto px-4 py-12">
-        {/* Profile Header */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              {profile.avatar_url || currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture ? (
-                <Image
-                  src={profile.avatar_url || currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture}
-                  alt={profile.full_name || profile.username}
-                  width={120}
-                  height={120}
-                  className="rounded-full border-4 border-purple-200 object-cover"
-                />
-              ) : (
-                <div className="w-30 h-30 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold border-4 border-purple-200">
-                  {profile.username.charAt(0).toUpperCase()}
+    <div className="container mx-auto px-4 py-12">
+      {/* Profile Header */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            {profile.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt={profile.full_name || profile.username || 'User'}
+                width={120}
+                height={120}
+                className="rounded-full border-4 border-purple-200 object-cover"
+              />
+            ) : (
+              <div className="w-30 h-30 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold border-4 border-purple-200">
+                {(profile.username || profile.full_name || 'U').charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+
+          {/* Profile Info */}
+          <div className="flex-1">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {profile.full_name || profile.username || 'Anonymous User'}
+                </h1>
+                {profile.username && (
+                  <p className="text-gray-500">@{profile.username}</p>
+                )}
+                {profile.bio && (
+                  <p className="text-gray-700 mt-2 max-w-2xl">{profile.bio}</p>
+                )}
+
+                {/* Social Links */}
+                {(profile.website || profile.github_url || profile.linkedin_url) && (
+                  <div className="flex gap-3 mt-3">
+                    {profile.website && (
+                      <a
+                        href={profile.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                      >
+                        Website
+                      </a>
+                    )}
+                    {profile.github_url && (
+                      <a
+                        href={profile.github_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                      >
+                        GitHub
+                      </a>
+                    )}
+                    {profile.linkedin_url && (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                      >
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              {isOwnProfile && (
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Link href="/upload">
+                    <Button className="w-full sm:w-auto">
+                      <UploadIcon className="h-4 w-4 mr-2" />
+                      Upload Agent
+                    </Button>
+                  </Link>
+                  <Link href="/profile/edit">
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={handleSignOut}
+                    className="w-full sm:w-auto"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
                 </div>
               )}
             </div>
 
-            {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    {profile.full_name || profile.username}
-                  </h1>
-                  <p className="text-gray-500">@{profile.username}</p>
-                  {profile.bio && (
-                    <p className="text-gray-700 mt-2">{profile.bio}</p>
-                  )}
-                </div>
-
-                {/* Action Buttons - Only show for own profile */}
-                {isOwnProfile && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleSignOut}
-                      className="flex items-center gap-2"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </div>
-                )}
+            {/* Stats */}
+            <div className="flex gap-8 mt-6">
+              <div>
+                <p className="text-2xl font-bold text-purple-600">{createdAgents.length}</p>
+                <p className="text-sm text-gray-600">Agents Created</p>
               </div>
-
-              {/* Stats */}
-              <div className="flex gap-6 mt-4">
+              {isOwnProfile && (
                 <div>
-                  <p className="text-2xl font-bold text-purple-600">{createdAgents.length}</p>
-                  <p className="text-sm text-gray-600">Agents Created</p>
+                  <p className="text-2xl font-bold text-purple-600">{totalFavorites}</p>
+                  <p className="text-sm text-gray-600">Favorites</p>
                 </div>
-                {isOwnProfile && (
-                  <div>
-                    <p className="text-2xl font-bold text-purple-600">{favoritedAgents.length}</p>
-                    <p className="text-sm text-gray-600">Favorites</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-2xl font-bold text-purple-600">{profile.reputation_score}</p>
-                  <p className="text-sm text-gray-600">Reputation</p>
-                </div>
+              )}
+              <div>
+                <p className="text-2xl font-bold text-purple-600">{totalDownloads}</p>
+                <p className="text-sm text-gray-600">Total Downloads</p>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Tabs - Only show for own profile */}
-        {isOwnProfile && (
-          <div className="bg-white rounded-lg shadow border border-gray-200 mb-6">
-            <div className="flex border-b">
-              <button
-                onClick={() => setActiveTab("created")}
-                className={`flex-1 px-6 py-4 font-semibold transition-colors ${
-                  activeTab === "created"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <UploadIcon className="h-4 w-4" />
-                  Created Agents ({createdAgents.length})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab("favorited")}
-                className={`flex-1 px-6 py-4 font-semibold transition-colors ${
-                  activeTab === "favorited"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Star className="h-4 w-4" />
-                  Favorited Agents ({favoritedAgents.length})
-                </div>
-              </button>
-            </div>
+      {/* Tabs - Only show for own profile */}
+      {isOwnProfile && (
+        <div className="bg-white rounded-lg shadow border border-gray-200 mb-6">
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab("created")}
+              className={`flex-1 px-6 py-4 font-semibold transition-colors ${
+                activeTab === "created"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <UploadIcon className="h-4 w-4" />
+                Created Agents ({createdAgents.length})
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab("favorites")}
+              className={`flex-1 px-6 py-4 font-semibold transition-colors ${
+                activeTab === "favorites"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Heart className="h-4 w-4" />
+                Favorites ({totalFavorites})
+              </div>
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Agents Grid */}
+      {/* Agents Grid */}
+      {loadingAgents || (isOwnProfile && loadingFavorites && activeTab === "favorites") ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {agents.length === 0 ? (
-            <div className="col-span-full text-center py-12 bg-white rounded-lg shadow border border-gray-200">
-              <p className="text-gray-500 text-lg">
-                {activeTab === "created"
-                  ? "No agents created yet"
-                  : "No favorited agents yet"}
-              </p>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
             </div>
-          ) : (
-            agents.map((agent) => (
-              <Link
-                key={agent.id}
-                href={`/agents/${agent.slug}`}
-                className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all hover:scale-105"
-              >
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{agent.name}</h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {agent.description}
-                </p>
-
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      {agent.upvotes_count}
-                    </span>
-                    <span>{agent.avg_rating.toFixed(1)} ⭐</span>
-                  </div>
-                  <span className="text-xs">
-                    {new Date(agent.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </Link>
-            ))
+          ))}
+        </div>
+      ) : agents.length === 0 ? (
+        <div className="col-span-full text-center py-16 bg-white rounded-lg shadow border border-gray-200">
+          <p className="text-gray-500 text-lg mb-4">
+            {activeTab === "created"
+              ? "No agents created yet"
+              : "No favorite agents yet"}
+          </p>
+          {isOwnProfile && activeTab === "created" && (
+            <Link href="/upload">
+              <Button>
+                <UploadIcon className="h-4 w-4 mr-2" />
+                Upload Your First Agent
+              </Button>
+            </Link>
+          )}
+          {isOwnProfile && activeTab === "favorites" && (
+            <Link href="/browse">
+              <Button variant="outline">
+                Browse Agents
+              </Button>
+            </Link>
           )}
         </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {agents.map((agent) => (
+            <AgentCard key={agent.id} agent={agent} />
+          ))}
+        </div>
+      )}
+
+      {/* Member Since */}
+      <div className="text-center mt-8 text-sm text-gray-500">
+        Member since {new Date(profile.created_at).toLocaleDateString('en-US', {
+          month: 'long',
+          year: 'numeric'
+        })}
       </div>
     </div>
   )
