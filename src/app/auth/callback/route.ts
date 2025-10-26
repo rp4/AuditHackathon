@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { Database } from '@/types/database-generated'
+
+type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -22,8 +25,60 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!exchangeError) {
+    if (!exchangeError && data.user) {
       console.log('Successfully exchanged code for session')
+
+      // Ensure profile exists - create if missing
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', data.user.id)
+        .single()
+
+      if (!existingProfile) {
+        console.log('Profile not found, creating one...')
+        const baseUsername = data.user.user_metadata?.username ||
+                            data.user.user_metadata?.preferred_username ||
+                            data.user.email?.split('@')[0] ||
+                            `user_${data.user.id.slice(0, 8)}`
+
+        // Try to create profile with original username
+        let username = baseUsername
+        const profileData: ProfileInsert = {
+          id: data.user.id,
+          username,
+          full_name: data.user.user_metadata?.name || data.user.user_metadata?.full_name || null,
+          avatar_url: data.user.user_metadata?.picture || data.user.user_metadata?.avatar_url || null,
+          linkedin_url: data.user.user_metadata?.linkedin_url || null
+        }
+
+        let { error: profileError } = await (supabase
+          .from('profiles')
+          .insert(profileData as any))
+
+        // If username collision, try with unique suffix
+        if (profileError?.code === '23505') {
+          console.log('Username collision, adding unique suffix...')
+          username = `${baseUsername}_${data.user.id.slice(0, 6)}`
+          const retryProfileData: ProfileInsert = {
+            ...profileData,
+            username
+          }
+          const result = await (supabase
+            .from('profiles')
+            .insert(retryProfileData as any))
+          profileError = result.error
+        }
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError)
+        } else {
+          console.log('Profile created successfully with username:', username)
+        }
+      } else {
+        console.log('Profile already exists')
+      }
+
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
 
