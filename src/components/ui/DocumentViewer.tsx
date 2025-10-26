@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { UniverDocsCorePreset } from '@univerjs/preset-docs-core'
+import { UniverDocsDrawingPreset } from '@univerjs/preset-docs-drawing'
 import UniverPresetDocsCoreEnUS from '@univerjs/preset-docs-core/locales/en-US'
+import UniverPresetDocsDrawingEnUS from '@univerjs/preset-docs-drawing/locales/en-US'
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets'
 import '@univerjs/preset-docs-core/lib/index.css'
+import '@univerjs/preset-docs-drawing/lib/index.css'
 import { Button } from './button'
 import { Download } from 'lucide-react'
 import { downloadUniverDocument, triggerDocumentDownload } from '@/lib/supabase/storage'
@@ -38,16 +41,20 @@ export function DocumentViewer({ documentPath, agentName = 'agent' }: DocumentVi
           return
         }
 
-        // Initialize Univer
+        // Initialize Univer with drawing support for images
         const { univerAPI } = createUniver({
           locale: LocaleType.EN_US,
           locales: {
-            [LocaleType.EN_US]: mergeLocales(UniverPresetDocsCoreEnUS),
+            [LocaleType.EN_US]: mergeLocales(
+              UniverPresetDocsCoreEnUS,
+              UniverPresetDocsDrawingEnUS
+            ),
           },
           presets: [
             UniverDocsCorePreset({
               container: containerRef.current!,
             }),
+            UniverDocsDrawingPreset(),
           ],
         })
 

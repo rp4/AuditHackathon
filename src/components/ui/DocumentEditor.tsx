@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { UniverDocsCorePreset } from '@univerjs/preset-docs-core'
+import { UniverDocsDrawingPreset } from '@univerjs/preset-docs-drawing'
 import UniverPresetDocsCoreEnUS from '@univerjs/preset-docs-core/locales/en-US'
+import UniverPresetDocsDrawingEnUS from '@univerjs/preset-docs-drawing/locales/en-US'
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets'
 import '@univerjs/preset-docs-core/lib/index.css'
+import '@univerjs/preset-docs-drawing/lib/index.css'
 
 interface DocumentEditorProps {
   onChange?: (content: any) => void
@@ -34,12 +37,16 @@ export const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>
       const { univerAPI } = createUniver({
         locale: LocaleType.EN_US,
         locales: {
-          [LocaleType.EN_US]: mergeLocales(UniverPresetDocsCoreEnUS),
+          [LocaleType.EN_US]: mergeLocales(
+            UniverPresetDocsCoreEnUS,
+            UniverPresetDocsDrawingEnUS
+          ),
         },
         presets: [
           UniverDocsCorePreset({
             container: containerRef.current,
           }),
+          UniverDocsDrawingPreset(),
         ],
       })
 

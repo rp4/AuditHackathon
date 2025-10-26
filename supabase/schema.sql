@@ -746,7 +746,7 @@ VALUES (
   false,
   false,
   10485760, -- 10MB
-  ARRAY['application/pdf', 'text/markdown', 'text/plain']
+  ARRAY['application/json', 'application/pdf', 'text/markdown', 'text/plain']
 )
 ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
@@ -888,16 +888,10 @@ CREATE POLICY "View documentation for accessible agents"
     )
   );
 
-CREATE POLICY "Users can upload documentation for own agents"
+CREATE POLICY "Authenticated users can upload documentation"
   ON storage.objects FOR INSERT
-  WITH CHECK (
-    bucket_id = 'documentation' AND
-    EXISTS (
-      SELECT 1 FROM agents
-      WHERE agents.slug = (storage.foldername(name))[1]
-      AND agents.user_id = auth.uid()
-    )
-  );
+  TO authenticated
+  WITH CHECK (bucket_id = 'documentation');
 
 CREATE POLICY "Users can update documentation for own agents"
   ON storage.objects FOR UPDATE

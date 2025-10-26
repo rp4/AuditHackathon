@@ -37,10 +37,23 @@ export async function GET(request: Request) {
 
       if (!existingProfile) {
         console.log('Profile not found, creating one...')
-        const baseUsername = data.user.user_metadata?.username ||
-                            data.user.user_metadata?.preferred_username ||
-                            data.user.email?.split('@')[0] ||
-                            `user_${data.user.id.slice(0, 8)}`
+
+        // Convert name to username format (lowercase, spaces to underscores, remove special chars)
+        const name = data.user.user_metadata?.name || data.user.user_metadata?.full_name
+        let baseUsername: string
+
+        if (name) {
+          baseUsername = name
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '_')           // Replace spaces with underscores
+            .replace(/[^a-z0-9_]/g, '')     // Remove special characters
+            .slice(0, 30)                    // Limit length
+        } else {
+          // Fallback if no name available
+          baseUsername = data.user.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') ||
+                        `user_${data.user.id.slice(0, 8)}`
+        }
 
         // Try to create profile with original username
         let username = baseUsername

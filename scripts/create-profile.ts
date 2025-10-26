@@ -59,10 +59,22 @@ async function createMissingProfiles() {
     console.log(`  User ID: ${user.id}`)
     console.log(`  Metadata:`, user.user_metadata)
 
-    const username = user.user_metadata?.username ||
-                    user.user_metadata?.preferred_username ||
-                    user.email?.split('@')[0] ||
-                    `user_${user.id.slice(0, 8)}`
+    // Convert name to username format (lowercase, spaces to underscores, remove special chars)
+    const name = user.user_metadata?.name || user.user_metadata?.full_name
+    let username: string
+
+    if (name) {
+      username = name
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '_')           // Replace spaces with underscores
+        .replace(/[^a-z0-9_]/g, '')     // Remove special characters
+        .slice(0, 30)                    // Limit length
+    } else {
+      // Fallback if no name available
+      username = user.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') ||
+                `user_${user.id.slice(0, 8)}`
+    }
 
     const { error: insertError } = await supabase
       .from('profiles')

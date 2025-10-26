@@ -32,6 +32,7 @@
     "@univerjs/docs-ui": "^0.10.12",
     "@univerjs/engine-render": "^0.10.12",
     "@univerjs/preset-docs-core": "^0.10.12",
+    "@univerjs/preset-docs-drawing": "^0.10.13",
     "@univerjs/presets": "^0.10.12",
     "@univerjs/ui": "^0.10.12",
     "autoprefixer": "^10.4.21",
