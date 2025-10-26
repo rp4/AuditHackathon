@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { UniverDocsCorePreset } from '@univerjs/preset-docs-core'
 import UniverPresetDocsCoreEnUS from '@univerjs/preset-docs-core/locales/en-US'
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets'
@@ -11,37 +11,60 @@ interface DocumentEditorProps {
   initialContent?: any
 }
 
-export function DocumentEditor({ onChange, initialContent }: DocumentEditorProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const univerAPIRef = useRef<any>(null)
+export interface DocumentEditorRef {
+  getContent: () => any
+}
 
-  useEffect(() => {
-    if (!containerRef.current) return
+export const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>(
+  ({ onChange, initialContent }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const univerAPIRef = useRef<any>(null)
 
-    const { univerAPI } = createUniver({
-      locale: LocaleType.EN_US,
-      locales: {
-        [LocaleType.EN_US]: mergeLocales(UniverPresetDocsCoreEnUS),
+    useImperativeHandle(ref, () => ({
+      getContent: () => {
+        if (!univerAPIRef.current) return null
+        const doc = univerAPIRef.current.getActiveDocument()
+        return doc?.getSnapshot()
       },
-      presets: [
-        UniverDocsCorePreset({
-          container: containerRef.current,
-        }),
-      ],
-    })
+    }))
 
-    univerAPI.createUniverDoc(initialContent || {})
-    univerAPIRef.current = univerAPI
+    useEffect(() => {
+      if (!containerRef.current) return
 
-    // Listen for content changes
-    if (onChange) {
-      // TODO: Add change listener
-    }
+      const { univerAPI } = createUniver({
+        locale: LocaleType.EN_US,
+        locales: {
+          [LocaleType.EN_US]: mergeLocales(UniverPresetDocsCoreEnUS),
+        },
+        presets: [
+          UniverDocsCorePreset({
+            container: containerRef.current,
+          }),
+        ],
+      })
 
-    return () => {
-      univerAPI.dispose()
-    }
-  }, [])
+      const doc = univerAPI.createUniverDoc(initialContent || {})
+      univerAPIRef.current = univerAPI
+
+      // Listen for content changes
+      if (onChange) {
+        const subscription = doc.onCommandExecuted(() => {
+          const docData = univerAPI.getActiveDocument()?.getSnapshot()
+          if (docData) {
+            onChange(docData)
+          }
+        })
+
+        return () => {
+          subscription.dispose()
+          univerAPI.dispose()
+        }
+      }
+
+      return () => {
+        univerAPI.dispose()
+      }
+    }, [])
 
   return (
     <div
@@ -50,4 +73,6 @@ export function DocumentEditor({ onChange, initialContent }: DocumentEditorProps
       style={{ height: '500px', width: '100%' }}
     />
   )
-}
+})
+
+DocumentEditor.displayName = 'DocumentEditor'

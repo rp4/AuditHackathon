@@ -272,6 +272,27 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
   return data as Platform[]
 }
 
+export async function getPlatformCounts(): Promise<Record<string, number>> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from('agent_platforms')
+    .select('platform_id')
+
+  if (error) {
+    console.error('❌ Error fetching platform counts:', error)
+    return {}
+  }
+
+  // Count occurrences of each platform_id
+  const counts: Record<string, number> = {}
+  data?.forEach((item: any) => {
+    counts[item.platform_id] = (counts[item.platform_id] || 0) + 1
+  })
+
+  return counts
+}
+
 // ============================================
 // PROFILE QUERIES
 // ============================================

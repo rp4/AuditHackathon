@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed-data": "tsx scripts/seed-data.ts",
+    "check-seed": "tsx scripts/check-seed-data.ts"
   },
   "keywords": [],
   "author": "",
@@ -51,5 +53,9 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
     "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.3",
+    "tsx": "^4.20.6"
   }
 }

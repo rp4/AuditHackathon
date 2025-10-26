@@ -13,12 +13,9 @@ export const createAgentSchema = z.object({
     .min(10, 'Description must be at least 10 characters')
     .max(500, 'Description must be less than 500 characters'),
 
-  markdown_content: z.string()
-    .min(100, 'Documentation must be at least 100 characters')
-    .optional(),
-
   category_id: z.string()
-    .uuid('Invalid category'),
+    .uuid('Invalid category')
+    .optional(),
 
   platforms: z.array(z.string().uuid())
     .min(1, 'Select at least one platform')
@@ -26,13 +23,6 @@ export const createAgentSchema = z.object({
 
   tags: z.array(z.string())
     .max(10, 'Maximum 10 tags')
-    .optional(),
-
-  version: z.string()
-    .regex(/^\d+\.\d+\.\d+$/, 'Version must be in format X.Y.Z')
-    .optional(),
-
-  complexity_level: z.enum(['beginner', 'intermediate', 'advanced'])
     .optional(),
 
   prerequisites: z.array(z.string())

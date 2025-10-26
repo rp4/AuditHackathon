@@ -5,52 +5,79 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Filter, Grid, List, Search, Star } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
-import { getCategories, getPlatforms } from '@/lib/supabase/queries'
+import { getPlatforms, getPlatformCounts } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
-import type { Category, Platform } from '@/types/database'
+import type { Platform } from '@/types/database'
 
 export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([])
   const [minRating, setMinRating] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'favorites'>('popular')
   const [showFilters, setShowFilters] = useState(true)
 
-  // Fetch categories and platforms
-  const [categories, setCategories] = useState<Category[]>([])
+  // Fetch platforms
   const [platforms, setPlatforms] = useState<Platform[]>([])
+  const [platformsLoading, setPlatformsLoading] = useState(true)
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(console.error)
-    getPlatforms().then(setPlatforms).catch(console.error)
+    console.log('🔵 Fetching platforms...')
+    setPlatformsLoading(true)
+    getPlatforms()
+      .then((data) => {
+        console.log('✅ Platforms loaded:', data)
+        setPlatforms(data)
+      })
+      .catch((err) => {
+        console.error('❌ Error loading platforms:', err)
+      })
+      .finally(() => {
+        setPlatformsLoading(false)
+      })
   }, [])
 
   // Build query params for agents
   const queryParams = useMemo(
     () => ({
       search: searchQuery || undefined,
-      categoryId: selectedCategoryIds[0] || undefined, // Currently supporting single category
       platformIds: selectedPlatformIds.length > 0 ? selectedPlatformIds : undefined,
       minRating: minRating || undefined,
       sortBy,
       limit: 20,
     }),
-    [searchQuery, selectedCategoryIds, selectedPlatformIds, minRating, sortBy]
+    [searchQuery, selectedPlatformIds, minRating, sortBy]
   )
 
   // Fetch agents with real-time filtering
   const { data: agents = [], isLoading, error } = useAgents(queryParams)
 
-  // Handle category toggle
-  const toggleCategory = (categoryId: string) => {
-    setSelectedCategoryIds((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [categoryId] // Single selection for now
-    )
-  }
+  // Fetch agents for counting (without platform filter to get accurate counts)
+  const countQueryParams = useMemo(
+    () => ({
+      search: searchQuery || undefined,
+      minRating: minRating || undefined,
+      limit: 1000, // Get more agents for accurate counting
+    }),
+    [searchQuery, minRating]
+  )
+  const { data: agentsForCounting = [] } = useAgents(countQueryParams)
+
+  // Calculate platform counts based on current filters (excluding platform filter itself)
+  const platformCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+
+    agentsForCounting.forEach((agent) => {
+      agent.platforms?.forEach((ap) => {
+        const platformId = ap.platform?.id || ap.platform_id
+        if (platformId) {
+          counts[platformId] = (counts[platformId] || 0) + 1
+        }
+      })
+    })
+
+    return counts
+  }, [agentsForCounting])
 
   // Handle platform toggle
   const togglePlatform = (platformId: string) => {
@@ -116,44 +143,29 @@ export default function BrowsePage() {
         {/* Filters Sidebar */}
         <aside className={`w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden'} lg:block`}>
           <div className="space-y-6">
-            {/* Category Filter */}
-            <div>
-              <h3 className="font-semibold mb-3">Category</h3>
-              {categories.length === 0 ? (
-                <div className="text-sm text-muted-foreground">Loading...</div>
-              ) : (
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <label key={category.id} className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategoryIds.includes(category.id)}
-                        onChange={() => toggleCategory(category.id)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm">{category.name}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Platform Filter */}
             <div>
               <h3 className="font-semibold mb-3">Platform</h3>
-              {platforms.length === 0 ? (
+              {platformsLoading ? (
                 <div className="text-sm text-muted-foreground">Loading...</div>
+              ) : platforms.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No platforms found</div>
               ) : (
                 <div className="space-y-2">
                   {platforms.map((platform) => (
-                    <label key={platform.id} className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedPlatformIds.includes(platform.id)}
-                        onChange={() => togglePlatform(platform.id)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm">{platform.name}</span>
+                    <label key={platform.id} className="flex items-center justify-between cursor-pointer">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedPlatformIds.includes(platform.id)}
+                          onChange={() => togglePlatform(platform.id)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">{platform.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {platformCounts[platform.id] || 0}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -195,15 +207,13 @@ export default function BrowsePage() {
             </div>
 
             {/* Clear Filters */}
-            {(selectedCategoryIds.length > 0 ||
-              selectedPlatformIds.length > 0 ||
+            {(selectedPlatformIds.length > 0 ||
               minRating !== null ||
               searchQuery) && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setSelectedCategoryIds([])
                   setSelectedPlatformIds([])
                   setMinRating(null)
                   setSearchQuery('')

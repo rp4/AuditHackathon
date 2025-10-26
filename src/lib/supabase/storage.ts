@@ -230,3 +230,148 @@ export function generateUniqueFileName(originalName: string): string {
 
   return `${sanitizedName}_${timestamp}_${randomString}.${extension}`
 }
+
+// ============================================
+// UNIVER DOCUMENT STORAGE HELPERS
+// ============================================
+
+/**
+ * Download a Univer document from storage
+ * @param documentPath - The path to the document in storage (e.g., "agent-slug/documentation.univer")
+ * @returns The parsed Univer document object or null
+ */
+export async function downloadUniverDocument(documentPath: string): Promise<any | null> {
+  if (!documentPath) return null
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('documentation')
+      .download(documentPath)
+
+    if (error) {
+      console.error('Error downloading document:', error)
+      return null
+    }
+
+    // Parse the blob as JSON
+    const text = await data.text()
+    return JSON.parse(text)
+  } catch (error) {
+    console.error('Error parsing document:', error)
+    return null
+  }
+}
+
+/**
+ * Get a signed URL for downloading a Univer document
+ * @param documentPath - The path to the document in storage
+ * @param expiresIn - Time in seconds until the URL expires (default: 3600 = 1 hour)
+ * @returns The signed URL or null
+ */
+export async function getDocumentDownloadUrl(
+  documentPath: string,
+  expiresIn: number = 3600
+): Promise<string | null> {
+  if (!documentPath) return null
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('documentation')
+      .createSignedUrl(documentPath, expiresIn)
+
+    if (error) {
+      console.error('Error creating signed URL:', error)
+      return null
+    }
+
+    return data.signedUrl
+  } catch (error) {
+    console.error('Error getting download URL:', error)
+    return null
+  }
+}
+
+/**
+ * Upload a Univer document to storage
+ * @param slug - The agent slug to use as folder name
+ * @param documentContent - The Univer document object
+ * @returns The storage path or null if failed
+ */
+export async function uploadUniverDocument(
+  slug: string,
+  documentContent: any
+): Promise<string | null> {
+  const documentPath = `${slug}/documentation.univer`
+
+  try {
+    const documentBlob = new Blob([JSON.stringify(documentContent)], {
+      type: 'application/json',
+    })
+
+    const { data, error } = await supabase.storage
+      .from('documentation')
+      .upload(documentPath, documentBlob, {
+        contentType: 'application/json',
+        upsert: true,
+      })
+
+    if (error) {
+      console.error('Error uploading document:', error)
+      return null
+    }
+
+    return documentPath
+  } catch (error) {
+    console.error('Error uploading document:', error)
+    return null
+  }
+}
+
+/**
+ * Delete a Univer document from storage
+ * @param documentPath - The path to the document in storage
+ * @returns True if successful, false otherwise
+ */
+export async function deleteUniverDocument(documentPath: string): Promise<boolean> {
+  if (!documentPath) return false
+
+  try {
+    const { error } = await supabase.storage
+      .from('documentation')
+      .remove([documentPath])
+
+    if (error) {
+      console.error('Error deleting document:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting document:', error)
+    return false
+  }
+}
+
+/**
+ * Trigger a browser download of a Univer document
+ * @param documentPath - The path to the document in storage
+ * @param filename - The filename for the download (default: "documentation.univer")
+ */
+export async function triggerDocumentDownload(
+  documentPath: string,
+  filename: string = 'documentation.univer'
+): Promise<void> {
+  const url = await getDocumentDownloadUrl(documentPath)
+
+  if (!url) {
+    throw new Error('Failed to get download URL')
+  }
+
+  // Create a temporary anchor element to trigger download
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}

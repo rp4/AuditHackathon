@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -12,34 +12,22 @@ import { Upload, Linkedin, ArrowLeft, Check, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCreateAgent } from "@/hooks/useAgents"
 import { useQuery } from "@tanstack/react-query"
-import { getCategories, getPlatforms } from "@/lib/supabase/queries"
+import { getPlatforms } from "@/lib/supabase/queries"
 import { createAgentSchema, type CreateAgentInput } from "@/lib/validations/agent"
 import Link from "next/link"
+import { DocumentEditor, type DocumentEditorRef } from "@/components/ui/DocumentEditor"
+import { uploadUniverDocument, deleteUniverDocument } from "@/lib/supabase/storage"
 
 export default function UploadPage() {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const documentEditorRef = useRef<DocumentEditorRef>(null)
   const router = useRouter()
   const supabase = createClient()
 
-  // Fetch categories and platforms from database
-  const { data: categories = [], isLoading: loadingCategories, error: categoriesError } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      console.log('🔍 Fetching categories...')
-      try {
-        const result = await getCategories()
-        console.log('✅ Categories loaded:', result?.length || 0, 'items')
-        return result
-      } catch (error) {
-        console.error('❌ Error fetching categories:', error)
-        throw error
-      }
-    },
-  })
-
+  // Fetch platforms from database
   const { data: platforms = [], isLoading: loadingPlatforms, error: platformsError } = useQuery({
     queryKey: ['platforms'],
     queryFn: async () => {
@@ -68,7 +56,6 @@ export default function UploadPage() {
       platforms: [],
       tags: [],
       is_public: true,
-      version: '1.0.0',
     },
   })
 
@@ -166,6 +153,26 @@ export default function UploadPage() {
       return
     }
 
+    // Check if user profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      console.error('Profile check error:', profileError)
+      setSubmitError('Your profile is not set up yet. Please try signing out and signing in again.')
+      return
+    }
+
+    // Get document content from Univer editor
+    const documentContent = documentEditorRef.current?.getContent()
+    if (!documentContent) {
+      setSubmitError('Please add documentation for your agent')
+      return
+    }
+
     setSubmitError(null)
     setSubmitSuccess(false)
 
@@ -175,65 +182,81 @@ export default function UploadPage() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
 
-    // Prepare agent data
-    const agentData = {
-      user_id: user.id,
-      name: data.name,
-      description: data.description,
-      slug,
-      category_id: data.category_id,
-      markdown_content: data.markdown_content,
-      tags: data.tags,
-      version: data.version || '1.0.0',
-      complexity_level: data.complexity_level,
-      prerequisites: data.prerequisites,
-      estimated_tokens: data.estimated_tokens,
-      estimated_cost: data.estimated_cost,
-      is_public: data.is_public ?? true,
-      instructions: data.instructions,
-      configuration: data.configuration,
-      sample_inputs: data.sample_inputs,
-      sample_outputs: data.sample_outputs,
-    }
+    try {
+      // Upload Univer document to storage bucket using helper function
+      console.log('📤 Uploading document to storage...')
 
-    createAgent(
-      { agent: agentData, platformIds: data.platforms },
-      {
-        onSuccess: (createdAgent: any) => {
-          setSubmitSuccess(true)
-          toast.success('Agent created successfully! Redirecting...')
-          setTimeout(() => {
-            router.push(`/agents/${createdAgent.slug}`)
-          }, 1500)
-        },
-        onError: (error: any) => {
-          console.error('Error creating agent:', error)
-          const errorMessage = error.message || 'Failed to create agent. Please try again.'
-          setSubmitError(errorMessage)
-          toast.error(errorMessage)
-        },
+      const documentPath = await uploadUniverDocument(slug, documentContent)
+
+      if (!documentPath) {
+        setSubmitError('Failed to upload documentation. Please try again.')
+        toast.error('Failed to upload documentation')
+        return
       }
-    )
+
+      console.log('✅ Document uploaded successfully:', documentPath)
+
+      // Prepare agent data with document file URL
+      const agentData = {
+        user_id: user.id,
+        name: data.name,
+        description: data.description,
+        slug,
+        markdown_file_url: documentPath, // Store the path for later retrieval
+        tags: data.tags,
+        is_public: data.is_public ?? true,
+        instructions: data.instructions,
+        configuration: data.configuration,
+        sample_inputs: data.sample_inputs,
+        sample_outputs: data.sample_outputs,
+        prerequisites: data.prerequisites,
+        estimated_tokens: data.estimated_tokens,
+        estimated_cost: data.estimated_cost,
+      }
+
+      createAgent(
+        { agent: agentData, platformIds: data.platforms },
+        {
+          onSuccess: (createdAgent: any) => {
+            setSubmitSuccess(true)
+            toast.success('Agent created successfully! Redirecting...')
+            setTimeout(() => {
+              router.push(`/agents/${createdAgent.slug}`)
+            }, 1500)
+          },
+          onError: async (error: any) => {
+            console.error('❌ Error creating agent:', error)
+
+            // Cleanup: Delete the uploaded document if agent creation failed
+            await deleteUniverDocument(documentPath)
+
+            const errorMessage = error.message || 'Failed to create agent. Please try again.'
+            setSubmitError(errorMessage)
+            toast.error(errorMessage)
+          },
+        }
+      )
+    } catch (error: any) {
+      console.error('❌ Exception during upload:', error)
+      setSubmitError(error.message || 'An unexpected error occurred')
+      toast.error('An unexpected error occurred')
+    }
   }
 
   // Debug: Log loading states
   useEffect(() => {
     console.log('📊 Loading states:', {
       isLoading,
-      loadingCategories,
       loadingPlatforms,
-      categoriesError: categoriesError?.message,
       platformsError: platformsError?.message,
-      categoriesCount: categories?.length,
       platformsCount: platforms?.length,
     })
-  }, [isLoading, loadingCategories, loadingPlatforms, categoriesError, platformsError, categories, platforms])
+  }, [isLoading, loadingPlatforms, platformsError, platforms])
 
   // Loading state
-  if (isLoading || loadingCategories || loadingPlatforms) {
+  if (isLoading || loadingPlatforms) {
     const loadingStates = {
       user: isLoading ? '⏳ Loading...' : '✅ Loaded',
-      categories: loadingCategories ? '⏳ Loading...' : categoriesError ? '❌ Error' : '✅ Loaded',
       platforms: loadingPlatforms ? '⏳ Loading...' : platformsError ? '❌ Error' : '✅ Loaded',
     }
 
@@ -245,14 +268,12 @@ export default function UploadPage() {
             <p className="mt-4 text-gray-600">Loading upload form...</p>
             <div className="mt-4 text-sm text-gray-500 space-y-1">
               <div>{loadingStates.user} User authentication</div>
-              <div>{loadingStates.categories} Categories ({categories?.length || 0})</div>
               <div>{loadingStates.platforms} Platforms ({platforms?.length || 0})</div>
             </div>
-            {(categoriesError || platformsError) && (
+            {platformsError && (
               <div className="mt-4 p-4 bg-red-50 text-red-800 rounded-lg text-sm">
                 <p className="font-semibold">Error loading data:</p>
-                {categoriesError && <p>Categories: {categoriesError.message}</p>}
-                {platformsError && <p>Platforms: {platformsError.message}</p>}
+                <p>Platforms: {platformsError.message}</p>
               </div>
             )}
           </div>
@@ -261,10 +282,9 @@ export default function UploadPage() {
     )
   }
 
-  // Check if categories or platforms are empty
-  if (!loadingCategories && !loadingPlatforms && (categories.length === 0 || platforms.length === 0)) {
+  // Check if platforms are empty
+  if (!loadingPlatforms && platforms.length === 0) {
     console.warn('⚠️ Missing data:', {
-      categories: categories.length,
       platforms: platforms.length,
     })
 
@@ -282,7 +302,6 @@ export default function UploadPage() {
               <div className="text-sm text-gray-600">
                 <p className="mb-2">The following data is missing:</p>
                 <ul className="list-disc list-inside space-y-1">
-                  {categories.length === 0 && <li>Categories (0 found)</li>}
                   {platforms.length === 0 && <li>Platforms (0 found)</li>}
                 </ul>
               </div>
@@ -436,29 +455,6 @@ export default function UploadPage() {
               </p>
             </div>
 
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <select
-                {...register('category_id')}
-                className={`w-full px-3 py-2 border rounded-md text-sm ${
-                  errors.category_id ? 'border-red-500' : ''
-                }`}
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              {errors.category_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.category_id.message}</p>
-              )}
-            </div>
-
             {/* Platforms */}
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -540,71 +536,15 @@ export default function UploadPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Markdown Content */}
+            {/* Document Editor */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                Documentation (Markdown) <span className="text-red-500">*</span>
+                Documentation <span className="text-red-500">*</span>
               </label>
-              <textarea
-                {...register('markdown_content')}
-                className={`w-full min-h-[300px] px-3 py-2 border rounded-md text-sm font-mono ${
-                  errors.markdown_content ? 'border-red-500' : ''
-                }`}
-                placeholder="# Agent Documentation
-
-## Overview
-Describe what your agent does...
-
-## Setup
-1. Step one
-2. Step two
-
-## Usage
-How to use the agent...
-
-## Examples
-Include examples of inputs and outputs..."
-              />
-              {errors.markdown_content && (
-                <p className="text-sm text-red-600 mt-1">{errors.markdown_content.message}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Use Markdown formatting. Minimum 100 characters.
+              <DocumentEditor ref={documentEditorRef} />
+              <p className="text-xs text-gray-500 mt-2">
+                Use the rich text editor to create comprehensive documentation for your agent.
               </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Additional Information (Optional)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Version */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Version</label>
-              <Input
-                {...register('version')}
-                placeholder="1.0.0"
-                className={errors.version ? 'border-red-500' : ''}
-              />
-              {errors.version && (
-                <p className="text-sm text-red-600 mt-1">{errors.version.message}</p>
-              )}
-            </div>
-
-            {/* Complexity Level */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Complexity Level</label>
-              <select
-                {...register('complexity_level')}
-                className="w-full px-3 py-2 border rounded-md text-sm"
-              >
-                <option value="">Select complexity</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
             </div>
           </CardContent>
         </Card>
