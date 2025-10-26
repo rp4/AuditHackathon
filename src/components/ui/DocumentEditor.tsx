@@ -48,10 +48,13 @@ export const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>
 
       // Listen for content changes
       if (onChange) {
-        const subscription = doc.onCommandExecuted(() => {
-          const docData = univerAPI.getActiveDocument()?.getSnapshot()
-          if (docData) {
-            onChange(docData)
+        const subscription = univerAPI.onCommandExecuted((command) => {
+          // Only respond to document edit commands
+          if (command.id?.startsWith('doc.command.')) {
+            const docData = univerAPI.getActiveDocument()?.getSnapshot()
+            if (docData) {
+              onChange(docData)
+            }
           }
         })
 
