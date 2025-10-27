@@ -32,8 +32,8 @@ export async function middleware(request: NextRequest) {
     '127.0.0.1'
 
   // Apply rate limiting based on endpoint type
-  let rateLimit = RATE_LIMITS.API // Default
-  let identifier = `api:${ip}`
+  let rateLimit: { maxRequests: number; windowMs: number }
+  let identifier: string
 
   // Authentication endpoints - strictest limits
   if (pathname.startsWith('/api/auth') || pathname.startsWith('/auth')) {
@@ -49,6 +49,11 @@ export async function middleware(request: NextRequest) {
   else if (request.method !== 'GET' && request.method !== 'HEAD') {
     rateLimit = RATE_LIMITS.MUTATION
     identifier = `mutation:${ip}`
+  }
+  // Default to API limits
+  else {
+    rateLimit = RATE_LIMITS.API
+    identifier = `api:${ip}`
   }
 
   // Check rate limit
