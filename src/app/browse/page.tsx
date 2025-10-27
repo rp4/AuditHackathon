@@ -70,7 +70,7 @@ export default function BrowsePage() {
     const counts: Record<string, number> = {}
 
     agentsForCounting.forEach((agent) => {
-      agent.platforms?.forEach((ap) => {
+      agent.agent_platforms?.forEach((ap) => {
         const platformId = ap.platform?.id || ap.platform_id
         if (platformId) {
           counts[platformId] = (counts[platformId] || 0) + 1

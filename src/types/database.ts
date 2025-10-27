@@ -521,7 +521,7 @@ export type CommentUpdate = Database['public']['Tables']['comments']['Update']
 export type AgentWithRelations = Agent & {
   profile: Profile
   category: Category | null
-  platforms: (AgentPlatform & { platform: Platform })[]
+  agent_platforms: (AgentPlatform & { platform: Platform })[]
   user_favorited?: boolean
   user_rating?: number | null
 }

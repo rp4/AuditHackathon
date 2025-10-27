@@ -30,7 +30,7 @@ function AgentCardComponent({ agent, showAuthor = true }: AgentCardProps) {
         <CardContent className="space-y-4">
           {/* Platforms */}
           <div className="flex flex-wrap gap-2">
-            {agent.platforms?.map((ap) => (
+            {agent.agent_platforms?.map((ap) => (
               <span
                 key={ap.platform_id}
                 className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium"
