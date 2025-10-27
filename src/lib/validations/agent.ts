@@ -65,12 +65,12 @@ export const createAgentSchema = z.object({
 
   tags: z.array(z.string())
     .max(10, 'Maximum 10 tags')
-    .optional()
-    .transform(tags => tags?.map(tag => DOMPurify.sanitize(tag, { ALLOWED_TAGS: [] }))),
+    .default([])
+    .transform(tags => tags.map(tag => DOMPurify.sanitize(tag, { ALLOWED_TAGS: [] }))),
 
   prerequisites: z.array(z.string())
-    .optional()
-    .transform(prereqs => prereqs?.map(p => sanitizeHtml(p))),
+    .default([])
+    .transform(prereqs => prereqs.map(p => sanitizeHtml(p))),
 
   estimated_tokens: z.number()
     .int()
@@ -87,21 +87,21 @@ export const createAgentSchema = z.object({
   instructions: z.string()
     .max(10000, 'Instructions too long')
     .optional()
-    .transform(val => val ? sanitizeHtml(val) : val),
+    .transform(val => val ? sanitizeHtml(val) : undefined),
 
   configuration: z.record(z.unknown())
     .optional()
-    .transform(val => val ? sanitizeJson(val) as Record<string, unknown> : val),
+    .transform(val => val ? sanitizeJson(val) as Record<string, unknown> : undefined),
 
   sample_inputs: z.array(z.string())
     .max(10, 'Maximum 10 sample inputs')
-    .optional()
-    .transform(inputs => inputs?.map(i => sanitizeHtml(i))),
+    .default([])
+    .transform(inputs => inputs.map(i => sanitizeHtml(i))),
 
   sample_outputs: z.array(z.string())
     .max(10, 'Maximum 10 sample outputs')
-    .optional()
-    .transform(outputs => outputs?.map(o => sanitizeHtml(o))),
+    .default([])
+    .transform(outputs => outputs.map(o => sanitizeHtml(o))),
 })
 
 export const updateAgentSchema = createAgentSchema.partial()
