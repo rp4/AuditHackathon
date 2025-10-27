@@ -124,7 +124,7 @@ export default function Header() {
             </div>
             <div className="hidden sm:block">
               <div className="font-black text-xl">Audit Agents</div>
-              <div className="text-xs text-gray-500">AI Agent Library</div>
+              <div className="text-xs text-gray-500">For Auditors By Auditors</div>
             </div>
           </Link>
 

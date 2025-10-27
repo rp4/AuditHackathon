@@ -4,8 +4,8 @@ import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToggleFavorite } from '@/hooks/useFavorites'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 
 interface FavoriteButtonProps {
   agentId: string
@@ -26,16 +26,25 @@ export function FavoriteButton({
   size = 'default',
   showCount = true,
 }: FavoriteButtonProps) {
-  const router = useRouter()
   const [localFavorited, setLocalFavorited] = useState(initialFavorited)
   const [localCount, setLocalCount] = useState(favoritesCount)
   const { mutate: toggleFavorite, isPending } = useToggleFavorite()
+  const supabase = createClient()
 
-  const handleClick = () => {
+  const handleClick = async () => {
     // Check if user is authenticated
     if (!userId) {
-      // Redirect to auth
-      router.push('/auth/signin')
+      // Trigger LinkedIn OAuth sign-in
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'linkedin_oidc',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        toast.error('Failed to sign in. Please try again.')
+      }
       return
     }
 
