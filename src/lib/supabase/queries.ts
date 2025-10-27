@@ -1,4 +1,4 @@
-import { createClient } from './client'
+import { createClient as createBrowserClient } from './client'
 import type {
   Agent,
   AgentWithRelations,
@@ -12,6 +12,23 @@ import type {
 } from '@/types/database'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database-generated'
+
+// Helper to get the appropriate client based on environment
+async function getClient() {
+  // Check if we're in a server context (headers available)
+  if (typeof window === 'undefined') {
+    try {
+      // Dynamically import server client to avoid loading next/headers in client components
+      const { createClient: createServerClient } = await import('./server')
+      return await createServerClient()
+    } catch {
+      // Fallback to browser client if server client fails
+      return createBrowserClient()
+    }
+  }
+  // Client-side, use browser client
+  return createBrowserClient()
+}
 
 // ============================================
 // AGENT QUERIES
@@ -32,7 +49,7 @@ export interface GetAgentsParams {
 }
 
 export async function getAgents(params: GetAgentsParams = {}) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   let query = supabase
     .from('agents')
@@ -78,9 +95,18 @@ export async function getAgents(params: GetAgentsParams = {}) {
     query = query.in('agent_platforms.platform_id', params.platformIds)
   }
 
-  // Search
+  // Search with sanitization
   if (params.search) {
-    query = query.or(`name.ilike.%${params.search}%,description.ilike.%${params.search}%`)
+    // Sanitize search input by escaping special characters
+    const sanitizedSearch = params.search
+      .replace(/[%_\\]/g, '\\$&') // Escape SQL LIKE special chars
+      .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric except spaces and hyphens
+      .trim()
+      .substring(0, 100) // Limit length
+
+    if (sanitizedSearch) {
+      query = query.or(`name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`)
+    }
   }
 
   // Sorting
@@ -120,7 +146,7 @@ export async function getAgents(params: GetAgentsParams = {}) {
 }
 
 export async function getAgentBySlug(slug: string, userId?: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('agents')
@@ -164,7 +190,7 @@ export async function getAgentBySlug(slug: string, userId?: string) {
 }
 
 export async function getAgentById(id: string, userId?: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('agents')
@@ -209,7 +235,7 @@ export async function getAgentById(id: string, userId?: string) {
 // ============================================
 
 export async function getCategories(limit: number = 100): Promise<Category[]> {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   console.log('📦 getCategories: Starting fetch...')
 
@@ -241,7 +267,7 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
 }
 
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   console.log('📦 getPlatforms: Starting fetch...')
 
@@ -273,7 +299,7 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 }
 
 export async function getPlatformCounts(): Promise<Record<string, number>> {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('agent_platforms')
@@ -298,7 +324,7 @@ export async function getPlatformCounts(): Promise<Record<string, number>> {
 // ============================================
 
 export async function getUserProfile(username: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('profiles')
@@ -315,7 +341,7 @@ export async function getUserProfile(username: string) {
 }
 
 export async function getUserProfileById(userId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('profiles')
@@ -340,7 +366,7 @@ export async function getUserAgents(userId: string, limit = 20) {
 // ============================================
 
 export async function getAgentRatings(agentId: string, limit = 10, offset = 0) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('ratings')
@@ -361,7 +387,7 @@ export async function getAgentRatings(agentId: string, limit = 10, offset = 0) {
 }
 
 export async function getUserRating(agentId: string, userId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('ratings')
@@ -382,7 +408,7 @@ export async function getUserRating(agentId: string, userId: string) {
 // ============================================
 
 export async function getAgentComments(agentId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('comments')
@@ -431,7 +457,7 @@ export async function getAgentComments(agentId: string) {
 // ============================================
 
 export async function getUserFavorites(userId: string, limit = 20, offset = 0) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('favorites')
@@ -463,7 +489,7 @@ export async function getUserFavorites(userId: string, limit = 20, offset = 0) {
 }
 
 export async function checkUserFavorited(agentId: string, userId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     // @ts-expect-error - Supabase client RPC type inference issue
@@ -482,7 +508,7 @@ export async function checkUserFavorited(agentId: string, userId: string) {
 // ============================================
 
 export async function getAgentStats(agentId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('agents')
@@ -503,7 +529,7 @@ export async function getAgentStats(agentId: string) {
 // ============================================
 
 export async function getUserCollections(userId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('collections')
@@ -520,7 +546,7 @@ export async function getUserCollections(userId: string) {
 }
 
 export async function getCollectionAgents(collectionId: string) {
-  const supabase = createClient()
+  const supabase = await getClient()
 
   const { data, error } = await supabase
     .from('collection_agents')

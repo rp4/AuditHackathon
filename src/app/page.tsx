@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { getAgents } from '@/lib/supabase/queries'
+import { getAgents, getPlatforms, getPlatformCounts } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
 
 export default async function HomePage() {
@@ -25,6 +25,16 @@ export default async function HomePage() {
     })
   } catch (error) {
     console.error('Error fetching featured agents:', error)
+  }
+
+  // Fetch platforms and their counts
+  let platforms: any[] = []
+  let platformCounts: Record<string, number> = {}
+  try {
+    platforms = await getPlatforms()
+    platformCounts = await getPlatformCounts()
+  } catch (error) {
+    console.error('Error fetching platforms:', error)
   }
 
   return (
@@ -62,7 +72,7 @@ export default async function HomePage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/upload">
+            <Link href="/add">
               <Button size="lg" variant="outline" className="min-w-[240px] h-14 text-lg font-semibold border-2 hover:bg-gray-50">
                 Share Your Agent
               </Button>
@@ -95,38 +105,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Platforms Section */}
       <section className="py-32 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-black mb-4">
-              Explore by Category
+              Explore by Platform
             </h2>
             <p className="text-xl text-gray-600">
-              Find the perfect AI agent for your specific audit needs
+              Find the perfect AI agent for your preferred platform
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { name: 'Financial Audit', count: 124, slug: 'financial-audit' },
-              { name: 'Compliance', count: 89, slug: 'compliance' },
-              { name: 'Risk Assessment', count: 67, slug: 'risk-assessment' },
-              { name: 'Internal Controls', count: 45, slug: 'internal-controls' },
-              { name: 'Data Analysis', count: 98, slug: 'data-analysis' },
-              { name: 'Report Generation', count: 76, slug: 'report-generation' },
-              { name: 'Process Automation', count: 112, slug: 'process-automation' },
-              { name: 'Document Review', count: 54, slug: 'document-review' },
-            ].map((category) => (
-              <Link key={category.slug} href={`/browse?category=${category.slug}`}>
+            {platforms.map((platform) => (
+              <Link key={platform.id} href={`/browse?platform=${platform.id}`}>
                 <div className="group cursor-pointer border-2 hover:border-purple-300 transition-all duration-200 hover:shadow-xl h-full rounded-lg p-6">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-lg group-hover:text-purple-600 transition-colors">
-                      {category.name}
+                      {platform.name}
                     </h3>
                     <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
                   </div>
-                  <p className="text-sm text-gray-500">{category.count} agents</p>
+                  <p className="text-sm text-gray-500">
+                    {platformCounts[platform.id] || 0} agents
+                  </p>
                 </div>
               </Link>
             ))}

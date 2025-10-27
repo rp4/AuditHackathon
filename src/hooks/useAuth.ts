@@ -33,11 +33,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Session timeout: 30 minutes of inactivity
   useEffect(() => {
+    if (!session) return
+
+    const IDLE_TIMEOUT = 30 * 60 * 1000 // 30 minutes
+    let timeoutId: NodeJS.Timeout
+
+    const resetTimeout = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+
+      timeoutId = setTimeout(async () => {
+        console.log('Session timed out due to inactivity')
+        await auth.signOut()
+        window.location.href = '/login?reason=timeout'
+      }, IDLE_TIMEOUT)
+    }
+
+    // Activity events that reset the timeout
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+
+    const handleActivity = () => {
+      resetTimeout()
+    }
+
+    // Set up listeners
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleActivity, { passive: true })
+    })
+
+    // Start initial timeout
+    resetTimeout()
+
+    // Cleanup
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleActivity)
+      })
+    }
+  }, [session])
+
+  useEffect(() => {
+    const DEV_USER_ID = '51b0255c-de4d-45d5-90fb-af62e5291435'
+    const isDevelopment = process.env.NODE_ENV === 'development' &&
+                          typeof window !== 'undefined' &&
+                          window.location.hostname === 'localhost'
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      // Auto-login in development mode if not already logged in
+      if (isDevelopment && !session) {
+        console.log('🔧 DEV MODE: No session found, attempting auto-login...')
+        try {
+          const response = await fetch('/api/dev-auth', {
+            method: 'POST',
+            credentials: 'include'
+          })
+          const data = await response.json()
+
+          if (data.success && data.properties?.hashed_token) {
+            // Use the hashed token to verify and create a session
+            const { data: authData, error } = await supabase.auth.verifyOtp({
+              token_hash: data.properties.hashed_token,
+              type: 'magiclink',
+            })
+
+            if (error) {
+              console.error('❌ DEV MODE: Failed to verify token:', error)
+            } else if (authData.session) {
+              console.log('✅ DEV MODE: Auto-logged in as user:', DEV_USER_ID)
+              setSession(authData.session)
+              setUser(authData.user)
+            }
+          } else {
+            console.error('❌ DEV MODE: Auto-login failed:', data.error || 'Unknown error')
+            if (data.details) {
+              console.error('Details:', data.details)
+            }
+          }
+        } catch (error) {
+          console.error('❌ DEV MODE: Auto-login request failed:', error)
+        }
+      } else {
+        setSession(session)
+        setUser(session?.user ?? null)
+      }
       setLoading(false)
     })
 

@@ -174,7 +174,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               {/* Action Buttons */}
               {isOwnProfile && (
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Link href="/upload">
+                  <Link href="/add">
                     <Button className="w-full sm:w-auto">
                       <UploadIcon className="h-4 w-4 mr-2" />
                       Upload Agent
@@ -272,7 +272,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               : "No favorite agents yet"}
           </p>
           {isOwnProfile && activeTab === "created" && (
-            <Link href="/upload">
+            <Link href="/add">
               <Button>
                 <UploadIcon className="h-4 w-4 mr-2" />
                 Upload Your First Agent

@@ -1,8 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import type { Database } from '@/types/database-generated'
 
 export async function createClient() {
+  // Dynamically import cookies to prevent webpack bundling issues
+  const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
 
   return createServerClient<Database>(

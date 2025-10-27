@@ -80,7 +80,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">Manage your agents and track performance</p>
         </div>
-        <Link href="/upload">
+        <Link href="/add">
           <Button className="mt-4 md:mt-0">
             <Plus className="h-4 w-4 mr-2" />
             Upload New Agent

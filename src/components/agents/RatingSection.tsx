@@ -76,6 +76,9 @@ export function RatingSection({
 
   return (
     <div className="space-y-6">
+      {/* Section Title */}
+      <h3 className="text-xl font-semibold">Ratings & Reviews</h3>
+
       {/* Overall Rating Display */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">

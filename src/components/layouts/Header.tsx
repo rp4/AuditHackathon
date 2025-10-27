@@ -147,7 +147,7 @@ export default function Header() {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
-            <Link href="/upload" className="hidden md:block">
+            <Link href="/add" className="hidden md:block">
               <Button variant="outline" className="font-semibold border-2 hover:bg-gray-50">
                 <Upload className="h-4 w-4 mr-2" />
                 Upload
@@ -218,7 +218,7 @@ export default function Header() {
           <div className="lg:hidden py-6 border-t bg-white absolute top-20 left-0 right-0 shadow-2xl">
             <div className="container mx-auto px-4">
               <div className="flex flex-col space-y-4">
-                <Link href="/upload" className="flex items-center justify-between py-3 px-4 text-base font-semibold text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all">
+                <Link href="/add" className="flex items-center justify-between py-3 px-4 text-base font-semibold text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all">
                   Upload Agent
                   <ChevronRight className="h-5 w-5" />
                 </Link>

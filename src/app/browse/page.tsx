@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Filter, Grid, List, Search, Star } from 'lucide-react'
@@ -11,6 +12,7 @@ import type { Platform } from '@/types/database'
 
 export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300) // 300ms debounce
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([])
   const [minRating, setMinRating] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -37,16 +39,16 @@ export default function BrowsePage() {
       })
   }, [])
 
-  // Build query params for agents
+  // Build query params for agents (using debounced search)
   const queryParams = useMemo(
     () => ({
-      search: searchQuery || undefined,
+      search: debouncedSearchQuery || undefined,
       platformIds: selectedPlatformIds.length > 0 ? selectedPlatformIds : undefined,
       minRating: minRating || undefined,
       sortBy,
       limit: 20,
     }),
-    [searchQuery, selectedPlatformIds, minRating, sortBy]
+    [debouncedSearchQuery, selectedPlatformIds, minRating, sortBy]
   )
 
   // Fetch agents with real-time filtering

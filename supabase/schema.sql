@@ -148,6 +148,7 @@ CREATE TABLE downloads (
   agent_id UUID NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
   ip_address INET,
   user_agent TEXT,
+  downloaded_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -222,41 +223,147 @@ CREATE TABLE agent_versions (
 -- ============================================
 -- 5. INDEXES FOR PERFORMANCE
 -- ============================================
+-- Updated: 2025-10-27 - Added comprehensive indexes for production performance
 
--- Profiles indexes
-CREATE INDEX idx_profiles_username ON profiles(username);
+-- ============================================
+-- PROFILES TABLE INDEXES
+-- ============================================
+-- Username lookup (case-insensitive for search)
+CREATE INDEX IF NOT EXISTS idx_profiles_username ON profiles(LOWER(username));
 
--- Categories and Platforms indexes
-CREATE INDEX idx_categories_slug ON categories(slug);
-CREATE INDEX idx_platforms_slug ON platforms(slug);
+-- Full-text search on full_name
+CREATE INDEX IF NOT EXISTS idx_profiles_fullname ON profiles(full_name) WHERE full_name IS NOT NULL;
 
--- Agents indexes
-CREATE INDEX idx_agents_user_id ON agents(user_id);
-CREATE INDEX idx_agents_category_id ON agents(category_id);
-CREATE INDEX idx_agents_slug ON agents(slug);
-CREATE INDEX idx_agents_is_public ON agents(is_public);
-CREATE INDEX idx_agents_created_at ON agents(created_at DESC);
-CREATE INDEX idx_agents_favorites_count ON agents(favorites_count DESC);
-CREATE INDEX idx_agents_downloads_count ON agents(downloads_count DESC);
-CREATE INDEX idx_agents_avg_rating ON agents(avg_rating DESC);
-CREATE INDEX idx_agents_search ON agents USING gin(to_tsvector('english', name || ' ' || coalesce(description, '')));
-CREATE INDEX idx_agents_tags ON agents USING gin(tags);
+-- ============================================
+-- CATEGORIES AND PLATFORMS INDEXES
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
+CREATE INDEX IF NOT EXISTS idx_platforms_slug ON platforms(slug);
 
--- Favorites indexes
-CREATE INDEX idx_favorites_user_id ON favorites(user_id);
-CREATE INDEX idx_favorites_agent_id ON favorites(agent_id);
+-- ============================================
+-- AGENTS TABLE INDEXES
+-- ============================================
+-- Single column indexes for filters
+CREATE INDEX IF NOT EXISTS idx_agents_user_id ON agents(user_id);
+CREATE INDEX IF NOT EXISTS idx_agents_slug ON agents(slug);
+CREATE INDEX IF NOT EXISTS idx_agents_category_id ON agents(category_id) WHERE category_id IS NOT NULL;
 
--- Collections indexes
-CREATE INDEX idx_collections_slug ON collections(slug);
-CREATE INDEX idx_collections_user_id ON collections(user_id);
+-- Tag search using GIN index for array overlap
+CREATE INDEX IF NOT EXISTS idx_agents_tags ON agents USING GIN(tags) WHERE tags IS NOT NULL;
 
--- Comments indexes
-CREATE INDEX idx_comments_agent_id ON comments(agent_id);
-CREATE INDEX idx_comments_user_id ON comments(user_id);
+-- Composite indexes for common query patterns in browse page
+CREATE INDEX IF NOT EXISTS idx_agents_public_created
+  ON agents(is_public, created_at DESC)
+  WHERE is_public = true;
 
--- Notifications indexes
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_agents_public_rating
+  ON agents(is_public, avg_rating DESC NULLS LAST)
+  WHERE is_public = true AND avg_rating IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_agents_public_downloads
+  ON agents(is_public, downloads_count DESC)
+  WHERE is_public = true;
+
+-- Full-text search indexes
+CREATE INDEX IF NOT EXISTS idx_agents_search_name
+  ON agents USING GIN(to_tsvector('english', name));
+
+CREATE INDEX IF NOT EXISTS idx_agents_search_description
+  ON agents USING GIN(to_tsvector('english', description));
+
+CREATE INDEX IF NOT EXISTS idx_agents_fulltext
+  ON agents USING GIN(to_tsvector('english', name || ' ' || COALESCE(description, '')));
+
+-- ============================================
+-- AGENT_PLATFORMS TABLE INDEXES
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_agent_platforms_agent ON agent_platforms(agent_id);
+CREATE INDEX IF NOT EXISTS idx_agent_platforms_platform ON agent_platforms(platform_id);
+
+-- Unique constraint enforcement
+CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_platforms_unique
+  ON agent_platforms(agent_id, platform_id);
+
+-- ============================================
+-- FAVORITES TABLE INDEXES
+-- ============================================
+-- Get all favorites for an agent (for count)
+CREATE INDEX IF NOT EXISTS idx_favorites_agent ON favorites(agent_id, created_at DESC);
+
+-- Get user's favorited agents
+CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id, created_at DESC);
+
+-- Unique constraint to prevent duplicate favorites
+CREATE UNIQUE INDEX IF NOT EXISTS idx_favorites_unique
+  ON favorites(agent_id, user_id);
+
+-- ============================================
+-- RATINGS TABLE INDEXES
+-- ============================================
+-- Get all ratings for an agent
+CREATE INDEX IF NOT EXISTS idx_ratings_agent ON ratings(agent_id, created_at DESC);
+
+-- Get user's ratings
+CREATE INDEX IF NOT EXISTS idx_ratings_user ON ratings(user_id, created_at DESC);
+
+-- Unique constraint to prevent duplicate ratings
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ratings_unique
+  ON ratings(agent_id, user_id);
+
+-- ============================================
+-- DOWNLOADS TABLE INDEXES
+-- ============================================
+-- Download count by agent
+CREATE INDEX IF NOT EXISTS idx_downloads_agent ON downloads(agent_id, downloaded_at DESC);
+
+-- User's download history
+CREATE INDEX IF NOT EXISTS idx_downloads_user ON downloads(user_id, downloaded_at DESC) WHERE user_id IS NOT NULL;
+
+-- ============================================
+-- COMMENTS TABLE INDEXES
+-- ============================================
+-- Get all comments for an agent
+CREATE INDEX IF NOT EXISTS idx_comments_agent ON comments(agent_id, created_at DESC);
+
+-- Get user's comments
+CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id, created_at DESC);
+
+-- Threaded comments - find replies to a comment
+CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id) WHERE parent_id IS NOT NULL;
+
+-- ============================================
+-- COLLECTIONS TABLE INDEXES
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_collections_slug ON collections(slug);
+CREATE INDEX IF NOT EXISTS idx_collections_user_id ON collections(user_id);
+
+-- ============================================
+-- NOTIFICATIONS TABLE INDEXES
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+
+-- ============================================
+-- PERFORMANCE NOTES
+-- ============================================
+-- These indexes will significantly improve:
+-- 1. Browse page queries (filtering, sorting, pagination)
+-- 2. Agent detail page loads (slug lookup is O(log n) instead of O(n))
+-- 3. User profile pages (user's agents, favorites, ratings)
+-- 4. Search functionality (GIN indexes for full-text search)
+-- 5. Platform filtering (join performance optimization)
+-- 6. Comment threading (parent-child relationships)
+-- 7. Favorite/rating uniqueness enforcement
+--
+-- Trade-offs:
+-- - Indexes consume disk space (~10-20% of table size)
+-- - Slightly slower writes (indexes need updating)
+-- - Much faster reads (the primary use case for this app)
+--
+-- Maintenance:
+-- - Run VACUUM ANALYZE periodically (Supabase does this automatically)
+-- - Monitor index usage: SELECT * FROM pg_stat_user_indexes;
+-- - Drop unused indexes if identified
 
 -- ============================================
 -- 6. UPDATE TRIGGERS

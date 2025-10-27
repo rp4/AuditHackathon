@@ -19,6 +19,9 @@ import type {
 export async function createAgent(agent: AgentInsert, platformIds: string[]): Promise<AgentRow> {
   const supabase = createClient()
 
+  console.log('📝 Creating agent with data:', JSON.stringify(agent, null, 2))
+  console.log('🔗 Platform IDs:', platformIds)
+
   // Insert agent
   const { data: agentData, error: agentError } = await supabase
     .from('agents')
@@ -28,9 +31,12 @@ export async function createAgent(agent: AgentInsert, platformIds: string[]): Pr
     .single<AgentRow>()
 
   if (agentError || !agentData) {
-    console.error('Error creating agent:', agentError)
+    console.error('❌ Error creating agent:', agentError)
+    console.error('❌ Full error details:', JSON.stringify(agentError, null, 2))
     throw agentError || new Error('Failed to create agent')
   }
+
+  console.log('✅ Agent created successfully:', agentData.id)
 
   // Insert agent platforms
   if (platformIds.length > 0) {
@@ -500,30 +506,66 @@ export async function deleteCollection(collectionId: string, userId: string) {
 /**
  * Generate a unique slug from a name
  */
-export async function generateUniqueSlug(name: string, table: 'agents' | 'collections' = 'agents') {
+export async function generateUniqueSlug(
+  name: string,
+  table: 'agents' | 'collections' = 'agents',
+  maxAttempts: number = 20
+): Promise<string> {
   const supabase = createClient()
 
-  let baseSlug = name
+  // Generate base slug with length limit
+  const baseSlug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
+    .substring(0, 50) // Limit slug length
+
+  // Handle empty slug
+  if (!baseSlug) {
+    const randomSuffix = Math.random().toString(36).substring(2, 8)
+    return `item-${randomSuffix}`
+  }
 
   let slug = baseSlug
-  let counter = 1
+  let attempts = 0
 
-  // Check if slug exists
-  while (true) {
+  // Try sequential numbers first (more readable)
+  while (attempts < maxAttempts) {
     const { data } = await supabase
       .from(table)
       .select('id')
       .eq('slug', slug)
-      .single()
+      .maybeSingle() // Use maybeSingle instead of single to avoid errors
 
     if (!data) {
+      // Slug is available
       return slug
     }
 
-    slug = `${baseSlug}-${counter}`
-    counter++
+    attempts++
+
+    if (attempts < maxAttempts) {
+      // Try with sequential number
+      slug = `${baseSlug}-${attempts}`
+    }
   }
+
+  // If we've exhausted attempts, add random suffix as fallback
+  const randomSuffix = Math.random().toString(36).substring(2, 8)
+  const fallbackSlug = `${baseSlug}-${randomSuffix}`
+
+  // Verify fallback slug is unique (one final check)
+  const { data: fallbackCheck } = await supabase
+    .from(table)
+    .select('id')
+    .eq('slug', fallbackSlug)
+    .maybeSingle()
+
+  if (!fallbackCheck) {
+    return fallbackSlug
+  }
+
+  // Ultimate fallback: use UUID
+  const uuid = crypto.randomUUID().split('-')[0]
+  return `${baseSlug.substring(0, 40)}-${uuid}`
 }

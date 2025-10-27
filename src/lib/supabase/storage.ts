@@ -19,15 +19,38 @@ export interface FileUploadResult {
  */
 export async function uploadFile(
   file: File,
-  options: UploadOptions = {}
+  options: UploadOptions & {
+    validate?: boolean
+    maxSize?: number
+    allowedTypes?: string[]
+  } = {}
 ): Promise<FileUploadResult> {
   try {
     const {
       folder = 'uploads',
       fileName = `${Date.now()}-${file.name}`,
       upsert = false,
-      contentType = file.type
+      contentType = file.type,
+      validate = true,
+      maxSize,
+      allowedTypes
     } = options
+
+    // Validate file before upload
+    if (validate) {
+      const validation = await validateFile(file, {
+        maxSize,
+        allowedTypes,
+        checkMagicNumbers: true
+      })
+
+      if (!validation.valid) {
+        return {
+          success: false,
+          error: validation.error,
+        }
+      }
+    }
 
     // Construct the full path
     const filePath = `${folder}/${fileName}`
@@ -176,16 +199,17 @@ export async function listFiles(folder: string = '') {
 }
 
 /**
- * Validate file before upload
+ * Validate file before upload with magic number checking
  */
-export function validateFile(
+export async function validateFile(
   file: File,
   options: {
     maxSize?: number // in bytes
     allowedTypes?: string[]
+    checkMagicNumbers?: boolean // Verify file type using magic numbers (default: true)
   } = {}
-): { valid: boolean; error?: string } {
-  const { maxSize = 10 * 1024 * 1024, allowedTypes } = options // Default 10MB
+): Promise<{ valid: boolean; error?: string }> {
+  const { maxSize = 10 * 1024 * 1024, allowedTypes, checkMagicNumbers = true } = options
 
   // Check file size
   if (file.size > maxSize) {
@@ -195,23 +219,99 @@ export function validateFile(
     }
   }
 
+  // Empty file check
+  if (file.size === 0) {
+    return {
+      valid: false,
+      error: 'File is empty',
+    }
+  }
+
   // Check file type if specified
   if (allowedTypes && allowedTypes.length > 0) {
     const fileType = file.type.toLowerCase()
-    const isAllowed = allowedTypes.some(type => {
+
+    // First check MIME type (client-provided)
+    const mimeTypeAllowed = allowedTypes.some(type => {
       if (type.endsWith('/*')) {
-        // Handle wildcard types like 'image/*'
         const baseType = type.slice(0, -2)
         return fileType.startsWith(baseType)
       }
       return fileType === type
     })
 
-    if (!isAllowed) {
+    if (!mimeTypeAllowed) {
       return {
         valid: false,
         error: `File type ${file.type} is not allowed. Allowed types: ${allowedTypes.join(', ')}`,
       }
+    }
+
+    // Then verify with magic numbers (server-side verification)
+    if (checkMagicNumbers) {
+      try {
+        const { fileTypeFromBuffer } = await import('file-type')
+        const buffer = await file.arrayBuffer()
+        const uint8Array = new Uint8Array(buffer)
+
+        // Detect actual file type from content
+        const detectedType = await fileTypeFromBuffer(uint8Array)
+
+        // Some files (like text files, JSON) may not have magic numbers
+        // Only validate if we can detect the type
+        if (detectedType) {
+          const detectedMime = detectedType.mime
+
+          // Verify detected type matches allowed types
+          const magicNumberMatches = allowedTypes.some(type => {
+            if (type.endsWith('/*')) {
+              const baseType = type.slice(0, -2)
+              return detectedMime.startsWith(baseType)
+            }
+            return detectedMime === type
+          })
+
+          if (!magicNumberMatches) {
+            return {
+              valid: false,
+              error: `File content does not match declared type. Detected: ${detectedMime}, Declared: ${file.type}`,
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Magic number validation error:', error)
+        // Don't fail validation if magic number check fails
+        // Just log the error and continue
+      }
+    }
+  }
+
+  // Special checks for specific file types
+  if (file.type === 'image/svg+xml') {
+    try {
+      const text = await file.text()
+      // Check for potentially malicious content in SVG
+      if (/<script/i.test(text) || /on\w+=/i.test(text) || /<iframe/i.test(text)) {
+        return {
+          valid: false,
+          error: 'SVG file contains potentially malicious content (scripts or event handlers)',
+        }
+      }
+    } catch (error) {
+      return {
+        valid: false,
+        error: 'Unable to read SVG file content',
+      }
+    }
+  }
+
+  // Check for executable files by extension
+  const dangerousExtensions = ['.exe', '.bat', '.cmd', '.sh', '.ps1', '.msi', '.app', '.dmg']
+  const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
+  if (dangerousExtensions.includes(extension)) {
+    return {
+      valid: false,
+      error: 'Executable files are not allowed',
     }
   }
 
@@ -374,4 +474,134 @@ export async function triggerDocumentDownload(
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+// ============================================
+// IMAGE STORAGE HELPERS
+// ============================================
+
+/**
+ * Upload an image for an agent to Supabase Storage
+ * @param agentSlug - The agent slug to organize images by
+ * @param imageBlob - The image blob to upload
+ * @param imageId - Unique image identifier (UUID)
+ * @returns The public URL of the uploaded image or null if failed
+ */
+export async function uploadAgentImage(
+  agentSlug: string,
+  imageBlob: Blob,
+  imageId: string
+): Promise<string | null> {
+  try {
+    // Determine file extension from blob type
+    const extension = imageBlob.type.split('/')[1] || 'png'
+    const imagePath = `${agentSlug}/images/${imageId}.${extension}`
+
+    const { data, error } = await supabase.storage
+      .from('agent-images')
+      .upload(imagePath, imageBlob, {
+        contentType: imageBlob.type,
+        upsert: true,
+        cacheControl: '31536000', // Cache for 1 year
+      })
+
+    if (error) {
+      console.error('Error uploading image:', error)
+      return null
+    }
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('agent-images')
+      .getPublicUrl(data.path)
+
+    return publicUrl
+  } catch (error) {
+    console.error('Error uploading image:', error)
+    return null
+  }
+}
+
+/**
+ * Delete an image from storage
+ * @param agentSlug - The agent slug
+ * @param imageId - The image identifier
+ * @returns True if successful, false otherwise
+ */
+export async function deleteAgentImage(
+  agentSlug: string,
+  imageId: string
+): Promise<boolean> {
+  try {
+    // Try common extensions
+    const extensions = ['png', 'jpg', 'jpeg', 'gif', 'webp']
+    const paths = extensions.map(ext => `${agentSlug}/images/${imageId}.${ext}`)
+
+    const { error } = await supabase.storage
+      .from('agent-images')
+      .remove(paths)
+
+    if (error) {
+      console.error('Error deleting image:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting image:', error)
+    return false
+  }
+}
+
+/**
+ * Delete all images for an agent
+ * @param agentSlug - The agent slug
+ * @returns True if successful, false otherwise
+ */
+export async function deleteAgentImages(agentSlug: string): Promise<boolean> {
+  try {
+    // List all files in the agent's folder
+    const { data: files, error: listError } = await supabase.storage
+      .from('agent-images')
+      .list(`${agentSlug}/images`)
+
+    if (listError || !files) {
+      console.error('Error listing images:', listError)
+      return false
+    }
+
+    if (files.length === 0) {
+      return true // No images to delete
+    }
+
+    // Delete all files
+    const paths = files.map(file => `${agentSlug}/images/${file.name}`)
+    const { error } = await supabase.storage
+      .from('agent-images')
+      .remove(paths)
+
+    if (error) {
+      console.error('Error deleting images:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting agent images:', error)
+    return false
+  }
+}
+
+/**
+ * Get a public URL for an agent image
+ * @param agentSlug - The agent slug
+ * @param imageId - The image identifier with extension
+ * @returns The public URL
+ */
+export function getAgentImageUrl(agentSlug: string, imageId: string): string {
+  const { data: { publicUrl } } = supabase.storage
+    .from('agent-images')
+    .getPublicUrl(`${agentSlug}/images/${imageId}`)
+
+  return publicUrl
 }

@@ -1,4 +1,45 @@
 import { z } from 'zod'
+import DOMPurify from 'isomorphic-dompurify'
+
+// ============================================
+// SANITIZATION HELPERS
+// ============================================
+
+/**
+ * Sanitize HTML/text content to prevent XSS
+ */
+function sanitizeHtml(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'code', 'pre'],
+    ALLOWED_ATTR: ['href', 'target', 'rel'],
+  })
+}
+
+/**
+ * Sanitize JSON configuration objects to prevent script injection
+ */
+function sanitizeJson(value: unknown): unknown {
+  if (value === null || value === undefined) return value
+  if (typeof value === 'string') {
+    // Check for script tags or dangerous content
+    if (/<script|javascript:|on\w+=/i.test(value)) {
+      return value.replace(/<script.*?<\/script>/gi, '').replace(/on\w+=/gi, '')
+    }
+    return value
+  }
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      return value.map(sanitizeJson)
+    }
+    const sanitized: Record<string, unknown> = {}
+    for (const [key, val] of Object.entries(value)) {
+      sanitized[key] = sanitizeJson(val)
+    }
+    return sanitized
+  }
+  return value
+}
 
 // ============================================
 // AGENT SCHEMAS
@@ -7,26 +48,29 @@ import { z } from 'zod'
 export const createAgentSchema = z.object({
   name: z.string()
     .min(3, 'Name must be at least 3 characters')
-    .max(100, 'Name must be less than 100 characters'),
+    .max(100, 'Name must be less than 100 characters')
+    .transform(val => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })), // Strip all HTML
 
   description: z.string()
     .min(10, 'Description must be at least 10 characters')
-    .max(500, 'Description must be less than 500 characters'),
+    .max(500, 'Description must be less than 500 characters')
+    .transform(sanitizeHtml),
 
   category_id: z.string()
     .uuid('Invalid category')
     .optional(),
 
   platforms: z.array(z.string().uuid())
-    .min(1, 'Select at least one platform')
-    .max(5, 'Maximum 5 platforms'),
+    .min(1, 'Select at least one platform'),
 
   tags: z.array(z.string())
     .max(10, 'Maximum 10 tags')
-    .optional(),
+    .optional()
+    .transform(tags => tags?.map(tag => DOMPurify.sanitize(tag, { ALLOWED_TAGS: [] }))),
 
   prerequisites: z.array(z.string())
-    .optional(),
+    .optional()
+    .transform(prereqs => prereqs?.map(p => sanitizeHtml(p))),
 
   estimated_tokens: z.number()
     .int()
@@ -40,10 +84,24 @@ export const createAgentSchema = z.object({
   is_public: z.boolean()
     .optional(),
 
-  instructions: z.any().optional(),
-  configuration: z.any().optional(),
-  sample_inputs: z.any().optional(),
-  sample_outputs: z.any().optional(),
+  instructions: z.string()
+    .max(10000, 'Instructions too long')
+    .optional()
+    .transform(val => val ? sanitizeHtml(val) : val),
+
+  configuration: z.record(z.unknown())
+    .optional()
+    .transform(val => val ? sanitizeJson(val) as Record<string, unknown> : val),
+
+  sample_inputs: z.array(z.string())
+    .max(10, 'Maximum 10 sample inputs')
+    .optional()
+    .transform(inputs => inputs?.map(i => sanitizeHtml(i))),
+
+  sample_outputs: z.array(z.string())
+    .max(10, 'Maximum 10 sample outputs')
+    .optional()
+    .transform(outputs => outputs?.map(o => sanitizeHtml(o))),
 })
 
 export const updateAgentSchema = createAgentSchema.partial()
@@ -63,7 +121,8 @@ export const createRatingSchema = z.object({
     .max(5, 'Rating must be at most 5'),
   review: z.string()
     .max(1000, 'Review must be less than 1000 characters')
-    .optional(),
+    .optional()
+    .transform(val => val ? sanitizeHtml(val) : val),
 })
 
 export type CreateRatingInput = z.infer<typeof createRatingSchema>
@@ -76,14 +135,16 @@ export const createCommentSchema = z.object({
   agent_id: z.string().uuid(),
   content: z.string()
     .min(1, 'Comment cannot be empty')
-    .max(2000, 'Comment must be less than 2000 characters'),
+    .max(2000, 'Comment must be less than 2000 characters')
+    .transform(sanitizeHtml),
   parent_id: z.string().uuid().optional(),
 })
 
 export const updateCommentSchema = z.object({
   content: z.string()
     .min(1, 'Comment cannot be empty')
-    .max(2000, 'Comment must be less than 2000 characters'),
+    .max(2000, 'Comment must be less than 2000 characters')
+    .transform(sanitizeHtml),
 })
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>
@@ -102,11 +163,13 @@ export const updateProfileSchema = z.object({
 
   full_name: z.string()
     .max(100, 'Full name must be less than 100 characters')
-    .optional(),
+    .optional()
+    .transform(val => val ? DOMPurify.sanitize(val, { ALLOWED_TAGS: [] }) : val),
 
   bio: z.string()
     .max(500, 'Bio must be less than 500 characters')
-    .optional(),
+    .optional()
+    .transform(val => val ? sanitizeHtml(val) : val),
 
   website: z.string()
     .url('Must be a valid URL')
@@ -133,11 +196,13 @@ export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 export const createCollectionSchema = z.object({
   name: z.string()
     .min(3, 'Collection name must be at least 3 characters')
-    .max(100, 'Collection name must be less than 100 characters'),
+    .max(100, 'Collection name must be less than 100 characters')
+    .transform(val => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
 
   description: z.string()
     .max(500, 'Description must be less than 500 characters')
-    .optional(),
+    .optional()
+    .transform(val => val ? sanitizeHtml(val) : val),
 
   is_public: z.boolean()
     .optional()

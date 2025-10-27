@@ -1,7 +1,8 @@
+import { memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, Download, Heart } from 'lucide-react'
+import { Star, Heart } from 'lucide-react'
 import type { AgentWithRelations } from '@/types/database'
 
 interface AgentCardProps {
@@ -9,7 +10,7 @@ interface AgentCardProps {
   showAuthor?: boolean
 }
 
-export function AgentCard({ agent, showAuthor = true }: AgentCardProps) {
+function AgentCardComponent({ agent, showAuthor = true }: AgentCardProps) {
   return (
     <Link href={`/agents/${agent.slug}`}>
       <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
@@ -54,10 +55,6 @@ export function AgentCard({ agent, showAuthor = true }: AgentCardProps) {
               <Heart className="h-4 w-4" />
               <span>{agent.favorites_count}</span>
             </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Download className="h-4 w-4" />
-              <span>{agent.downloads_count}</span>
-            </div>
           </div>
 
           {/* Category */}
@@ -77,6 +74,8 @@ export function AgentCard({ agent, showAuthor = true }: AgentCardProps) {
                   width={24}
                   height={24}
                   className="rounded-full"
+                  loading="lazy"
+                  sizes="24px"
                 />
               ) : (
                 <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
@@ -112,3 +111,6 @@ export function AgentCard({ agent, showAuthor = true }: AgentCardProps) {
     </Link>
   )
 }
+
+// Memoized export to prevent unnecessary re-renders
+export const AgentCard = memo(AgentCardComponent)

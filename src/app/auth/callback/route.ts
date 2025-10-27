@@ -4,6 +4,44 @@ import type { Database } from '@/types/database-generated'
 
 type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 
+/**
+ * Sanitize string input from OAuth provider
+ */
+function sanitizeString(value: string | undefined, maxLength: number = 100): string | null {
+  if (!value || typeof value !== 'string') return null
+
+  return value
+    .trim()
+    .replace(/[<>\"']/g, '') // Remove potential XSS characters
+    .substring(0, maxLength)
+    .trim() || null
+}
+
+/**
+ * Sanitize and validate URL from OAuth provider
+ */
+function sanitizeUrl(url: string | undefined, allowedHosts: string[] = ['linkedin.com']): string | null {
+  if (!url || typeof url !== 'string') return null
+
+  try {
+    const parsed = new URL(url)
+
+    // Only allow HTTPS
+    if (parsed.protocol !== 'https:') return null
+
+    // Check if hostname ends with allowed hosts
+    const isAllowed = allowedHosts.some(host =>
+      parsed.hostname === host || parsed.hostname.endsWith(`.${host}`)
+    )
+
+    if (!isAllowed) return null
+
+    return parsed.toString().substring(0, 500) // Limit URL length
+  } catch {
+    return null
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
@@ -57,12 +95,23 @@ export async function GET(request: Request) {
 
         // Try to create profile with original username
         let username = baseUsername
+
+        // Sanitize all user metadata before storing
         const profileData: ProfileInsert = {
           id: data.user.id,
           username,
-          full_name: data.user.user_metadata?.name || data.user.user_metadata?.full_name || null,
-          avatar_url: data.user.user_metadata?.picture || data.user.user_metadata?.avatar_url || null,
-          linkedin_url: data.user.user_metadata?.linkedin_url || null
+          full_name: sanitizeString(
+            data.user.user_metadata?.name || data.user.user_metadata?.full_name,
+            100
+          ),
+          avatar_url: sanitizeUrl(
+            data.user.user_metadata?.picture || data.user.user_metadata?.avatar_url,
+            ['linkedin.com', 'licdn.com', 'media.licdn.com']
+          ),
+          linkedin_url: sanitizeUrl(
+            data.user.user_metadata?.linkedin_url,
+            ['linkedin.com']
+          )
         }
 
         let { error: profileError } = await (supabase
