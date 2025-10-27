@@ -89,7 +89,7 @@ export const createAgentSchema = z.object({
     .optional()
     .transform(val => val ? sanitizeHtml(val) : undefined),
 
-  configuration: z.record(z.unknown())
+  configuration: z.record(z.string(), z.unknown())
     .optional()
     .transform(val => val ? sanitizeJson(val) as Record<string, unknown> : undefined),
 
@@ -106,8 +106,13 @@ export const createAgentSchema = z.object({
 
 export const updateAgentSchema = createAgentSchema.partial()
 
-export type CreateAgentInput = z.infer<typeof createAgentSchema>
-export type UpdateAgentInput = z.infer<typeof updateAgentSchema>
+// Input type (before validation/transform) for forms
+export type CreateAgentInput = z.input<typeof createAgentSchema>
+// Output type (after validation/transform) for API
+export type CreateAgentOutput = z.output<typeof createAgentSchema>
+
+export type UpdateAgentInput = z.input<typeof updateAgentSchema>
+export type UpdateAgentOutput = z.output<typeof updateAgentSchema>
 
 // ============================================
 // RATING SCHEMAS
@@ -164,12 +169,12 @@ export const updateProfileSchema = z.object({
   full_name: z.string()
     .max(100, 'Full name must be less than 100 characters')
     .optional()
-    .transform(val => val ? DOMPurify.sanitize(val, { ALLOWED_TAGS: [] }) : val),
+    .transform(val => val ? DOMPurify.sanitize(val, { ALLOWED_TAGS: [] }) : undefined),
 
   bio: z.string()
     .max(500, 'Bio must be less than 500 characters')
     .optional()
-    .transform(val => val ? sanitizeHtml(val) : val),
+    .transform(val => val ? sanitizeHtml(val) : undefined),
 
   website: z.string()
     .url('Must be a valid URL')
@@ -187,7 +192,8 @@ export const updateProfileSchema = z.object({
     .or(z.literal('')),
 })
 
-export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
+export type UpdateProfileInput = z.input<typeof updateProfileSchema>
+export type UpdateProfileOutput = z.output<typeof updateProfileSchema>
 
 // ============================================
 // COLLECTION SCHEMAS
