@@ -27,8 +27,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get client identifier (IP address or fallback)
-  const ip = request.ip ??
-    request.headers.get('x-real-ip') ??
+  const ip = request.headers.get('x-real-ip') ??
     request.headers.get('x-forwarded-for')?.split(',')[0] ??
     '127.0.0.1'
 
