@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, createContext, useContext } fr
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 import * as auth from '@/lib/supabase/auth'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface AuthContextType {
   user: User | null
@@ -29,6 +30,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient()
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -126,13 +128,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      const wasLoggedOut = !session && user
+      const wasLoggedIn = session && !user
+
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
+
+      // Invalidate queries when auth state changes
+      if (wasLoggedIn || wasLoggedOut) {
+        console.log('🔄 Auth state changed, invalidating queries...')
+        queryClient.invalidateQueries({ queryKey: ['agents'] })
+        queryClient.invalidateQueries({ queryKey: ['platforms'] })
+        queryClient.invalidateQueries({ queryKey: ['categories'] })
+      }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [user, queryClient])
 
   const value = {
     user,

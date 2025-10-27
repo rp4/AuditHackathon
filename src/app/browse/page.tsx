@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Filter, Grid, List, Search, Star } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
-import { getPlatforms, getPlatformCounts } from '@/lib/supabase/queries'
+import { getPlatforms } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
 import type { Platform } from '@/types/database'
 
@@ -39,20 +39,35 @@ export default function BrowsePage() {
       })
   }, [])
 
-  // Build query params for agents (using debounced search)
+  // Build query params for agents (using debounced search, excluding platformIds)
   const queryParams = useMemo(
     () => ({
       search: debouncedSearchQuery || undefined,
-      platformIds: selectedPlatformIds.length > 0 ? selectedPlatformIds : undefined,
       minRating: minRating || undefined,
       sortBy,
-      limit: 20,
+      limit: 1000, // Fetch more to allow client-side filtering
     }),
-    [debouncedSearchQuery, selectedPlatformIds, minRating, sortBy]
+    [debouncedSearchQuery, minRating, sortBy]
   )
 
   // Fetch agents with real-time filtering
-  const { data: agents = [], isLoading, error } = useAgents(queryParams)
+  const { data: allAgents = [], isLoading, error } = useAgents(queryParams)
+
+  // Filter agents by selected platforms on the client side
+  const agents = useMemo(() => {
+    if (selectedPlatformIds.length === 0) {
+      return allAgents.slice(0, 20) // Return first 20 if no platform filter
+    }
+
+    // Filter agents that have at least one of the selected platforms
+    const filtered = allAgents.filter((agent) => {
+      return agent.agent_platforms?.some((ap) =>
+        selectedPlatformIds.includes(ap.platform_id || ap.platform?.id)
+      )
+    })
+
+    return filtered.slice(0, 20) // Return first 20 filtered results
+  }, [allAgents, selectedPlatformIds])
 
   // Fetch agents for counting (without platform filter to get accurate counts)
   const countQueryParams = useMemo(
