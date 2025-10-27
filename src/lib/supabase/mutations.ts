@@ -500,6 +500,47 @@ export async function deleteCollection(collectionId: string, userId: string) {
 }
 
 // ============================================
+// REPORT MUTATIONS
+// ============================================
+
+export async function createReport(agentId: string, userId: string, reason?: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase
+    .from('reports')
+    // @ts-expect-error - Supabase client type inference issue
+    .insert({
+      agent_id: agentId,
+      user_id: userId,
+      reason,
+    })
+
+  if (error) {
+    console.error('Error creating report:', error)
+    throw error
+  }
+
+  return true
+}
+
+export async function removeReport(agentId: string, userId: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase
+    .from('reports')
+    .delete()
+    .eq('agent_id', agentId)
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('Error removing report:', error)
+    throw error
+  }
+
+  return true
+}
+
+// ============================================
 // HELPER FUNCTIONS
 // ============================================
 

@@ -33,8 +33,7 @@ export function ShareDialog({ open, onOpenChange, agent }: ShareDialogProps) {
     : ''
 
   // Create default share message
-  const platforms = agent.platforms?.map(ap => ap.platform.name).join(', ') || 'AI'
-  const defaultMessage = `Check out "${agent.name}" on OpenAuditSwarms!\n\n${agent.description}\n\nPlatforms: ${platforms}\n\n${agentUrl}`
+  const defaultMessage = `Check out "${agent.name}" on Audit Agents!\n\n${agent.description}\n\n${agentUrl}`
 
   const [message, setMessage] = useState(defaultMessage)
 
@@ -78,7 +77,7 @@ export function ShareDialog({ open, onOpenChange, agent }: ShareDialogProps) {
           <div className="flex items-center gap-3 mb-2">
             <Image
               src="/logo.png"
-              alt="OpenAuditSwarms"
+              alt="Audit Agents"
               width={40}
               height={40}
               className="rounded"

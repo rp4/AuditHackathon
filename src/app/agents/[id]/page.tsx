@@ -28,12 +28,13 @@ const ShareDialog = dynamic(
 
 import { useAgent } from '@/hooks/useAgents'
 import { useIncrementViews } from '@/hooks/useAgents'
-import { trackDownload } from '@/lib/supabase/mutations'
+import { trackDownload, createReport } from '@/lib/supabase/mutations'
 import { FavoriteButton } from '@/components/agents/FavoriteButton'
 import { createClient } from '@/lib/supabase/client'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 export default function AgentDetailPage({
   params,
@@ -46,6 +47,7 @@ export default function AgentDetailPage({
   // Get current user
   const [user, setUser] = useState<any>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [isReporting, setIsReporting] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
@@ -84,6 +86,31 @@ export default function AgentDetailPage({
   // Handle share dialog
   const handleShare = () => {
     setShareDialogOpen(true)
+  }
+
+  // Handle report
+  const handleReport = async () => {
+    if (!user) {
+      toast.error('Please sign in to report this agent.')
+      return
+    }
+
+    if (!agent) return
+
+    setIsReporting(true)
+    try {
+      await createReport(agent.id, user.id)
+      toast.success('Report submitted. Thank you for reporting. We will review this agent.')
+    } catch (error: any) {
+      // Check if already reported
+      if (error?.code === '23505') {
+        toast.error('You have already reported this agent.')
+      } else {
+        toast.error('Failed to submit report. Please try again.')
+      }
+    } finally {
+      setIsReporting(false)
+    }
   }
 
   if (isLoading) {
@@ -194,20 +221,25 @@ export default function AgentDetailPage({
 
           {/* Action Buttons */}
           <div className="ml-auto flex flex-wrap gap-3">
+            <Button
+              variant="ghost"
+              size="default"
+              onClick={handleReport}
+              disabled={isReporting}
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              {isReporting ? 'Reporting...' : 'Report'}
+            </Button>
+            <Button variant="outline" size="default" onClick={handleShare}>
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </Button>
             <FavoriteButton
               agentId={agent.id}
               userId={user?.id}
               initialFavorited={agent.user_favorited}
               favoritesCount={agent.favorites_count}
             />
-            <Button variant="outline" size="default" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="ghost" size="default">
-              <Flag className="h-4 w-4 mr-2" />
-              Report
-            </Button>
           </div>
         </div>
       </div>
