@@ -6,12 +6,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, Download, Share2, Flag, ExternalLink } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-// CRITICAL: Load Univer client-side only to prevent SSR duplicate initialization
-const UniverDocumentViewer = dynamic(
-  () => import('@/components/univer/UniverDocumentViewer').then(mod => ({ default: mod.UniverDocumentViewer })),
-  { ssr: false }
-)
-
 // Lazy load heavy components for better performance
 const RatingSection = dynamic(
   () => import('@/components/agents/RatingSection').then(mod => ({ default: mod.RatingSection })),
@@ -64,23 +58,10 @@ export default function AgentDetailPage({
     }
   }, [agent?.id, incrementViews])
 
-  // Handle download
+  // Handle download - placeholder for new implementation
   const handleDownloadDocument = async () => {
-    if (!agent || !agent.markdown_file_url) return
-
-    // Track download
-    await trackDownload({
-      agent_id: agent.id,
-      user_id: user?.id || null,
-    })
-
-    // Trigger download of the Univer document
-    try {
-      const { triggerDocumentDownload } = await import('@/lib/supabase/storage')
-      await triggerDocumentDownload(agent.markdown_file_url, `${agent.slug}-documentation.univer`)
-    } catch (error) {
-      console.error('Error downloading document:', error)
-    }
+    // TODO: Implement document download with new document system
+    toast.error('Document download will be implemented with the new document system')
   }
 
   // Handle share dialog
@@ -248,25 +229,9 @@ export default function AgentDetailPage({
       <div className="space-y-6">
           <Card>
             <CardContent className="pt-6">
-              {/* Download Button */}
-              <div className="mb-6">
-                <Button onClick={handleDownloadDocument} size="lg" className="w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Documentation
-                </Button>
+              <div className="p-8 text-center text-gray-500">
+                <p>Documentation viewer will be implemented soon.</p>
               </div>
-
-              {/* Univer Document Viewer */}
-              {agent.markdown_file_url ? (
-                <UniverDocumentViewer
-                  documentPath={agent.markdown_file_url}
-                  agentSlug={agent.slug}
-                />
-              ) : (
-                <div className="p-8 text-center text-gray-500">
-                  <p>No documentation available for this agent.</p>
-                </div>
-              )}
             </CardContent>
           </Card>
 

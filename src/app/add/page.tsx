@@ -146,7 +146,6 @@ export default function AddAgentPage() {
         slug: slug,
         description: data.description,
         user_id: user.id,
-        markdown_content: `# ${data.name}\n\n${data.description}\n\n*Documentation coming soon...*`,
         is_public: true,
       }
 

@@ -122,8 +122,6 @@ export interface Database {
           sample_inputs: any
           sample_outputs: any
           prerequisites: string[] | null
-          markdown_content: string | null
-          markdown_file_url: string | null
           version: string
           is_public: boolean
           is_featured: boolean
@@ -152,8 +150,6 @@ export interface Database {
           sample_inputs?: any
           sample_outputs?: any
           prerequisites?: string[] | null
-          markdown_content?: string | null
-          markdown_file_url?: string | null
           version?: string
           is_public?: boolean
           is_featured?: boolean
@@ -182,8 +178,6 @@ export interface Database {
           sample_inputs?: any
           sample_outputs?: any
           prerequisites?: string[] | null
-          markdown_content?: string | null
-          markdown_file_url?: string | null
           version?: string
           is_public?: boolean
           is_featured?: boolean
