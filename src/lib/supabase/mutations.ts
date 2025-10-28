@@ -115,16 +115,25 @@ export async function updateAgent(agentId: string, updates: AgentUpdate, platfor
 export async function deleteAgent(agentId: string) {
   const supabase = createClient()
 
-  const { error } = await supabase
+  console.log('🔧 Deleting agent with ID:', agentId)
+
+  // Soft delete: set is_deleted to true and record deletion time
+  const { data, error } = await supabase
     .from('agents')
-    .delete()
+    // @ts-expect-error - Supabase client type inference issue
+    .update({
+      is_deleted: true,
+      deleted_at: new Date().toISOString()
+    })
     .eq('id', agentId)
+    .select()
 
   if (error) {
-    console.error('Error deleting agent:', error)
+    console.error('❌ Error deleting agent:', error)
     throw error
   }
 
+  console.log('✅ Agent soft-deleted:', data)
   return true
 }
 

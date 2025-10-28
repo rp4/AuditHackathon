@@ -14,7 +14,7 @@ import { TaskItem } from '@tiptap/extension-task-item'
 import { useEffect, useState } from 'react'
 import { useDebounce } from 'use-debounce'
 import { EditorToolbar } from './EditorToolbar'
-import { extractImageUrls } from '@/lib/documents/storage'
+import { extractImageUrls, uploadDocumentImage } from '@/lib/documents/storage'
 
 interface DocumentEditorProps {
   agentSlug: string
@@ -41,6 +41,7 @@ export function DocumentEditor({
   const [debouncedContent] = useDebounce(content, autoSaveDelay)
   const [isSaving, setIsSaving] = useState(false)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -80,6 +81,45 @@ export function DocumentEditor({
       attributes: {
         class:
           'prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none focus:outline-none min-h-[400px] p-4',
+      },
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items
+        if (!items) return false
+
+        // Check if clipboard contains image
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]
+          if (item.type.indexOf('image') !== -1) {
+            event.preventDefault()
+
+            const file = item.getAsFile()
+            if (file) {
+              setIsUploadingImage(true)
+
+              uploadDocumentImage(agentSlug, file)
+                .then((result) => {
+                  if (result.success && result.url) {
+                    editor?.chain().focus().setImage({ src: result.url }).run()
+                    setUploadedImages((prev) => [...prev, result.url])
+                  } else {
+                    console.error('Image upload failed:', result.error)
+                    alert('Failed to upload image: ' + (result.error || 'Unknown error'))
+                  }
+                })
+                .catch((error) => {
+                  console.error('Image upload error:', error)
+                  alert('Failed to upload image. Please try again.')
+                })
+                .finally(() => {
+                  setIsUploadingImage(false)
+                })
+            }
+
+            return true
+          }
+        }
+
+        return false
       },
     },
     onUpdate: ({ editor }) => {
@@ -138,6 +178,13 @@ export function DocumentEditor({
         {isSaving && (
           <div className="absolute top-2 right-2 text-xs text-gray-500 bg-white px-2 py-1 rounded shadow">
             Saving...
+          </div>
+        )}
+
+        {isUploadingImage && (
+          <div className="absolute top-2 right-2 text-xs text-blue-600 bg-white px-2 py-1 rounded shadow flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            Uploading image...
           </div>
         )}
       </div>

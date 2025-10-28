@@ -23,6 +23,9 @@ import {
   AlignCenter,
   AlignRight,
   MinusSquare,
+  Columns,
+  Rows,
+  Trash2,
 } from 'lucide-react'
 import { uploadDocumentImage } from '@/lib/documents/storage'
 import { toast } from 'sonner'
@@ -76,10 +79,13 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   }
 
+  const isInTable = editor.isActive('table')
+
   return (
     <div className="border-b border-gray-200 bg-gray-50 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
       {/* Undo/Redo */}
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().undo().run()}
@@ -89,6 +95,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Undo className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().redo().run()}
@@ -102,6 +109,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
 
       {/* Text Formatting */}
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -112,6 +120,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Bold className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -122,6 +131,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Italic className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -132,6 +142,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Strikethrough className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleCode().run()}
@@ -146,6 +157,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
 
       {/* Headings */}
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -156,6 +168,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Heading1 className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -166,6 +179,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Heading2 className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
@@ -180,6 +194,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
 
       {/* Lists */}
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -190,6 +205,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <List className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
@@ -200,6 +216,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <ListOrdered className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleTaskList().run()}
@@ -214,6 +231,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
 
       {/* Text Alignment */}
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -224,6 +242,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <AlignLeft className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
@@ -234,6 +253,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <AlignCenter className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
@@ -248,6 +268,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
 
       {/* Other */}
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -258,6 +279,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Quote className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={addLink}
@@ -268,6 +290,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Link className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={handleImageUpload}
@@ -276,6 +299,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Image className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={insertTable}
@@ -284,6 +308,7 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
         <Table className="h-4 w-4" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
@@ -291,6 +316,93 @@ export function EditorToolbar({ editor, agentSlug, onImageUpload }: EditorToolba
       >
         <MinusSquare className="h-4 w-4" />
       </Button>
+
+      {/* Table Controls - Only visible when cursor is inside a table */}
+      {isInTable && (
+        <>
+          <div className="w-px h-6 bg-gray-300 mx-1" />
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().addColumnBefore().run()}
+            title="Add Column Before"
+          >
+            <Columns className="h-4 w-4" />
+            <span className="text-xs ml-1">←</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().addColumnAfter().run()}
+            title="Add Column After"
+          >
+            <Columns className="h-4 w-4" />
+            <span className="text-xs ml-1">→</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().deleteColumn().run()}
+            title="Delete Column"
+            className="text-red-600 hover:text-red-700"
+          >
+            <Columns className="h-4 w-4" />
+            <Trash2 className="h-3 w-3 -ml-1" />
+          </Button>
+
+          <div className="w-px h-6 bg-gray-300 mx-1" />
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().addRowBefore().run()}
+            title="Add Row Before"
+          >
+            <Rows className="h-4 w-4" />
+            <span className="text-xs ml-1">↑</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+            title="Add Row After"
+          >
+            <Rows className="h-4 w-4" />
+            <span className="text-xs ml-1">↓</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().deleteRow().run()}
+            title="Delete Row"
+            className="text-red-600 hover:text-red-700"
+          >
+            <Rows className="h-4 w-4" />
+            <Trash2 className="h-3 w-3 -ml-1" />
+          </Button>
+
+          <div className="w-px h-6 bg-gray-300 mx-1" />
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            title="Delete Table"
+            className="text-red-600 hover:text-red-700"
+          >
+            <Table className="h-4 w-4" />
+            <Trash2 className="h-3 w-3 -ml-1" />
+          </Button>
+        </>
+      )}
     </div>
   )
 }

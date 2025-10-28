@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Search, Upload, Menu, X, ChevronRight, Linkedin, LogOut, User as UserIcon } from "lucide-react"
+import { Upload, Menu, X, ChevronRight, Linkedin, LogOut, User as UserIcon } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -128,19 +128,6 @@ export default function Header() {
             </div>
           </Link>
 
-
-          {/* Search Bar */}
-          <div className="hidden md:flex items-center max-w-md flex-1 mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="search"
-                placeholder="Search agents, categories, or platforms..."
-                className="w-full pl-12 pr-4 py-3 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              />
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -222,13 +209,6 @@ export default function Header() {
                   Upload Agent
                   <ChevronRight className="h-5 w-5" />
                 </Link>
-                <div className="pt-4">
-                  <input
-                    type="search"
-                    placeholder="Search agents..."
-                    className="w-full px-4 py-3 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
               </div>
             </div>
           </div>

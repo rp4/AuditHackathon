@@ -1,9 +1,10 @@
 'use client'
 
 import { use, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft, Download, Share2, Flag, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Download, Share2, Flag, ExternalLink, Edit, Trash2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 // Lazy load heavy components for better performance
@@ -30,6 +31,11 @@ const ShareDialog = dynamic(
   { ssr: false }
 )
 
+const DeleteAgentDialog = dynamic(
+  () => import('@/components/agents/DeleteAgentDialog').then(mod => ({ default: mod.DeleteAgentDialog })),
+  { ssr: false }
+)
+
 import { useAgent } from '@/hooks/useAgents'
 import { useIncrementViews } from '@/hooks/useAgents'
 import { trackDownload, createReport } from '@/lib/supabase/mutations'
@@ -48,11 +54,13 @@ export default function AgentDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id: slug } = use(params)
+  const router = useRouter()
   const supabase = createClient()
 
   // Get current user
   const [user, setUser] = useState<any>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isReporting, setIsReporting] = useState(false)
 
   useEffect(() => {
@@ -235,15 +243,40 @@ export default function AgentDetailPage({
 
           {/* Action Buttons */}
           <div className="ml-auto flex flex-wrap gap-3">
-            <Button
-              variant="ghost"
-              size="default"
-              onClick={handleReport}
-              disabled={isReporting}
-            >
-              <Flag className="h-4 w-4 mr-2" />
-              {isReporting ? 'Reporting...' : 'Report'}
-            </Button>
+            {/* Edit and Delete buttons - only show to owner */}
+            {user && agent.user_id === user.id && (
+              <>
+                <Button
+                  variant="outline"
+                  size="default"
+                  onClick={() => router.push(`/agents/${slug}/edit`)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="default"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="text-red-600 hover:text-red-700 hover:border-red-600"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </>
+            )}
+            {/* Report button - only show to non-owners */}
+            {(!user || agent.user_id !== user.id) && (
+              <Button
+                variant="ghost"
+                size="default"
+                onClick={handleReport}
+                disabled={isReporting}
+              >
+                <Flag className="h-4 w-4 mr-2" />
+                {isReporting ? 'Reporting...' : 'Report'}
+              </Button>
+            )}
             <Button variant="outline" size="default" onClick={handleShare}>
               <Share2 className="h-4 w-4 mr-2" />
               Share
@@ -314,6 +347,16 @@ export default function AgentDetailPage({
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
           agent={agent}
+        />
+      )}
+
+      {/* Delete Dialog */}
+      {agent && (
+        <DeleteAgentDialog
+          agentId={agent.id}
+          agentName={agent.name}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
         />
       )}
     </div>

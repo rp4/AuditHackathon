@@ -107,14 +107,6 @@ export default function BrowsePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Browse AI Agents</h1>
-        <p className="text-muted-foreground">
-          Discover and implement AI agents created by the audit community
-        </p>
-      </div>
-
       {/* Search and Controls */}
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
