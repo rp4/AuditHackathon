@@ -7,6 +7,16 @@ import { ArrowLeft, Download, Share2, Flag, ExternalLink } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 // Lazy load heavy components for better performance
+const DocumentViewer = dynamic(
+  () => import('@/components/documents/DocumentViewer').then(mod => ({ default: mod.DocumentViewer })),
+  { ssr: false }
+)
+
+const PaywallBanner = dynamic(
+  () => import('@/components/documents/PaywallBanner').then(mod => ({ default: mod.PaywallBanner })),
+  { ssr: false }
+)
+
 const RatingSection = dynamic(
   () => import('@/components/agents/RatingSection').then(mod => ({ default: mod.RatingSection })),
   {
@@ -29,6 +39,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { canAccessFullDocumentation } from '@/lib/documents/access'
+import { useQuery } from '@tanstack/react-query'
 
 export default function AgentDetailPage({
   params,
@@ -58,10 +70,31 @@ export default function AgentDetailPage({
     }
   }, [agent?.id, incrementViews])
 
-  // Handle download - placeholder for new implementation
+  // Check if user can access full documentation
+  const { data: canAccessFull = false } = useQuery({
+    queryKey: ['doc-access', agent?.id, user?.id],
+    queryFn: async () => {
+      if (!agent) return false
+      return await canAccessFullDocumentation(agent.id, user?.id || null, {
+        is_premium: agent.is_premium,
+        user_id: agent.user_id,
+      })
+    },
+    enabled: !!agent,
+  })
+
+  // Handle download
   const handleDownloadDocument = async () => {
-    // TODO: Implement document download with new document system
-    toast.error('Document download will be implemented with the new document system')
+    if (!agent) return
+
+    // Track download
+    await trackDownload({
+      agent_id: agent.id,
+      user_id: user?.id || null,
+    })
+
+    // TODO: Implement PDF export
+    toast.info('PDF export coming soon! For now, you can copy the content.')
   }
 
   // Handle share dialog
@@ -229,9 +262,36 @@ export default function AgentDetailPage({
       <div className="space-y-6">
           <Card>
             <CardContent className="pt-6">
-              <div className="p-8 text-center text-gray-500">
-                <p>Documentation viewer will be implemented soon.</p>
-              </div>
+              {/* Download Button */}
+              {(agent.documentation_preview || agent.documentation_full) && (
+                <div className="mb-6 flex justify-end">
+                  <Button onClick={handleDownloadDocument} size="default" variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                </div>
+              )}
+
+              {/* Document Viewer */}
+              {canAccessFull && agent.documentation_full ? (
+                <DocumentViewer content={agent.documentation_full} />
+              ) : agent.documentation_preview ? (
+                <>
+                  <DocumentViewer content={agent.documentation_preview} />
+                  {agent.is_premium && (
+                    <PaywallBanner
+                      agentId={agent.id}
+                      agentName={agent.name}
+                      price={agent.price}
+                      currency={agent.currency}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  <p>No documentation available for this agent.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

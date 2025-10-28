@@ -122,6 +122,14 @@ export interface Database {
           sample_inputs: any
           sample_outputs: any
           prerequisites: string[] | null
+          documentation_preview: any | null
+          documentation_full: any | null
+          documentation_preview_images: string[] | null
+          documentation_full_images: string[] | null
+          is_premium: boolean
+          price: number
+          currency: string
+          preview_paragraph_count: number
           version: string
           is_public: boolean
           is_featured: boolean
@@ -150,6 +158,14 @@ export interface Database {
           sample_inputs?: any
           sample_outputs?: any
           prerequisites?: string[] | null
+          documentation_preview?: any | null
+          documentation_full?: any | null
+          documentation_preview_images?: string[] | null
+          documentation_full_images?: string[] | null
+          is_premium?: boolean
+          price?: number
+          currency?: string
+          preview_paragraph_count?: number
           version?: string
           is_public?: boolean
           is_featured?: boolean
@@ -178,6 +194,14 @@ export interface Database {
           sample_inputs?: any
           sample_outputs?: any
           prerequisites?: string[] | null
+          documentation_preview?: any | null
+          documentation_full?: any | null
+          documentation_preview_images?: string[] | null
+          documentation_full_images?: string[] | null
+          is_premium?: boolean
+          price?: number
+          currency?: string
+          preview_paragraph_count?: number
           version?: string
           is_public?: boolean
           is_featured?: boolean

@@ -15,12 +15,22 @@ import { useQuery } from "@tanstack/react-query"
 import { getPlatforms } from "@/lib/supabase/queries"
 import { createAgentSchema, type CreateAgentInput } from "@/lib/validations/agent"
 import Link from "next/link"
+import dynamic from "next/dynamic"
+import { JSONContent } from "@tiptap/core"
+
+// Lazy load DocumentEditor (client-side only)
+const DocumentEditor = dynamic(
+  () => import('@/components/documents/DocumentEditor').then(mod => ({ default: mod.DocumentEditor })),
+  { ssr: false }
+)
 
 export default function AddAgentPage() {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [documentationContent, setDocumentationContent] = useState<JSONContent | null>(null)
+  const [documentationImages, setDocumentationImages] = useState<string[]>([])
   const router = useRouter()
   const supabase = createClient()
 
@@ -147,6 +157,12 @@ export default function AddAgentPage() {
         description: data.description,
         user_id: user.id,
         is_public: true,
+        // For now, both preview and full show the same content (free agents)
+        // When monetization is enabled, user can set preview vs full manually
+        documentation_preview: documentationContent,
+        documentation_full: documentationContent,
+        documentation_preview_images: documentationImages,
+        documentation_full_images: documentationImages,
       }
 
       // Only add tags if provided
@@ -395,6 +411,29 @@ export default function AddAgentPage() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Documentation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Documentation</CardTitle>
+            <CardDescription>
+              Write comprehensive documentation for your agent
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DocumentEditor
+              agentSlug={watch('name')?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'new-agent'}
+              initialContent={documentationContent || undefined}
+              onContentChange={(content) => setDocumentationContent(content)}
+              onSave={(content, images) => {
+                setDocumentationContent(content)
+                setDocumentationImages(images)
+              }}
+              autoSave={false}
+              placeholder="Write your agent's documentation here. Include setup instructions, usage examples, and any important notes..."
+            />
           </CardContent>
         </Card>
 
