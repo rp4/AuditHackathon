@@ -371,8 +371,14 @@ export async function getAgentRatings(agentId: string, limit = 10, offset = 0) {
   const { data, error } = await supabase
     .from('ratings')
     .select(`
-      *,
-      profile:profiles(id, username, full_name, avatar_url)
+      id,
+      agent_id,
+      user_id,
+      score,
+      review,
+      created_at,
+      updated_at,
+      profile:profiles!ratings_user_id_fkey(id, username, full_name, avatar_url)
     `)
     .eq('agent_id', agentId)
     .order('created_at', { ascending: false })

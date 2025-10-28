@@ -47,6 +47,8 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { canAccessFullDocumentation } from '@/lib/documents/access'
 import { useQuery } from '@tanstack/react-query'
+import { generatePDFFromHTML } from '@/lib/pdf/generatePDF'
+import { useRef } from 'react'
 
 export default function AgentDetailPage({
   params,
@@ -62,6 +64,8 @@ export default function AgentDetailPage({
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isReporting, setIsReporting] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const documentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
@@ -93,16 +97,35 @@ export default function AgentDetailPage({
 
   // Handle download
   const handleDownloadDocument = async () => {
-    if (!agent) return
+    if (!agent || !documentRef.current) return
 
-    // Track download
-    await trackDownload({
-      agent_id: agent.id,
-      user_id: user?.id || null,
-    })
+    setIsDownloading(true)
 
-    // TODO: Implement PDF export
-    toast.info('PDF export coming soon! For now, you can copy the content.')
+    try {
+      // Track download
+      await trackDownload({
+        agent_id: agent.id,
+        user_id: user?.id || null,
+      })
+
+      // Generate PDF from the document content
+      const filename = `${agent.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_documentation.pdf`
+
+      await generatePDFFromHTML(documentRef.current, {
+        filename,
+        title: agent.name,
+        author: agent.profile.full_name || agent.profile.username,
+        orientation: 'portrait',
+        margin: 15,
+      })
+
+      toast.success('PDF downloaded successfully!')
+    } catch (error) {
+      console.error('PDF generation error:', error)
+      toast.error('Failed to generate PDF. Please try again.')
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   // Handle share dialog
@@ -298,33 +321,40 @@ export default function AgentDetailPage({
               {/* Download Button */}
               {(agent.documentation_preview || agent.documentation_full) && (
                 <div className="mb-6 flex justify-end">
-                  <Button onClick={handleDownloadDocument} size="default" variant="outline">
+                  <Button
+                    onClick={handleDownloadDocument}
+                    size="default"
+                    variant="outline"
+                    disabled={isDownloading}
+                  >
                     <Download className="h-4 w-4 mr-2" />
-                    Download PDF
+                    {isDownloading ? 'Generating PDF...' : 'Download PDF'}
                   </Button>
                 </div>
               )}
 
               {/* Document Viewer */}
-              {canAccessFull && agent.documentation_full ? (
-                <DocumentViewer content={agent.documentation_full} />
-              ) : agent.documentation_preview ? (
-                <>
-                  <DocumentViewer content={agent.documentation_preview} />
-                  {agent.is_premium && (
-                    <PaywallBanner
-                      agentId={agent.id}
-                      agentName={agent.name}
-                      price={agent.price}
-                      currency={agent.currency}
-                    />
-                  )}
-                </>
-              ) : (
-                <div className="p-8 text-center text-gray-500">
-                  <p>No documentation available for this agent.</p>
-                </div>
-              )}
+              <div ref={documentRef}>
+                {canAccessFull && agent.documentation_full ? (
+                  <DocumentViewer content={agent.documentation_full} />
+                ) : agent.documentation_preview ? (
+                  <>
+                    <DocumentViewer content={agent.documentation_preview} />
+                    {agent.is_premium && (
+                      <PaywallBanner
+                        agentId={agent.id}
+                        agentName={agent.name}
+                        price={agent.price}
+                        currency={agent.currency}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    <p>No documentation available for this agent.</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 

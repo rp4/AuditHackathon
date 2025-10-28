@@ -21,11 +21,7 @@ export function DocumentViewer({ content, className = '' }: DocumentViewerProps)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-        },
-      }),
+      StarterKit,
       Table.configure({
         resizable: false,
       }),
