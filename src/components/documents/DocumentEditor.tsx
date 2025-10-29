@@ -100,7 +100,7 @@ export function DocumentEditor({
                 .then((result) => {
                   if (result.success && result.url) {
                     editor?.chain().focus().setImage({ src: result.url }).run()
-                    setUploadedImages((prev) => [...prev, result.url])
+                    setUploadedImages((prev) => [...prev, result.url as string])
                   } else {
                     console.error('Image upload failed:', result.error)
                     alert('Failed to upload image: ' + (result.error || 'Unknown error'))
