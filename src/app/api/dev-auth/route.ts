@@ -4,14 +4,24 @@ import { createClient } from '@supabase/supabase-js'
 const DEV_USER_ID = '51b0255c-de4d-45d5-90fb-af62e5291435'
 
 export async function POST(request: NextRequest) {
-  // Multiple layers of protection
+  // HARD BLOCK in production - this endpoint should never be accessible
+  if (process.env.NODE_ENV === 'production' ||
+      process.env.VERCEL_ENV === 'production') {
+    return new NextResponse(null, { status: 404 })
+  }
+
+  // Multiple layers of protection for non-production environments
   const isDev = process.env.NODE_ENV === 'development'
   const devModeEnabled = process.env.ENABLE_DEV_AUTH === 'true'
   const host = request.headers.get('host') || ''
   const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1')
 
+  // Require special development header for additional security
+  const devHeader = request.headers.get('x-dev-auth-secret')
+  const expectedSecret = process.env.DEV_AUTH_SECRET || 'dev-only-secret'
+
   // Strict checks - ALL must be true
-  if (!isDev || !devModeEnabled || !isLocalhost) {
+  if (!isDev || !devModeEnabled || !isLocalhost || devHeader !== expectedSecret) {
     return NextResponse.json(
       { error: 'Not found' },
       { status: 404 }
@@ -57,10 +67,10 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔧 DEV MODE: User found, generating magic link...')
-    // Generate a magic link (this creates a one-time token)
+    // Generate a magic link for dev login (createSession doesn't exist in this version)
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
-      email: userData.user.email!,
+      email: userData.user.email || '',
     })
 
     if (linkError || !linkData) {
@@ -71,13 +81,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('✅ DEV MODE: Auto-login link generated for user:', DEV_USER_ID)
+    console.log('✅ DEV MODE: Auth link generated for user:', DEV_USER_ID)
 
-    // Return the link data so client can use it
+    // Return the auth URL (client should redirect here)
     const response = NextResponse.json({
       success: true,
       user: userData.user,
-      properties: linkData.properties
+      authUrl: linkData.properties.action_link,
     })
 
     return response

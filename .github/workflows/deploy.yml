@@ -1,0 +1,25 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        run: |
+          echo "Deployment handled automatically by Vercel GitHub integration"
+          echo "Monitor deployment at: https://vercel.com/dashboard"
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✅ Deployment initiated successfully"
+          echo "Check Vercel dashboard for deployment status"

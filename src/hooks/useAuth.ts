@@ -94,15 +94,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
           const data = await response.json()
 
-          if (data.success && data.properties?.hashed_token) {
-            // Use the hashed token to verify and create a session
-            const { data: authData, error } = await supabase.auth.verifyOtp({
-              token_hash: data.properties.hashed_token,
-              type: 'magiclink',
+          if (data.success && data.session) {
+            // Set the session directly using the tokens
+            const { data: authData, error } = await supabase.auth.setSession({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token
             })
 
             if (error) {
-              console.error('❌ DEV MODE: Failed to verify token:', error)
+              console.error('❌ DEV MODE: Failed to set session:', error)
             } else if (authData.session) {
               console.log('✅ DEV MODE: Auto-logged in as user:', DEV_USER_ID)
               setSession(authData.session)

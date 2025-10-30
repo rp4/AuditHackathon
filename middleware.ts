@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { rateLimiter, RATE_LIMITS } from './src/lib/ratelimit'
+import { checkRateLimit, getLimiterForPath } from './src/lib/ratelimit'
+import crypto from 'crypto'
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // Generate request ID for tracing
+  const requestId = crypto.randomUUID()
 
   // CSRF Protection for state-changing requests
   if (
@@ -26,42 +30,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Get client identifier (IP address or fallback)
+  // Get client identifier - prefer authenticated user ID over IP
   const ip = request.headers.get('x-real-ip') ??
     request.headers.get('x-forwarded-for')?.split(',')[0] ??
     '127.0.0.1'
 
-  // Apply rate limiting based on endpoint type
-  let rateLimit: { maxRequests: number; windowMs: number }
-  let identifier: string
+  // Try to get user ID from session cookie for better rate limiting
+  const userId = request.cookies.get('sb-user-id')?.value
+  const identifier = userId ? `user:${userId}` : `ip:${ip}`
 
-  // Authentication endpoints - strictest limits
-  if (pathname.startsWith('/api/auth') || pathname.startsWith('/auth')) {
-    rateLimit = RATE_LIMITS.AUTH
-    identifier = `auth:${ip}`
-  }
-  // Upload endpoints - strict limits
-  else if (pathname.includes('/upload') || pathname.includes('/add')) {
-    rateLimit = RATE_LIMITS.UPLOAD
-    identifier = `upload:${ip}`
-  }
-  // Mutation endpoints - moderate limits
-  else if (request.method !== 'GET' && request.method !== 'HEAD') {
-    rateLimit = RATE_LIMITS.MUTATION
-    identifier = `mutation:${ip}`
-  }
-  // Default to API limits
-  else {
-    rateLimit = RATE_LIMITS.API
-    identifier = `api:${ip}`
-  }
+  // Get appropriate rate limiter for this path
+  const { limiter, config } = getLimiterForPath(pathname)
 
   // Check rate limit
-  const result = await rateLimiter.limit(
-    identifier,
-    rateLimit.maxRequests,
-    rateLimit.windowMs
-  )
+  const result = await checkRateLimit(identifier, limiter, config)
 
   // Add rate limit headers
   const response = result.success
@@ -71,16 +53,21 @@ export async function middleware(request: NextRequest) {
         { status: 429 }
       )
 
+  response.headers.set('X-Request-ID', requestId)
   response.headers.set('X-RateLimit-Limit', result.limit.toString())
   response.headers.set('X-RateLimit-Remaining', result.remaining.toString())
   response.headers.set('X-RateLimit-Reset', new Date(result.reset).toISOString())
 
-  // Add security headers
+  // Enhanced security headers
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  response.headers.set('X-DNS-Prefetch-Control', 'off')
+  response.headers.set('X-Download-Options', 'noopen')
+  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
 
   // Content Security Policy
   const cspHeader = `
