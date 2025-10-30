@@ -8,7 +8,6 @@ import { Filter, Grid, List, Search, Star } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
 import { getPlatforms } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
-import { DebugPanel } from '@/components/DebugPanel'
 import type { Platform } from '@/types/database'
 
 export default function BrowsePage() {
@@ -25,15 +24,15 @@ export default function BrowsePage() {
   const [platformsLoading, setPlatformsLoading] = useState(true)
 
   useEffect(() => {
-    console.log('🔵 Fetching platforms...')
+    console.log('[Browse] Fetching platforms...')
     setPlatformsLoading(true)
     getPlatforms()
       .then((data) => {
-        console.log('✅ Platforms loaded:', data)
+        console.log('[Browse] Platforms loaded:', data.length)
         setPlatforms(data)
       })
       .catch((err) => {
-        console.error('❌ Error loading platforms:', err)
+        console.error('[Browse] Error loading platforms:', err)
       })
       .finally(() => {
         setPlatformsLoading(false)
@@ -298,9 +297,6 @@ export default function BrowsePage() {
           </div> */}
         </div>
       </div>
-
-      {/* Debug Panel - Remove in production */}
-      <DebugPanel />
     </div>
   )
 }
