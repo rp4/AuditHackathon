@@ -54,14 +54,10 @@ export async function getAgents(params: GetAgentsParams = {}) {
   // Check if user is authenticated (with error handling)
   let user = null
   try {
-    const { data, error: authError } = await supabase.auth.getUser()
-    if (authError) {
-      console.error('[getAgents] Auth error:', authError.message)
-    }
+    const { data } = await supabase.auth.getUser()
     user = data?.user
-  } catch (authError) {
+  } catch {
     // Continue without user info
-    console.error('[getAgents] Auth check exception:', authError)
   }
 
   let query = supabase
@@ -273,16 +269,6 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
   const supabase = await getClient()
 
-  // Check auth status (with error handling) - prevents issues with auth state
-  try {
-    const { error: authError } = await supabase.auth.getUser()
-    if (authError) {
-      console.error('[getPlatforms] Auth error:', authError.message)
-    }
-  } catch (authError) {
-    console.error('[getPlatforms] Auth check exception:', authError)
-  }
-
   const { data, error } = await supabase
     .from('platforms')
     .select('*')
@@ -290,7 +276,7 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     .limit(limit)
 
   if (error) {
-    console.error('[getPlatforms] Query error:', error)
+    console.error('Error fetching platforms:', error)
 
     // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
