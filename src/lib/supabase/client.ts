@@ -13,7 +13,13 @@ let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = nul
 
 // Create a browser client for client components (singleton pattern)
 export function createClient() {
-  // Return existing instance if available
+  // Only use singleton in browser environment
+  if (typeof window === 'undefined') {
+    // For SSR/Edge, create new instance (needed for OAuth callback)
+    return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+  }
+
+  // Return existing instance if available (browser only)
   if (browserClient) {
     return browserClient
   }
@@ -22,14 +28,12 @@ export function createClient() {
   browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        if (typeof document === 'undefined') return []
         return document.cookie.split(';').map(cookie => {
           const [name, value] = cookie.trim().split('=')
           return { name, value: decodeURIComponent(value) }
         }).filter(cookie => cookie.name)
       },
       setAll(cookies) {
-        if (typeof document === 'undefined') return
         cookies.forEach(({ name, value, options }) => {
           const cookieOptions = {
             sameSite: 'lax' as const,
@@ -54,8 +58,16 @@ export function createClient() {
   return browserClient
 }
 
-// Legacy export for backwards compatibility
-export const supabase = createClient()
+// Export singleton for direct use (lazy initialized on first access)
+let _supabase: ReturnType<typeof createBrowserClient<Database>> | null = null
+export const supabase = new Proxy({} as ReturnType<typeof createBrowserClient<Database>>, {
+  get(_target, prop) {
+    if (!_supabase && typeof window !== 'undefined') {
+      _supabase = createClient()
+    }
+    return _supabase?.[prop as keyof typeof _supabase]
+  }
+})
 
 // Export storage bucket name
 export const STORAGE_BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'agents-storage'
