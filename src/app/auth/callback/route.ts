@@ -49,6 +49,13 @@ export async function GET(request: Request) {
   const error_description = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/'
 
+  console.log('Auth callback received:', {
+    hasCode: !!code,
+    hasError: !!error,
+    origin,
+    next
+  })
+
   // Log any errors from the OAuth provider
   if (error) {
     console.error('OAuth provider error:', {
@@ -61,6 +68,7 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
+    console.log('Attempting to exchange code for session...')
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!exchangeError && data.user) {
