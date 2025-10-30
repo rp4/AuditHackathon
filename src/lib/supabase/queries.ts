@@ -160,17 +160,20 @@ export async function getAgents(params: GetAgentsParams = {}) {
     throw error
   }
 
-  console.log('✅ [getAgents] SUCCESS: fetched', data?.length || 0, 'agents')
-  if (data && data.length > 0) {
+  const agents = (data || []) as AgentWithRelations[]
+  console.log('✅ [getAgents] SUCCESS: fetched', agents.length, 'agents')
+
+  if (agents.length > 0) {
     console.log('🔍 [getAgents] Sample agent:', {
-      id: data[0].id,
-      name: data[0].name,
-      is_public: data[0].is_public,
-      has_profile: !!data[0].profile,
-      platforms_count: data[0].agent_platforms?.length || 0,
+      id: agents[0].id,
+      name: agents[0].name,
+      is_public: agents[0].is_public,
+      has_profile: !!agents[0].profile,
+      platforms_count: agents[0].agent_platforms?.length || 0,
     })
   }
-  return data as AgentWithRelations[]
+
+  return agents
 }
 
 export async function getAgentBySlug(slug: string, userId?: string) {
@@ -327,11 +330,14 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     throw error
   }
 
-  console.log('✅ [getPlatforms] SUCCESS: Fetched', data?.length || 0, 'platforms')
-  if (data && data.length > 0) {
-    console.log('📦 [getPlatforms] Sample:', data.slice(0, 3).map(p => p.name).join(', '))
+  const platforms = (data || []) as Platform[]
+  console.log('✅ [getPlatforms] SUCCESS: Fetched', platforms.length, 'platforms')
+
+  if (platforms.length > 0) {
+    console.log('📦 [getPlatforms] Sample:', platforms.slice(0, 3).map(p => p.name).join(', '))
   }
-  return data as Platform[]
+
+  return platforms
 }
 
 export async function getPlatformCounts(): Promise<Record<string, number>> {
