@@ -49,25 +49,16 @@ export interface GetAgentsParams {
 }
 
 export async function getAgents(params: GetAgentsParams = {}) {
-  console.log('🔍 [getAgents] Called with params:', JSON.stringify(params))
-  console.log('🔍 [getAgents] Environment:', typeof window === 'undefined' ? 'SERVER' : 'CLIENT')
-
   const supabase = await getClient()
 
   // Check if user is authenticated (with error handling)
   let user = null
   try {
-    const { data, error: userError } = await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
     user = data?.user
-    console.log('🔍 [getAgents] Auth status:', {
-      authenticated: !!user,
-      email: user?.email || 'none',
-      userId: user?.id || 'none',
-      error: userError?.message || 'none',
-    })
   } catch (authError) {
-    console.error('❌ [getAgents] Auth check failed:', authError)
     // Continue without user info
+    console.error('Auth check failed in getAgents:', authError)
   }
 
   let query = supabase
@@ -154,33 +145,14 @@ export async function getAgents(params: GetAgentsParams = {}) {
     query = query.range(params.offset, params.offset + (params.limit || 20) - 1)
   }
 
-  console.log('🔍 [getAgents] Executing query...')
   const { data, error } = await query
 
   if (error) {
-    console.error('❌ [getAgents] ERROR:', {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    })
+    console.error('Error fetching agents:', error)
     throw error
   }
 
-  const agents = (data || []) as AgentWithRelations[]
-  console.log('✅ [getAgents] SUCCESS: fetched', agents.length, 'agents')
-
-  if (agents.length > 0) {
-    console.log('🔍 [getAgents] Sample agent:', {
-      id: agents[0].id,
-      name: agents[0].name,
-      is_public: agents[0].is_public,
-      has_profile: !!agents[0].profile,
-      platforms_count: agents[0].agent_platforms?.length || 0,
-    })
-  }
-
-  return agents
+  return (data || []) as AgentWithRelations[]
 }
 
 export async function getAgentBySlug(slug: string, userId?: string) {
@@ -275,8 +247,6 @@ export async function getAgentById(id: string, userId?: string) {
 export async function getCategories(limit: number = 100): Promise<Category[]> {
   const supabase = await getClient()
 
-  console.log('📦 getCategories: Starting fetch...')
-
   const { data, error } = await supabase
     .from('categories')
     .select('*')
@@ -284,42 +254,21 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
     .limit(limit)
 
   if (error) {
-    console.error('❌ Error fetching categories:', {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    })
+    console.error('Error fetching categories:', error)
 
-    // If table doesn't exist, return empty array with warning
+    // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
-      console.warn('⚠️ Categories table does not exist. Returning empty array.')
       return []
     }
 
     throw error
   }
 
-  console.log('✅ getCategories: Fetched', data?.length || 0, 'categories')
   return data as Category[]
 }
 
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
-  console.log('📦 [getPlatforms] Starting fetch...')
-  console.log('📦 [getPlatforms] Environment:', typeof window === 'undefined' ? 'SERVER' : 'CLIENT')
-
   const supabase = await getClient()
-
-  // Check auth status (with error handling)
-  let user = null
-  try {
-    const { data } = await supabase.auth.getUser()
-    user = data?.user
-    console.log('📦 [getPlatforms] Auth:', user ? `Logged in as ${user.email}` : 'Anonymous')
-  } catch (authError) {
-    console.error('❌ [getPlatforms] Auth check failed:', authError)
-    // Continue without auth check
-  }
 
   const { data, error } = await supabase
     .from('platforms')
@@ -328,30 +277,17 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     .limit(limit)
 
   if (error) {
-    console.error('❌ [getPlatforms] ERROR:', {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    })
+    console.error('Error fetching platforms:', error)
 
-    // If table doesn't exist, return empty array with warning
+    // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
-      console.warn('⚠️ Platforms table does not exist. Returning empty array.')
       return []
     }
 
     throw error
   }
 
-  const platforms = (data || []) as Platform[]
-  console.log('✅ [getPlatforms] SUCCESS: Fetched', platforms.length, 'platforms')
-
-  if (platforms.length > 0) {
-    console.log('📦 [getPlatforms] Sample:', platforms.slice(0, 3).map(p => p.name).join(', '))
-  }
-
-  return platforms
+  return (data || []) as Platform[]
 }
 
 export async function getPlatformCounts(): Promise<Record<string, number>> {
