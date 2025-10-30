@@ -49,7 +49,19 @@ export interface GetAgentsParams {
 }
 
 export async function getAgents(params: GetAgentsParams = {}) {
+  console.log('🔍 [getAgents] Called with params:', JSON.stringify(params))
+  console.log('🔍 [getAgents] Environment:', typeof window === 'undefined' ? 'SERVER' : 'CLIENT')
+
   const supabase = await getClient()
+
+  // Check if user is authenticated
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  console.log('🔍 [getAgents] Auth status:', {
+    authenticated: !!user,
+    email: user?.email || 'none',
+    userId: user?.id || 'none',
+    error: userError?.message || 'none',
+  })
 
   let query = supabase
     .from('agents')
@@ -135,13 +147,29 @@ export async function getAgents(params: GetAgentsParams = {}) {
     query = query.range(params.offset, params.offset + (params.limit || 20) - 1)
   }
 
+  console.log('🔍 [getAgents] Executing query...')
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching agents:', error)
+    console.error('❌ [getAgents] ERROR:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    })
     throw error
   }
 
+  console.log('✅ [getAgents] SUCCESS: fetched', data?.length || 0, 'agents')
+  if (data && data.length > 0) {
+    console.log('🔍 [getAgents] Sample agent:', {
+      id: data[0].id,
+      name: data[0].name,
+      is_public: data[0].is_public,
+      has_profile: !!data[0].profile,
+      platforms_count: data[0].agent_platforms?.length || 0,
+    })
+  }
   return data as AgentWithRelations[]
 }
 
@@ -267,9 +295,14 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
 }
 
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
+  console.log('📦 [getPlatforms] Starting fetch...')
+  console.log('📦 [getPlatforms] Environment:', typeof window === 'undefined' ? 'SERVER' : 'CLIENT')
+
   const supabase = await getClient()
 
-  console.log('📦 getPlatforms: Starting fetch...')
+  // Check auth status
+  const { data: { user } } = await supabase.auth.getUser()
+  console.log('📦 [getPlatforms] Auth:', user ? `Logged in as ${user.email}` : 'Anonymous')
 
   const { data, error } = await supabase
     .from('platforms')
@@ -278,7 +311,7 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     .limit(limit)
 
   if (error) {
-    console.error('❌ Error fetching platforms:', {
+    console.error('❌ [getPlatforms] ERROR:', {
       message: error.message,
       details: error.details,
       hint: error.hint,
@@ -294,7 +327,10 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     throw error
   }
 
-  console.log('✅ getPlatforms: Fetched', data?.length || 0, 'platforms')
+  console.log('✅ [getPlatforms] SUCCESS: Fetched', data?.length || 0, 'platforms')
+  if (data && data.length > 0) {
+    console.log('📦 [getPlatforms] Sample:', data.slice(0, 3).map(p => p.name).join(', '))
+  }
   return data as Platform[]
 }
 

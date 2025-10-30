@@ -8,6 +8,7 @@ import { Filter, Grid, List, Search, Star } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
 import { getPlatforms } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
+import { DebugPanel } from '@/components/DebugPanel'
 import type { Platform } from '@/types/database'
 
 export default function BrowsePage() {
@@ -297,6 +298,9 @@ export default function BrowsePage() {
           </div> */}
         </div>
       </div>
+
+      {/* Debug Panel - Remove in production */}
+      <DebugPanel />
     </div>
   )
 }
