@@ -195,7 +195,7 @@ export default function AgentDetailPage({
                 {agent.agent_platforms.map((ap: any) => (
                   <span
                     key={ap.platform_id}
-                    className="text-xs font-medium px-2 py-1 rounded-md bg-primary/10 text-primary"
+                    className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium"
                   >
                     {ap.platform?.name || 'Unknown Platform'}
                   </span>
