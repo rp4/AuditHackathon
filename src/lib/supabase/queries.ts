@@ -14,19 +14,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database-generated'
 
 // Helper to get the appropriate client based on environment
-async function getClient() {
-  // Check if we're in a server context (headers available)
-  if (typeof window === 'undefined') {
-    try {
-      // Dynamically import server client to avoid loading next/headers in client components
-      const { createClient: createServerClient } = await import('./server')
-      return await createServerClient()
-    } catch {
-      // Fallback to browser client if server client fails
-      return createBrowserClient()
-    }
-  }
-  // Client-side, use browser client
+function getClient() {
+  // Always use browser client for now to avoid auth issues
   return createBrowserClient()
 }
 
@@ -49,7 +38,7 @@ export interface GetAgentsParams {
 }
 
 export async function getAgents(params: GetAgentsParams = {}) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   // Check if user is authenticated (with error handling)
   let user = null
@@ -155,7 +144,7 @@ export async function getAgents(params: GetAgentsParams = {}) {
 }
 
 export async function getAgentBySlug(slug: string, userId?: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('agents')
@@ -199,7 +188,7 @@ export async function getAgentBySlug(slug: string, userId?: string) {
 }
 
 export async function getAgentById(id: string, userId?: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('agents')
@@ -244,7 +233,7 @@ export async function getAgentById(id: string, userId?: string) {
 // ============================================
 
 export async function getCategories(limit: number = 100): Promise<Category[]> {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('categories')
@@ -267,7 +256,7 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
 }
 
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('platforms')
@@ -290,7 +279,7 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 }
 
 export async function getPlatformCounts(): Promise<Record<string, number>> {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('agent_platforms')
@@ -315,7 +304,7 @@ export async function getPlatformCounts(): Promise<Record<string, number>> {
 // ============================================
 
 export async function getUserProfile(username: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('profiles')
@@ -332,7 +321,7 @@ export async function getUserProfile(username: string) {
 }
 
 export async function getUserProfileById(userId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('profiles')
@@ -357,7 +346,7 @@ export async function getUserAgents(userId: string, limit = 20) {
 // ============================================
 
 export async function getAgentRatings(agentId: string, limit = 10, offset = 0) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('ratings')
@@ -384,7 +373,7 @@ export async function getAgentRatings(agentId: string, limit = 10, offset = 0) {
 }
 
 export async function getUserRating(agentId: string, userId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('ratings')
@@ -405,7 +394,7 @@ export async function getUserRating(agentId: string, userId: string) {
 // ============================================
 
 export async function getAgentComments(agentId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('comments')
@@ -454,7 +443,7 @@ export async function getAgentComments(agentId: string) {
 // ============================================
 
 export async function getUserFavorites(userId: string, limit = 20, offset = 0) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('favorites')
@@ -486,7 +475,7 @@ export async function getUserFavorites(userId: string, limit = 20, offset = 0) {
 }
 
 export async function checkUserFavorited(agentId: string, userId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     // @ts-expect-error - Supabase client RPC type inference issue
@@ -505,7 +494,7 @@ export async function checkUserFavorited(agentId: string, userId: string) {
 // ============================================
 
 export async function getAgentStats(agentId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('agents')
@@ -526,7 +515,7 @@ export async function getAgentStats(agentId: string) {
 // ============================================
 
 export async function getUserCollections(userId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('collections')
@@ -543,7 +532,7 @@ export async function getUserCollections(userId: string) {
 }
 
 export async function getCollectionAgents(collectionId: string) {
-  const supabase = await getClient()
+  const supabase = getClient()
 
   const { data, error } = await supabase
     .from('collection_agents')
