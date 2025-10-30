@@ -203,8 +203,6 @@ export default function AgentDetailPage({
                 <span className="text-xs text-muted-foreground">•</span>
               </>
             )}
-            <span className="text-xs text-muted-foreground">v{agent.version}</span>
-            <span className="text-xs text-muted-foreground">•</span>
             <span className="text-xs text-muted-foreground">
               Updated {new Date(agent.updated_at).toLocaleDateString()}
             </span>
