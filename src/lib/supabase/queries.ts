@@ -54,14 +54,21 @@ export async function getAgents(params: GetAgentsParams = {}) {
 
   const supabase = await getClient()
 
-  // Check if user is authenticated
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  console.log('🔍 [getAgents] Auth status:', {
-    authenticated: !!user,
-    email: user?.email || 'none',
-    userId: user?.id || 'none',
-    error: userError?.message || 'none',
-  })
+  // Check if user is authenticated (with error handling)
+  let user = null
+  try {
+    const { data, error: userError } = await supabase.auth.getUser()
+    user = data?.user
+    console.log('🔍 [getAgents] Auth status:', {
+      authenticated: !!user,
+      email: user?.email || 'none',
+      userId: user?.id || 'none',
+      error: userError?.message || 'none',
+    })
+  } catch (authError) {
+    console.error('❌ [getAgents] Auth check failed:', authError)
+    // Continue without user info
+  }
 
   let query = supabase
     .from('agents')
@@ -303,9 +310,16 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 
   const supabase = await getClient()
 
-  // Check auth status
-  const { data: { user } } = await supabase.auth.getUser()
-  console.log('📦 [getPlatforms] Auth:', user ? `Logged in as ${user.email}` : 'Anonymous')
+  // Check auth status (with error handling)
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data?.user
+    console.log('📦 [getPlatforms] Auth:', user ? `Logged in as ${user.email}` : 'Anonymous')
+  } catch (authError) {
+    console.error('❌ [getPlatforms] Auth check failed:', authError)
+    // Continue without auth check
+  }
 
   const { data, error } = await supabase
     .from('platforms')
