@@ -8,9 +8,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-// Create a browser client for client components
+// Singleton instance to ensure auth state is shared across the app
+let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
+
+// Create a browser client for client components (singleton pattern)
 export function createClient() {
-  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+  // Return existing instance if available
+  if (browserClient) {
+    return browserClient
+  }
+
+  // Create new instance with proper cookie handling
+  browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         if (typeof document === 'undefined') return []
@@ -34,19 +43,19 @@ export function createClient() {
         })
       },
     },
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storageKey: 'supabase-auth-token',
+    },
   })
+
+  return browserClient
 }
 
-// Legacy export for backwards compatibility - lazy initialized to avoid SSR issues
-let _supabase: ReturnType<typeof createClient> | null = null
-export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
-  get(target, prop) {
-    if (!_supabase) {
-      _supabase = createClient()
-    }
-    return _supabase[prop as keyof typeof _supabase]
-  }
-})
+// Legacy export for backwards compatibility
+export const supabase = createClient()
 
 // Export storage bucket name
 export const STORAGE_BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'agents-storage'

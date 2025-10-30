@@ -1,4 +1,4 @@
-import { createClient as createBrowserClient } from './client'
+import { supabase } from './client'
 import type {
   Agent,
   AgentWithRelations,
@@ -13,10 +13,9 @@ import type {
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database-generated'
 
-// Helper to get the appropriate client based on environment
+// Use the singleton client instance
 function getClient() {
-  // Always use browser client for now to avoid auth issues
-  return createBrowserClient()
+  return supabase
 }
 
 // ============================================
