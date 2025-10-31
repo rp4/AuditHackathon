@@ -18,6 +18,24 @@ function getClient() {
   return createClient()
 }
 
+/**
+ * Handle invalid/expired sessions by auto-logout
+ * Best practice: Don't leave users in broken auth state
+ */
+async function handleInvalidSession(supabase: ReturnType<typeof createClient>) {
+  if (typeof window === 'undefined') return // Server-side, do nothing
+
+  console.warn('Invalid session detected - auto-logging out and refreshing')
+  try {
+    await supabase.auth.signOut()
+  } catch (e) {
+    console.error('Error during auto-logout:', e)
+  }
+
+  // Hard reload to clear all stale state
+  window.location.href = '/'
+}
+
 // ============================================
 // AGENT QUERIES
 // ============================================
@@ -42,10 +60,19 @@ export async function getAgents(params: GetAgentsParams = {}) {
   // Check if user is authenticated (with error handling)
   let user = null
   try {
-    const { data } = await supabase.auth.getUser()
+    const { data, error } = await supabase.auth.getUser()
+
+    // Auto-logout on invalid/expired session
+    if (error) {
+      await handleInvalidSession(supabase)
+      return []
+    }
+
     user = data?.user
-  } catch {
-    // Continue without user info
+  } catch (error) {
+    // Critical auth error - auto-logout
+    await handleInvalidSession(supabase)
+    return []
   }
 
   let query = supabase
@@ -139,6 +166,13 @@ export async function getAgents(params: GetAgentsParams = {}) {
 
   if (error) {
     console.error('Error fetching agents:', error)
+
+    // Check if it's an auth error (JWT expired, invalid session, etc.)
+    if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
+      await handleInvalidSession(supabase)
+      return []
+    }
+
     throw error
   }
 
@@ -270,6 +304,12 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 
   if (error) {
     console.error('Error fetching platforms:', error)
+
+    // Check if it's an auth error (JWT expired, invalid session, etc.)
+    if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
+      await handleInvalidSession(supabase)
+      return []
+    }
 
     // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
