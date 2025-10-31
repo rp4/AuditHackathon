@@ -529,10 +529,13 @@ export async function getUserFavorites(userId: string, limit = 20, offset = 0) {
     throw error
   }
 
-  return data.map((fav: any) => ({
-    ...fav.agent,
-    user_favorited: true
-  })) as AgentWithRelations[]
+  // Filter out soft-deleted agents (agent can be null if deleted)
+  return data
+    .filter((fav: any) => fav.agent && (fav.agent.is_deleted === null || fav.agent.is_deleted === false))
+    .map((fav: any) => ({
+      ...fav.agent,
+      user_favorited: true
+    })) as AgentWithRelations[]
 }
 
 export async function checkUserFavorited(agentId: string, userId: string) {
@@ -617,5 +620,8 @@ export async function getCollectionAgents(collectionId: string) {
     throw error
   }
 
-  return data.map((item: any) => item.agent) as AgentWithRelations[]
+  // Filter out soft-deleted agents (agent can be null if deleted)
+  return data
+    .filter((item: any) => item.agent && (item.agent.is_deleted === null || item.agent.is_deleted === false))
+    .map((item: any) => item.agent) as AgentWithRelations[]
 }
