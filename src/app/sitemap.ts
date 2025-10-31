@@ -1,5 +1,9 @@
 import { MetadataRoute } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServerClient } from '@supabase/supabase-js'
+
+// Force dynamic rendering (sitemap can't be static if it uses cookies)
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // Revalidate every hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://openauditswarms.com'
@@ -28,7 +32,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic agent pages
   try {
-    const supabase = await createClient()
+    // Use direct client without server auth (sitemap doesn't need auth)
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
     const { data: agents } = await supabase
       .from('agents')
       .select('slug, updated_at')
