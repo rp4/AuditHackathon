@@ -61,6 +61,9 @@ export async function getAgents(params: GetAgentsParams = {}) {
     `)
 
   // Apply filters
+  // CRITICAL: Always filter out soft-deleted agents
+  query = query.or('is_deleted.is.null,is_deleted.eq.false')
+
   if (params.isPublic !== undefined) {
     query = query.eq('is_public', params.isPublic)
   } else {
@@ -158,6 +161,7 @@ export async function getAgentBySlug(slug: string, userId?: string) {
       )
     `)
     .eq('slug', slug)
+    .or('is_deleted.is.null,is_deleted.eq.false')
     .single()
 
   if (error) {
@@ -201,6 +205,7 @@ export async function getAgentById(id: string, userId?: string) {
       )
     `)
     .eq('id', id)
+    .or('is_deleted.is.null,is_deleted.eq.false')
     .single()
 
   if (error) {
