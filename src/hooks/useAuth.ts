@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import * as auth from '@/lib/supabase/auth'
 import { useQueryClient } from '@tanstack/react-query'
+
+// Get the singleton client instance
+const supabase = createClient()
 
 interface AuthContextType {
   user: User | null

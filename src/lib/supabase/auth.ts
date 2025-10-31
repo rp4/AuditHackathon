@@ -1,6 +1,9 @@
-import { supabase } from './client'
+import { createClient } from './client'
 import type { User, Session } from '@supabase/supabase-js'
 import zxcvbn from 'zxcvbn'
+
+// Get singleton instance
+const supabase = createClient()
 
 export interface AuthError {
   message: string

@@ -13,6 +13,9 @@ type Profile = {
   username: string
 }
 
+// Get singleton instance outside component to ensure consistency
+const supabase = createClient()
+
 export default function Header() {
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -20,7 +23,6 @@ export default function Header() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
 
   useEffect(() => {
     // Get initial session and profile

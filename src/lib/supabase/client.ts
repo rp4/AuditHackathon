@@ -8,57 +8,56 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-// Singleton instance to ensure auth state is shared across the app
+// Singleton instance - initialized lazily in browser only
 let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
 
-// Create a browser client for client components (singleton pattern)
+/**
+ * Get or create the singleton Supabase client
+ * CRITICAL: This ensures all parts of the app share the same auth state
+ */
 export function createClient() {
-  // Only create singleton in browser environment
-  if (typeof window !== 'undefined') {
-    // Return existing instance if available
-    if (browserClient) {
-      return browserClient
-    }
+  // SSR/Build time: create temporary instance
+  if (typeof window === 'undefined') {
+    return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+  }
 
-    // Create new instance with proper cookie handling
-    browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return document.cookie.split(';').map(cookie => {
-            const [name, value] = cookie.trim().split('=')
-            return { name, value: decodeURIComponent(value) }
-          }).filter(cookie => cookie.name)
-        },
-        setAll(cookies) {
-          cookies.forEach(({ name, value, options }) => {
-            const cookieOptions = {
-              sameSite: 'lax' as const,
-              secure: process.env.NODE_ENV === 'production',
-              ...options,
-            }
-            const expires = cookieOptions.maxAge
-              ? new Date(Date.now() + cookieOptions.maxAge * 1000).toUTCString()
-              : ''
-            document.cookie = `${name}=${encodeURIComponent(value)}; path=${cookieOptions.path || '/'}; ${expires ? `expires=${expires};` : ''} ${cookieOptions.sameSite ? `SameSite=${cookieOptions.sameSite};` : ''} ${cookieOptions.secure ? 'Secure;' : ''}`
-          })
-        },
-      },
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    })
-
+  // Browser: Use singleton pattern
+  if (browserClient) {
     return browserClient
   }
 
-  // For SSR/Edge, create minimal instance (used during build/SSR)
-  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
-}
+  // Create singleton with proper auth persistence
+  browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return document.cookie.split(';').map(cookie => {
+          const [name, value] = cookie.trim().split('=')
+          return { name, value: decodeURIComponent(value) }
+        }).filter(cookie => cookie.name)
+      },
+      setAll(cookies) {
+        cookies.forEach(({ name, value, options }) => {
+          const cookieOptions = {
+            sameSite: 'lax' as const,
+            secure: process.env.NODE_ENV === 'production',
+            ...options,
+          }
+          const expires = cookieOptions.maxAge
+            ? new Date(Date.now() + cookieOptions.maxAge * 1000).toUTCString()
+            : ''
+          document.cookie = `${name}=${encodeURIComponent(value)}; path=${cookieOptions.path || '/'}; ${expires ? `expires=${expires};` : ''} ${cookieOptions.sameSite ? `SameSite=${cookieOptions.sameSite};` : ''} ${cookieOptions.secure ? 'Secure;' : ''}`
+        })
+      },
+    },
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  })
 
-// Direct export of singleton (calls createClient on first use)
-export const supabase = createClient()
+  return browserClient
+}
 
 // Export storage bucket name
 export const STORAGE_BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'agents-storage'

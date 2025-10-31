@@ -1,4 +1,7 @@
-import { supabase, STORAGE_BUCKET } from './client'
+import { createClient, STORAGE_BUCKET } from './client'
+
+// Get singleton instance
+const supabase = createClient()
 
 export interface UploadOptions {
   folder?: string // Optional folder path within the bucket

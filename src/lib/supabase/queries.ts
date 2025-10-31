@@ -1,4 +1,4 @@
-import { supabase } from './client'
+import { createClient } from './client'
 import type {
   Agent,
   AgentWithRelations,
@@ -13,9 +13,9 @@ import type {
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database-generated'
 
-// Use the singleton client instance
+// CRITICAL: Always get the singleton instance to ensure auth state is shared
 function getClient() {
-  return supabase
+  return createClient()
 }
 
 // ============================================
