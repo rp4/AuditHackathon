@@ -61,18 +61,23 @@ export async function getAgents(params: GetAgentsParams = {}) {
   let user = null
   try {
     const { data, error } = await supabase.auth.getUser()
-
-    // Auto-logout on invalid/expired session
-    if (error) {
-      await handleInvalidSession(supabase)
-      return []
-    }
-
     user = data?.user
+
+    // Only trigger auto-logout if there's an auth error AND we think we're logged in
+    // (Don't trigger for users who were never logged in)
+    if (error && typeof window !== 'undefined') {
+      // Check if there's a session cookie/token present
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        // We have a session but getUser failed - session is invalid
+        await handleInvalidSession(supabase)
+        return []
+      }
+      // No session present - user is simply not logged in, continue normally
+    }
   } catch (error) {
-    // Critical auth error - auto-logout
-    await handleInvalidSession(supabase)
-    return []
+    // Silent fail - just continue without user
+    console.error('Auth check failed:', error)
   }
 
   let query = supabase
@@ -169,8 +174,14 @@ export async function getAgents(params: GetAgentsParams = {}) {
 
     // Check if it's an auth error (JWT expired, invalid session, etc.)
     if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
-      await handleInvalidSession(supabase)
-      return []
+      // Only auto-logout if we actually have a session that's invalid
+      if (typeof window !== 'undefined') {
+        const { data: sessionData } = await supabase.auth.getSession()
+        if (sessionData.session) {
+          await handleInvalidSession(supabase)
+          return []
+        }
+      }
     }
 
     throw error
@@ -307,8 +318,14 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 
     // Check if it's an auth error (JWT expired, invalid session, etc.)
     if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
-      await handleInvalidSession(supabase)
-      return []
+      // Only auto-logout if we actually have a session that's invalid
+      if (typeof window !== 'undefined') {
+        const { data: sessionData } = await supabase.auth.getSession()
+        if (sessionData.session) {
+          await handleInvalidSession(supabase)
+          return []
+        }
+      }
     }
 
     // If table doesn't exist, return empty array
