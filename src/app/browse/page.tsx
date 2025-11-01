@@ -168,18 +168,18 @@ export default function BrowsePage() {
               ) : (
                 <div className="space-y-2">
                   {platforms.map((platform) => (
-                    <label key={platform.id} className="flex items-center justify-between cursor-pointer">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedPlatformIds.includes(platform.id)}
-                          onChange={() => togglePlatform(platform.id)}
-                          className="mr-2"
-                        />
-                        <span className="text-sm">{platform.name}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {platformCounts[platform.id] || 0}
+                    <label key={platform.id} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedPlatformIds.includes(platform.id)}
+                        onChange={() => togglePlatform(platform.id)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">
+                        {platform.name}{' '}
+                        <span className="text-gray-400">
+                          ({platformCounts[platform.id] || 0})
+                        </span>
                       </span>
                     </label>
                   ))}
