@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Filter, Grid, List, Search, Star } from 'lucide-react'
+import { Filter, Search, Star } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
 import { getPlatforms } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
@@ -15,9 +15,8 @@ export default function BrowsePage() {
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300) // 300ms debounce
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([])
   const [minRating, setMinRating] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'favorites'>('popular')
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
 
   // Fetch platforms
   const [platforms, setPlatforms] = useState<Platform[]>([])
@@ -138,13 +137,6 @@ export default function BrowsePage() {
             <option value="recent">Most Recent</option>
             <option value="favorites">Most Favorited</option>
           </select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-          >
-            {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
-          </Button>
         </div>
       </div>
 
@@ -267,14 +259,8 @@ export default function BrowsePage() {
                 Try adjusting your filters or search query
               </p>
             </div>
-          ) : viewMode === 'grid' ? (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {agents.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
-              ))}
-            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
               {agents.map((agent) => (
                 <AgentCard key={agent.id} agent={agent} />
               ))}

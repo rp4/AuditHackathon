@@ -114,6 +114,13 @@ export default function Header() {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
+            {/* Upload button - icon only on mobile, full button on desktop */}
+            <Link href="/add" className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Upload className="h-5 w-5" />
+              </Button>
+            </Link>
+
             <Link href="/add" className="hidden md:block">
               <Button variant="outline" className="font-semibold border-2 hover:bg-gray-50">
                 <Upload className="h-4 w-4 mr-2" />
