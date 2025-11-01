@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Upload, Menu, X, ChevronRight, Linkedin } from "lucide-react"
+import { Upload, Linkedin } from "lucide-react"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -18,7 +18,6 @@ const supabase = createClient()
 
 export default function Header() {
   const router = useRouter()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
 
@@ -110,10 +109,6 @@ export default function Header() {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-
             {/* Upload button - icon only on mobile, full button on desktop */}
             <Link href="/add" className="md:hidden">
               <Button variant="ghost" size="icon">
@@ -160,19 +155,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden py-6 border-t bg-white absolute top-20 left-0 right-0 shadow-2xl">
-            <div className="container mx-auto px-4">
-              <div className="flex flex-col space-y-4">
-                <Link href="/add" className="flex items-center justify-between py-3 px-4 text-base font-semibold text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all">
-                  Upload Agent
-                  <ChevronRight className="h-5 w-5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   )
