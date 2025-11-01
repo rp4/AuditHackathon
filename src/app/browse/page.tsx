@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Filter, Search, Star } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
 import { getPlatforms } from '@/lib/supabase/queries'
@@ -104,6 +105,14 @@ export default function BrowsePage() {
     )
   }
 
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (selectedPlatformIds.length > 0) count += selectedPlatformIds.length
+    if (minRating !== null) count += 1
+    return count
+  }, [selectedPlatformIds.length, minRating])
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Search and Controls */}
@@ -122,10 +131,15 @@ export default function BrowsePage() {
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden"
+            className="lg:hidden relative"
           >
             <Filter className="h-4 w-4 mr-2" />
             Filters
+            {activeFilterCount > 0 && (
+              <Badge className="ml-2 bg-primary text-primary-foreground">
+                {activeFilterCount}
+              </Badge>
+            )}
           </Button>
           <select
             className="px-4 py-2 border rounded-md text-sm"
@@ -148,7 +162,7 @@ export default function BrowsePage() {
             <div>
               <h3 className="font-semibold mb-3">Platform</h3>
               {platformsLoading ? (
-                <div className="text-sm text-muted-foreground">Loading...</div>
+                <div className="text-sm text-muted-foreground">Please Refresh the Page.</div>
               ) : platforms.length === 0 ? (
                 <div className="text-sm text-muted-foreground">No platforms found</div>
               ) : (

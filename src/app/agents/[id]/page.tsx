@@ -200,12 +200,8 @@ export default function AgentDetailPage({
                     {ap.platform?.name || 'Unknown Platform'}
                   </span>
                 ))}
-                <span className="text-xs text-muted-foreground">•</span>
               </>
             )}
-            <span className="text-xs text-muted-foreground">
-              Updated {new Date(agent.updated_at).toLocaleDateString()}
-            </span>
           </div>
           <h1 className="text-4xl font-bold mb-3">{agent.name}</h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
@@ -252,15 +248,9 @@ export default function AgentDetailPage({
             </span>
           </Link>
 
-          <span className="text-muted-foreground">•</span>
-
-          {/* Stats */}
-          <div className="text-sm text-muted-foreground">
-            {agent.downloads_count} downloads
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {agent.views_count} views
-          </div>
+          <span className="text-sm text-muted-foreground">
+            Updated {new Date(agent.updated_at).toLocaleDateString()}
+          </span>
 
           {/* Action Buttons */}
           <div className="ml-auto flex flex-wrap gap-3">
