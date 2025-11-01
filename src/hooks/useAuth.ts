@@ -150,6 +150,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [user, queryClient])
 
+  // Validate session when window regains focus (user returns to tab)
+  // and periodically check for expired sessions
+  useEffect(() => {
+    const validateSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
+
+      if (error || !session) {
+        // Session is invalid or expired
+        if (user) {
+          console.log('🔄 Session expired, refreshing page...')
+          // Clear auth state and reload
+          setUser(null)
+          setSession(null)
+          queryClient.invalidateQueries()
+          window.location.reload()
+        }
+      } else if (!user && session) {
+        // We have a session but no user state - sync it
+        setSession(session)
+        setUser(session.user)
+        queryClient.invalidateQueries({ queryKey: ['agents'] })
+        queryClient.invalidateQueries({ queryKey: ['platforms'] })
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to tab - validate session
+        validateSession()
+      }
+    }
+
+    const handleFocus = () => {
+      // User focused window - validate session
+      validateSession()
+    }
+
+    // Periodic session check (every 5 minutes)
+    const intervalId = setInterval(() => {
+      validateSession()
+    }, 5 * 60 * 1000) // 5 minutes
+
+    // Listen for visibility changes and focus events
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [user, queryClient, supabase])
+
   const value = {
     user,
     session,
