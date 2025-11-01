@@ -245,7 +245,7 @@ export default function BrowsePage() {
         <div className="flex-1">
           <div className="mb-4 text-sm text-muted-foreground">
             {isLoading ? (
-              'Loading agents...'
+              'Please Refresh the Page'
             ) : error ? (
               'Error loading agents'
             ) : (

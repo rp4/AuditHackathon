@@ -23,9 +23,22 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   // Fetch current user
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setCurrentUser(user)
-      setIsLoading(false)
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+
+        // Handle expired/invalid session gracefully
+        if (error) {
+          console.warn('Auth error in profile page:', error.message)
+          setCurrentUser(null)
+        } else {
+          setCurrentUser(user)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+        setCurrentUser(null)
+      } finally {
+        setIsLoading(false)
+      }
     }
     fetchUser()
 
@@ -96,7 +109,6 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
   const agents = activeTab === "created" ? createdAgents : favoritedAgents
   const totalFavorites = favoritedAgents.length
-  const totalDownloads = createdAgents.reduce((sum, agent) => sum + (agent.downloads_count || 0), 0)
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -130,56 +142,11 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
                 {profile.username && (
                   <p className="text-gray-500">@{profile.username}</p>
                 )}
-                {profile.bio && (
-                  <p className="text-gray-700 mt-2 max-w-2xl">{profile.bio}</p>
-                )}
-
-                {/* Social Links */}
-                {(profile.website || profile.github_url || profile.linkedin_url) && (
-                  <div className="flex gap-3 mt-3">
-                    {profile.website && (
-                      <a
-                        href={profile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
-                      >
-                        Website
-                      </a>
-                    )}
-                    {profile.github_url && (
-                      <a
-                        href={profile.github_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
-                      >
-                        GitHub
-                      </a>
-                    )}
-                    {profile.linkedin_url && (
-                      <a
-                        href={profile.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
-                      >
-                        LinkedIn
-                      </a>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Action Buttons */}
               {isOwnProfile && (
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Link href="/add">
-                    <Button className="w-full sm:w-auto">
-                      <UploadIcon className="h-4 w-4 mr-2" />
-                      Upload Agent
-                    </Button>
-                  </Link>
                   <Link href="/profile/edit">
                     <Button variant="outline" className="w-full sm:w-auto">
                       <Edit className="h-4 w-4 mr-2" />
@@ -198,23 +165,47 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               )}
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-8 mt-6">
-              <div>
-                <p className="text-2xl font-bold text-purple-600">{createdAgents.length}</p>
-                <p className="text-sm text-gray-600">Agents Created</p>
+            {/* Bio */}
+            {profile.bio && (
+              <p className="text-gray-700 mt-4 max-w-2xl">{profile.bio}</p>
+            )}
+
+            {/* Social Links */}
+            {(profile.website || profile.github_url || profile.linkedin_url) && (
+              <div className="flex gap-3 mt-3">
+                {profile.website && (
+                  <a
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                  >
+                    Website
+                  </a>
+                )}
+                {profile.github_url && (
+                  <a
+                    href={profile.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                  >
+                    GitHub
+                  </a>
+                )}
+                {profile.linkedin_url && (
+                  <a
+                    href={profile.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                  >
+                    LinkedIn
+                  </a>
+                )}
               </div>
-              {isOwnProfile && (
-                <div>
-                  <p className="text-2xl font-bold text-purple-600">{totalFavorites}</p>
-                  <p className="text-sm text-gray-600">Favorites</p>
-                </div>
-              )}
-              <div>
-                <p className="text-2xl font-bold text-purple-600">{totalDownloads}</p>
-                <p className="text-sm text-gray-600">Total Downloads</p>
-              </div>
-            </div>
+            )}
+
           </div>
         </div>
       </div>

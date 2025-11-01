@@ -33,33 +33,48 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
 
-      if (!user) {
-        router.push('/auth/signin')
-        return
+        // Handle auth errors or no user
+        if (error || !user) {
+          console.warn('Auth error in profile edit:', error?.message || 'No user')
+          router.push('/')
+          return
+        }
+
+        setUser(user)
+
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError)
+          toast.error('Failed to load profile')
+          setIsLoading(false)
+          return
+        }
+
+        if (profileData) {
+          setProfile(profileData)
+          // Set form values
+          setValue('username', (profileData as any).username || '')
+          setValue('full_name', (profileData as any).full_name || '')
+          setValue('bio', (profileData as any).bio || '')
+          setValue('website', (profileData as any).website || '')
+          setValue('github_url', (profileData as any).github_url || '')
+          setValue('linkedin_url', (profileData as any).linkedin_url || '')
+        }
+
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+        toast.error('Failed to load profile')
+        router.push('/')
       }
-
-      setUser(user)
-
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (profileData) {
-        setProfile(profileData)
-        // Set form values
-        setValue('username', (profileData as any).username || '')
-        setValue('full_name', (profileData as any).full_name || '')
-        setValue('bio', (profileData as any).bio || '')
-        setValue('website', (profileData as any).website || '')
-        setValue('github_url', (profileData as any).github_url || '')
-        setValue('linkedin_url', (profileData as any).linkedin_url || '')
-      }
-
-      setIsLoading(false)
     }
 
     fetchProfile()
