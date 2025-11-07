@@ -263,7 +263,7 @@ export default function BrowsePage() {
         </aside>
 
         {/* Agents Grid/List */}
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col">
           <div className="mb-4 text-sm text-muted-foreground">
             {isLoading ? (
               'Please Refresh the Page'
@@ -274,48 +274,51 @@ export default function BrowsePage() {
             )}
           </div>
 
-          {isLoading ? (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-64 bg-muted rounded-lg"></div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">Failed to load agents</p>
-              <Button onClick={() => window.location.reload()}>Retry</Button>
-            </div>
-          ) : agents.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-2">No agents found</p>
-              <p className="text-sm text-muted-foreground">
-                Try adjusting your filters or search query
-              </p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {agents.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
-              ))}
-            </div>
-          )}
+          {/* Scrollable container for agents */}
+          <div className="flex-1 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+            {isLoading ? (
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-64 bg-muted rounded-lg"></div>
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-4">Failed to load agents</p>
+                <Button onClick={() => window.location.reload()}>Retry</Button>
+              </div>
+            ) : agents.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-2">No agents found</p>
+                <p className="text-sm text-muted-foreground">
+                  Try adjusting your filters or search query
+                </p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {agents.map((agent) => (
+                  <AgentCard key={agent.id} agent={agent} />
+                ))}
+              </div>
+            )}
 
-          {/* Pagination - Future Enhancement */}
-          {/* <div className="mt-8 flex justify-center">
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                Next
-              </Button>
-            </div>
-          </div> */}
+            {/* Pagination - Future Enhancement */}
+            {/* <div className="mt-8 flex justify-center">
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
+                  1
+                </Button>
+                <Button variant="outline" size="sm">
+                  Next
+                </Button>
+              </div>
+            </div> */}
+          </div>
         </div>
       </div>
     </div>

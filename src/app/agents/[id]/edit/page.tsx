@@ -365,7 +365,7 @@ export default function EditAgentPage({
           <Button
             type="submit"
             disabled={isSubmitting || isPending}
-            className="flex-1"
+            className="flex-1 bg-purple-600 hover:bg-purple-700"
             size="lg"
           >
             {isSubmitting || isPending ? (

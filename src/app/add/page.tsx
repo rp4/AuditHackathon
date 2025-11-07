@@ -368,7 +368,7 @@ export default function AddAgentPage() {
           <Button
             type="submit"
             disabled={isSubmitting || isPending || submitSuccess}
-            className="flex-1"
+            className="flex-1 bg-purple-600 hover:bg-purple-700"
             size="lg"
           >
             {isSubmitting || isPending ? (
