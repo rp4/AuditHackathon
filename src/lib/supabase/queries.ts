@@ -55,29 +55,44 @@ export interface GetAgentsParams {
 }
 
 export async function getAgents(params: GetAgentsParams = {}) {
+  console.log('🔍 [QUERIES] getAgents called with params:', params)
   const supabase = getClient()
 
   // Check if user is authenticated (with error handling)
   let user = null
   try {
+    console.log('👤 [QUERIES] Checking user authentication...')
     const { data, error } = await supabase.auth.getUser()
     user = data?.user
+
+    if (user) {
+      console.log('✅ [QUERIES] User authenticated:', {
+        userId: user.id,
+        email: user.email,
+        timestamp: new Date().toISOString()
+      })
+    } else {
+      console.log('ℹ️ [QUERIES] No authenticated user')
+    }
 
     // Only trigger auto-logout if there's an auth error AND we think we're logged in
     // (Don't trigger for users who were never logged in)
     if (error && typeof window !== 'undefined') {
+      console.warn('⚠️ [QUERIES] Auth error detected:', error)
       // Check if there's a session cookie/token present
       const { data: sessionData } = await supabase.auth.getSession()
       if (sessionData.session) {
         // We have a session but getUser failed - session is invalid
+        console.error('❌ [QUERIES] Invalid session detected, triggering auto-logout')
         await handleInvalidSession(supabase)
         return []
       }
+      console.log('ℹ️ [QUERIES] No session present - user is simply not logged in')
       // No session present - user is simply not logged in, continue normally
     }
   } catch (error) {
     // Silent fail - just continue without user
-    console.error('Auth check failed:', error)
+    console.error('❌ [QUERIES] Auth check failed:', error)
   }
 
   let query = supabase
@@ -167,17 +182,27 @@ export async function getAgents(params: GetAgentsParams = {}) {
     query = query.range(params.offset, params.offset + (params.limit || 20) - 1)
   }
 
+  console.log('📡 [QUERIES] Executing query...')
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching agents:', error)
+    console.error('❌ [QUERIES] Error fetching agents:', {
+      error,
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      timestamp: new Date().toISOString()
+    })
 
     // Check if it's an auth error (JWT expired, invalid session, etc.)
     if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
+      console.warn('⚠️ [QUERIES] Auth error in query, checking session validity...')
       // Only auto-logout if we actually have a session that's invalid
       if (typeof window !== 'undefined') {
         const { data: sessionData } = await supabase.auth.getSession()
         if (sessionData.session) {
+          console.error('❌ [QUERIES] Invalid session in query, triggering auto-logout')
           await handleInvalidSession(supabase)
           return []
         }
@@ -186,6 +211,11 @@ export async function getAgents(params: GetAgentsParams = {}) {
 
     throw error
   }
+
+  console.log('✅ [QUERIES] Agents fetched successfully:', {
+    count: data?.length || 0,
+    timestamp: new Date().toISOString()
+  })
 
   return (data || []) as AgentWithRelations[]
 }
@@ -305,8 +335,10 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
 }
 
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
+  console.log('🏢 [QUERIES] getPlatforms called with limit:', limit)
   const supabase = getClient()
 
+  console.log('📡 [QUERIES] Fetching platforms from database...')
   const { data, error } = await supabase
     .from('platforms')
     .select('*')
@@ -314,14 +346,23 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     .limit(limit)
 
   if (error) {
-    console.error('Error fetching platforms:', error)
+    console.error('❌ [QUERIES] Error fetching platforms:', {
+      error,
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      timestamp: new Date().toISOString()
+    })
 
     // Check if it's an auth error (JWT expired, invalid session, etc.)
     if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
+      console.warn('⚠️ [QUERIES] Auth error in getPlatforms, checking session validity...')
       // Only auto-logout if we actually have a session that's invalid
       if (typeof window !== 'undefined') {
         const { data: sessionData } = await supabase.auth.getSession()
         if (sessionData.session) {
+          console.error('❌ [QUERIES] Invalid session in getPlatforms, triggering auto-logout')
           await handleInvalidSession(supabase)
           return []
         }
@@ -330,11 +371,17 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 
     // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
+      console.warn('⚠️ [QUERIES] Platforms table does not exist')
       return []
     }
 
     throw error
   }
+
+  console.log('✅ [QUERIES] Platforms fetched successfully:', {
+    count: data?.length || 0,
+    timestamp: new Date().toISOString()
+  })
 
   return (data || []) as Platform[]
 }

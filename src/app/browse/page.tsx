@@ -24,15 +24,24 @@ export default function BrowsePage() {
   const [platformsLoading, setPlatformsLoading] = useState(true)
 
   useEffect(() => {
-    console.log('[Browse] Fetching platforms...')
+    console.log('🌐 [BROWSE] Component mounted, fetching platforms...')
     setPlatformsLoading(true)
     getPlatforms()
       .then((data) => {
-        console.log('[Browse] Platforms loaded:', data.length)
+        console.log('✅ [BROWSE] Platforms loaded successfully:', {
+          count: data.length,
+          platforms: data.map(p => ({ id: p.id, name: p.name })),
+          timestamp: new Date().toISOString()
+        })
         setPlatforms(data)
       })
       .catch((err) => {
-        console.error('[Browse] Error loading platforms:', err)
+        console.error('❌ [BROWSE] Error loading platforms:', {
+          error: err,
+          message: err?.message,
+          code: err?.code,
+          timestamp: new Date().toISOString()
+        })
       })
       .finally(() => {
         setPlatformsLoading(false)
@@ -40,18 +49,30 @@ export default function BrowsePage() {
   }, [])
 
   // Build query params for agents (using debounced search, excluding platformIds)
-  const queryParams = useMemo(
-    () => ({
+  const queryParams = useMemo(() => {
+    const params = {
       search: debouncedSearchQuery || undefined,
       minRating: minRating || undefined,
       sortBy,
       limit: 1000, // Fetch more to allow client-side filtering
-    }),
-    [debouncedSearchQuery, minRating, sortBy]
-  )
+    }
+    console.log('🔍 [BROWSE] Query params updated:', params)
+    return params
+  }, [debouncedSearchQuery, minRating, sortBy])
 
   // Fetch agents with real-time filtering
   const { data: allAgents = [], isLoading, error } = useAgents(queryParams)
+
+  // Debug log when agents data changes
+  useEffect(() => {
+    console.log('📊 [BROWSE] Agents data updated:', {
+      count: allAgents.length,
+      isLoading,
+      hasError: !!error,
+      error: error?.message,
+      timestamp: new Date().toISOString()
+    })
+  }, [allAgents, isLoading, error])
 
   // Filter agents by selected platforms on the client side
   const agents = useMemo(() => {

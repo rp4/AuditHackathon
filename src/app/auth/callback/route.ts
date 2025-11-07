@@ -49,40 +49,58 @@ export async function GET(request: Request) {
   const error_description = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/'
 
-  console.log('Auth callback received:', {
+  console.log('🔐 [AUTH-CALLBACK] Auth callback received:', {
     hasCode: !!code,
     hasError: !!error,
     origin,
-    next
+    next,
+    timestamp: new Date().toISOString(),
+    url: request.url,
+    headers: {
+      host: request.headers.get('host'),
+      forwardedHost: request.headers.get('x-forwarded-host'),
+      forwardedProto: request.headers.get('x-forwarded-proto'),
+    }
   })
 
   // Log any errors from the OAuth provider
   if (error) {
-    console.error('OAuth provider error:', {
+    console.error('❌ [AUTH-CALLBACK] OAuth provider error:', {
       error,
       error_description,
-      full_url: request.url
+      full_url: request.url,
+      timestamp: new Date().toISOString()
     })
     return NextResponse.redirect(`${origin}/auth/auth-code-error`)
   }
 
   if (code) {
     const supabase = await createClient()
-    console.log('Attempting to exchange code for session...')
+    console.log('🔄 [AUTH-CALLBACK] Attempting to exchange code for session...')
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!exchangeError && data.user) {
-      console.log('Successfully exchanged code for session')
+      console.log('✅ [AUTH-CALLBACK] Successfully exchanged code for session:', {
+        userId: data.user.id,
+        email: data.user.email,
+        hasSession: !!data.session,
+        timestamp: new Date().toISOString()
+      })
 
       // Ensure profile exists - create if missing
-      const { data: existingProfile } = await supabase
+      console.log('🔍 [AUTH-CALLBACK] Checking for existing profile...')
+      const { data: existingProfile, error: profileCheckError } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', data.user.id)
         .single()
 
+      if (profileCheckError) {
+        console.log('⚠️ [AUTH-CALLBACK] Profile check error:', profileCheckError)
+      }
+
       if (!existingProfile) {
-        console.log('Profile not found, creating one...')
+        console.log('📝 [AUTH-CALLBACK] Profile not found, creating one...')
 
         // Convert name to username format (lowercase, spaces to underscores, remove special chars)
         const name = data.user.user_metadata?.name || data.user.user_metadata?.full_name
@@ -128,7 +146,7 @@ export async function GET(request: Request) {
 
         // If username collision, try with unique suffix
         if (profileError?.code === '23505') {
-          console.log('Username collision, adding unique suffix...')
+          console.log('⚠️ [AUTH-CALLBACK] Username collision, adding unique suffix...')
           username = `${baseUsername}_${data.user.id.slice(0, 6)}`
           const retryProfileData: ProfileInsert = {
             ...profileData,
@@ -141,16 +159,30 @@ export async function GET(request: Request) {
         }
 
         if (profileError) {
-          console.error('Error creating profile:', profileError)
+          console.error('❌ [AUTH-CALLBACK] Error creating profile:', profileError)
         } else {
-          console.log('Profile created successfully with username:', username)
+          console.log('✅ [AUTH-CALLBACK] Profile created successfully with username:', username)
         }
       } else {
-        console.log('Profile already exists')
+        console.log('✅ [AUTH-CALLBACK] Profile already exists')
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
+
+      const redirectUrl = isLocalEnv
+        ? `${origin}${next}`
+        : forwardedHost
+          ? `https://${forwardedHost}${next}`
+          : `${origin}${next}`
+
+      console.log('🔀 [AUTH-CALLBACK] Redirecting user:', {
+        redirectUrl,
+        isLocalEnv,
+        forwardedHost,
+        next,
+        timestamp: new Date().toISOString()
+      })
 
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${next}`)
@@ -160,13 +192,15 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}${next}`)
       }
     } else {
-      console.error('Error exchanging code for session:', {
+      console.error('❌ [AUTH-CALLBACK] Error exchanging code for session:', {
         error: exchangeError,
-        code: code?.substring(0, 20) + '...'
+        code: code?.substring(0, 20) + '...',
+        timestamp: new Date().toISOString()
       })
     }
   }
 
+  console.error('❌ [AUTH-CALLBACK] No code or error in callback, redirecting to error page')
   // Return the user to an error page with some instructions
   return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }

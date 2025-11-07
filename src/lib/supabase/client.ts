@@ -18,22 +18,33 @@ let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = nul
 export function createClient() {
   // SSR/Build time: create temporary instance
   if (typeof window === 'undefined') {
+    console.log('🔧 [SUPABASE-CLIENT] Creating server-side client instance')
     return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
   }
 
   // Browser: Use singleton pattern
   if (browserClient) {
+    console.log('♻️ [SUPABASE-CLIENT] Returning existing singleton client')
     return browserClient
   }
 
+  console.log('🆕 [SUPABASE-CLIENT] Creating new singleton browser client')
   // Create singleton with proper auth persistence
   browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        return document.cookie.split(';').map(cookie => {
+        const cookies = document.cookie.split(';').map(cookie => {
           const [name, value] = cookie.trim().split('=')
           return { name, value: decodeURIComponent(value) }
         }).filter(cookie => cookie.name)
+
+        // Log Supabase auth cookies for debugging
+        const authCookies = cookies.filter(c => c.name.includes('supabase') || c.name.includes('sb-'))
+        if (authCookies.length > 0) {
+          console.log('🍪 [SUPABASE-CLIENT] Auth cookies found:', authCookies.map(c => c.name))
+        }
+
+        return cookies
       },
       setAll(cookies) {
         cookies.forEach(({ name, value, options }) => {
@@ -46,6 +57,11 @@ export function createClient() {
             ? new Date(Date.now() + cookieOptions.maxAge * 1000).toUTCString()
             : ''
           document.cookie = `${name}=${encodeURIComponent(value)}; path=${cookieOptions.path || '/'}; ${expires ? `expires=${expires};` : ''} ${cookieOptions.sameSite ? `SameSite=${cookieOptions.sameSite};` : ''} ${cookieOptions.secure ? 'Secure;' : ''}`
+
+          // Log cookie setting for debugging
+          if (name.includes('supabase') || name.includes('sb-')) {
+            console.log('🍪 [SUPABASE-CLIENT] Setting auth cookie:', name)
+          }
         })
       },
     },
@@ -56,6 +72,7 @@ export function createClient() {
     },
   })
 
+  console.log('✅ [SUPABASE-CLIENT] Singleton client created successfully')
   return browserClient
 }
 

@@ -80,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session])
 
   useEffect(() => {
+    console.log('🔐 [AUTH-PROVIDER] Initializing auth state...')
     const DEV_USER_ID = '51b0255c-de4d-45d5-90fb-af62e5291435'
     const isDevelopment = process.env.NODE_ENV === 'development' &&
                           typeof window !== 'undefined' &&
@@ -87,9 +88,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('📋 [AUTH-PROVIDER] Initial session check:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        expiresAt: session?.expires_at,
+        timestamp: new Date().toISOString()
+      })
+
       // Auto-login in development mode if not already logged in
       if (isDevelopment && !session) {
-        console.log('🔧 DEV MODE: No session found, attempting auto-login...')
+        console.log('🔧 [AUTH-PROVIDER] DEV MODE: No session found, attempting auto-login...')
         try {
           const response = await fetch('/api/dev-auth', {
             method: 'POST',
@@ -105,34 +114,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
 
             if (error) {
-              console.error('❌ DEV MODE: Failed to set session:', error)
+              console.error('❌ [AUTH-PROVIDER] DEV MODE: Failed to set session:', error)
             } else if (authData.session) {
-              console.log('✅ DEV MODE: Auto-logged in as user:', DEV_USER_ID)
+              console.log('✅ [AUTH-PROVIDER] DEV MODE: Auto-logged in as user:', DEV_USER_ID)
               setSession(authData.session)
               setUser(authData.user)
             }
           } else {
-            console.error('❌ DEV MODE: Auto-login failed:', data.error || 'Unknown error')
+            console.error('❌ [AUTH-PROVIDER] DEV MODE: Auto-login failed:', data.error || 'Unknown error')
             if (data.details) {
-              console.error('Details:', data.details)
+              console.error('[AUTH-PROVIDER] Details:', data.details)
             }
           }
         } catch (error) {
-          console.error('❌ DEV MODE: Auto-login request failed:', error)
+          console.error('❌ [AUTH-PROVIDER] DEV MODE: Auto-login request failed:', error)
         }
       } else {
+        console.log('📝 [AUTH-PROVIDER] Setting initial session state')
         setSession(session)
         setUser(session?.user ?? null)
       }
       setLoading(false)
+      console.log('✅ [AUTH-PROVIDER] Initial auth state set, loading complete')
     })
 
     // Listen for auth changes
+    console.log('👂 [AUTH-PROVIDER] Setting up auth state change listener')
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const wasLoggedOut = !session && user
       const wasLoggedIn = session && !user
+
+      console.log('🔄 [AUTH-PROVIDER] Auth state changed:', {
+        event: _event,
+        hasSession: !!session,
+        userId: session?.user?.id,
+        wasLoggedOut,
+        wasLoggedIn,
+        timestamp: new Date().toISOString()
+      })
 
       setSession(session)
       setUser(session?.user ?? null)
@@ -140,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Invalidate queries when auth state changes
       if (wasLoggedIn || wasLoggedOut) {
-        console.log('🔄 Auth state changed, invalidating queries...')
+        console.log('🔄 [AUTH-PROVIDER] Auth state changed, invalidating queries...')
         queryClient.invalidateQueries({ queryKey: ['agents'] })
         queryClient.invalidateQueries({ queryKey: ['platforms'] })
         queryClient.invalidateQueries({ queryKey: ['categories'] })
@@ -154,12 +175,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // and periodically check for expired sessions
   useEffect(() => {
     const validateSession = async () => {
+      console.log('🔍 [AUTH-PROVIDER] Validating session...')
       const { data: { session }, error } = await supabase.auth.getSession()
+
+      console.log('📊 [AUTH-PROVIDER] Session validation result:', {
+        hasSession: !!session,
+        hasError: !!error,
+        hasUser: !!user,
+        userId: session?.user?.id,
+        timestamp: new Date().toISOString()
+      })
 
       if (error || !session) {
         // Session is invalid or expired
         if (user) {
-          console.log('🔄 Session expired, refreshing page...')
+          console.warn('⚠️ [AUTH-PROVIDER] Session expired, refreshing page...')
           // Clear auth state and reload
           setUser(null)
           setSession(null)
@@ -168,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (!user && session) {
         // We have a session but no user state - sync it
+        console.log('🔄 [AUTH-PROVIDER] Syncing session state (had session but no user)')
         setSession(session)
         setUser(session.user)
         queryClient.invalidateQueries({ queryKey: ['agents'] })

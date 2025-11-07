@@ -22,20 +22,34 @@ export default function Header() {
   const [profile, setProfile] = useState<Profile | null>(null)
 
   useEffect(() => {
+    console.log('🎯 [HEADER] Component mounted, fetching user and profile...')
+
     // Get initial session and profile
     const fetchUserAndProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession()
+      console.log('📋 [HEADER] Initial session:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        timestamp: new Date().toISOString()
+      })
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        const { data: profileData } = await supabase
+        console.log('👤 [HEADER] Fetching profile for user:', session.user.id)
+        const { data: profileData, error } = await supabase
           .from("profiles")
           .select("username")
           .eq("id", session.user.id)
           .single()
 
-        if (profileData) {
+        if (error) {
+          console.error('❌ [HEADER] Error fetching profile:', error)
+        } else if (profileData) {
+          console.log('✅ [HEADER] Profile loaded:', profileData)
           setProfile(profileData)
+        } else {
+          console.warn('⚠️ [HEADER] No profile data found')
         }
       }
     }
@@ -43,22 +57,34 @@ export default function Header() {
     fetchUserAndProfile()
 
     // Listen for auth changes
+    console.log('👂 [HEADER] Setting up auth state change listener')
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('🔄 [HEADER] Auth state changed:', {
+        event: _event,
+        hasSession: !!session,
+        userId: session?.user?.id,
+        timestamp: new Date().toISOString()
+      })
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        const { data: profileData } = await supabase
+        console.log('👤 [HEADER] Fetching updated profile for user:', session.user.id)
+        const { data: profileData, error } = await supabase
           .from("profiles")
           .select("username")
           .eq("id", session.user.id)
           .single()
 
-        if (profileData) {
+        if (error) {
+          console.error('❌ [HEADER] Error fetching profile:', error)
+        } else if (profileData) {
+          console.log('✅ [HEADER] Profile updated:', profileData)
           setProfile(profileData)
         }
       } else {
+        console.log('🚪 [HEADER] User logged out, clearing profile')
         setProfile(null)
       }
     })
@@ -68,6 +94,7 @@ export default function Header() {
 
 
   const handleSignIn = async () => {
+    console.log('🔐 [HEADER] Initiating LinkedIn OAuth sign-in...')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
       options: {
@@ -76,7 +103,9 @@ export default function Header() {
     })
 
     if (error) {
-      console.error('Error logging in with LinkedIn:', error.message)
+      console.error('❌ [HEADER] Error logging in with LinkedIn:', error.message)
+    } else {
+      console.log('✅ [HEADER] OAuth sign-in initiated successfully')
     }
   }
 
