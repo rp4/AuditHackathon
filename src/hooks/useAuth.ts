@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import React, { useState, useEffect, useCallback, createContext, useContext, useRef } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import * as auth from '@/lib/supabase/auth'
@@ -37,6 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Use ref to access current user in validation without triggering re-renders
+  const userRef = useRef(user)
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
 
   // Session timeout: 30 minutes of inactivity
   useEffect(() => {
@@ -140,11 +146,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     console.log('👂 [AUTH-PROVIDER] Setting up auth state change listener')
+    let isInitialChange = true
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      const wasLoggedOut = !session && user
-      const wasLoggedIn = session && !user
+      // Skip the first INITIAL_SESSION event to avoid double initialization
+      if (isInitialChange && _event === 'INITIAL_SESSION') {
+        console.log('⏩ [AUTH-PROVIDER] Skipping INITIAL_SESSION event (already handled)')
+        isInitialChange = false
+        return
+      }
+
+      const currentUser = userRef.current
+      const wasLoggedOut = !session && currentUser
+      const wasLoggedIn = session && !currentUser
 
       console.log('🔄 [AUTH-PROVIDER] Auth state changed:', {
         event: _event,
@@ -157,9 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false)
 
-      // Invalidate queries when auth state changes
+      // Only invalidate queries on actual auth transitions (not during initial load)
       if (wasLoggedIn || wasLoggedOut) {
         console.log('🔄 [AUTH-PROVIDER] Auth state changed, invalidating queries...')
         queryClient.invalidateQueries({ queryKey: ['agents'] })
@@ -169,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [user, queryClient])
+  }, [queryClient]) // Remove 'user' from dependencies to prevent re-initialization
 
   // Validate session when window regains focus (user returns to tab)
   // and periodically check for expired sessions
@@ -177,18 +191,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const validateSession = async () => {
       console.log('🔍 [AUTH-PROVIDER] Validating session...')
       const { data: { session }, error } = await supabase.auth.getSession()
+      const currentUser = userRef.current
 
       console.log('📊 [AUTH-PROVIDER] Session validation result:', {
         hasSession: !!session,
         hasError: !!error,
-        hasUser: !!user,
+        hasUser: !!currentUser,
         userId: session?.user?.id,
         timestamp: new Date().toISOString()
       })
 
       if (error || !session) {
         // Session is invalid or expired
-        if (user) {
+        if (currentUser) {
           console.warn('⚠️ [AUTH-PROVIDER] Session expired, refreshing page...')
           // Clear auth state and reload
           setUser(null)
@@ -196,7 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           queryClient.invalidateQueries()
           window.location.reload()
         }
-      } else if (!user && session) {
+      } else if (!currentUser && session) {
         // We have a session but no user state - sync it
         console.log('🔄 [AUTH-PROVIDER] Syncing session state (had session but no user)')
         setSession(session)
@@ -232,7 +247,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleFocus)
     }
-  }, [user, queryClient, supabase])
+  }, [queryClient]) // Removed user and supabase to prevent unnecessary re-runs
 
   const value = {
     user,
