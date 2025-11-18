@@ -415,6 +415,135 @@ export async function updateProfile(userId: string, updates: ProfileUpdate) {
   return data
 }
 
+/**
+ * Uploads a new avatar for a user and updates their profile
+ * @param userId - The user's ID
+ * @param file - The image file to upload
+ * @returns The public URL of the uploaded avatar
+ */
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  const supabase = createClient()
+
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+  if (!validTypes.includes(file.type)) {
+    throw new Error('Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image.')
+  }
+
+  // Validate file size (5MB max)
+  const maxSize = 5 * 1024 * 1024 // 5MB
+  if (file.size > maxSize) {
+    throw new Error('File too large. Maximum size is 5MB.')
+  }
+
+  // Get file extension
+  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+
+  // Delete old avatar if it exists
+  try {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', userId)
+      .single<{ avatar_url: string | null }>()
+
+    if (profileData?.avatar_url) {
+      // Extract file path from URL if it's a Supabase storage URL
+      const storageUrl = supabase.storage.from('avatars').getPublicUrl('').data.publicUrl
+      if (profileData.avatar_url.startsWith(storageUrl)) {
+        const oldPath = profileData.avatar_url.replace(storageUrl + '/', '')
+        await supabase.storage.from('avatars').remove([oldPath])
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to delete old avatar:', error)
+    // Continue anyway - not critical
+  }
+
+  // Upload new avatar
+  const fileName = `${userId}/profile.${extension}`
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: true,
+      cacheControl: '3600',
+    })
+
+  if (uploadError) {
+    console.error('Error uploading avatar:', uploadError)
+    throw new Error('Failed to upload avatar. Please try again.')
+  }
+
+  // Get public URL
+  const { data: publicUrlData } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName)
+
+  if (!publicUrlData?.publicUrl) {
+    throw new Error('Failed to get avatar URL')
+  }
+
+  // Update profile with new avatar URL
+  const { error: updateError } = await supabase
+    .from('profiles')
+    // @ts-expect-error - Supabase client type inference issue
+    .update({ avatar_url: publicUrlData.publicUrl })
+    .eq('id', userId)
+
+  if (updateError) {
+    console.error('Error updating profile with avatar URL:', updateError)
+    throw new Error('Failed to update profile with new avatar')
+  }
+
+  return publicUrlData.publicUrl
+}
+
+/**
+ * Deletes a user's avatar
+ * @param userId - The user's ID
+ */
+export async function deleteAvatar(userId: string): Promise<void> {
+  const supabase = createClient()
+
+  // Get current avatar URL
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('avatar_url')
+    .eq('id', userId)
+    .single<{ avatar_url: string | null }>()
+
+  if (!profileData?.avatar_url) {
+    return // No avatar to delete
+  }
+
+  // Delete from storage if it's a Supabase storage URL
+  const storageUrl = supabase.storage.from('avatars').getPublicUrl('').data.publicUrl
+  if (profileData.avatar_url.startsWith(storageUrl)) {
+    const filePath = profileData.avatar_url.replace(storageUrl + '/', '')
+    const { error: deleteError } = await supabase.storage
+      .from('avatars')
+      .remove([filePath])
+
+    if (deleteError) {
+      console.error('Error deleting avatar from storage:', deleteError)
+      throw new Error('Failed to delete avatar')
+    }
+  }
+
+  // Update profile to remove avatar URL
+  const { error: updateError } = await supabase
+    .from('profiles')
+    // @ts-expect-error - Supabase client type inference issue
+    .update({ avatar_url: null })
+    .eq('id', userId)
+
+  if (updateError) {
+    console.error('Error updating profile to remove avatar:', updateError)
+    throw new Error('Failed to update profile')
+  }
+}
+
 // ============================================
 // COLLECTION MUTATIONS
 // ============================================

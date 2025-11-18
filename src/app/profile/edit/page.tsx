@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/client"
 import { updateProfileSchema, type UpdateProfileInput } from "@/lib/validations/agent"
 import { updateProfile } from "@/lib/supabase/mutations"
 import Link from "next/link"
+import { AvatarUpload } from "@/components/profile/AvatarUpload"
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -21,6 +22,7 @@ export default function EditProfilePage() {
   const [profile, setProfile] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   const {
     register,
@@ -60,6 +62,7 @@ export default function EditProfilePage() {
 
         if (profileData) {
           setProfile(profileData)
+          setAvatarUrl((profileData as any).avatar_url || null)
           // Set form values
           setValue('username', (profileData as any).username || '')
           setValue('full_name', (profileData as any).full_name || '')
@@ -123,6 +126,18 @@ export default function EditProfilePage() {
           Update your public profile information
         </p>
       </div>
+
+      {/* Avatar Upload */}
+      {user && profile && (
+        <div className="mb-6">
+          <AvatarUpload
+            userId={user.id}
+            currentAvatarUrl={avatarUrl}
+            username={profile.username}
+            onAvatarChange={(newUrl) => setAvatarUrl(newUrl)}
+          />
+        </div>
+      )}
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)}>

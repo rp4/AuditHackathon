@@ -195,6 +195,21 @@ export const updateProfileSchema = z.object({
 export type UpdateProfileInput = z.input<typeof updateProfileSchema>
 export type UpdateProfileOutput = z.output<typeof updateProfileSchema>
 
+// Avatar upload validation
+export const avatarUploadSchema = z.object({
+  file: z.instanceof(File, { message: 'Please select a file' })
+    .refine(
+      (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'].includes(file.type),
+      'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image.'
+    )
+    .refine(
+      (file) => file.size <= 5 * 1024 * 1024, // 5MB
+      'File too large. Maximum size is 5MB.'
+    ),
+})
+
+export type AvatarUploadInput = z.infer<typeof avatarUploadSchema>
+
 // ============================================
 // COLLECTION SCHEMAS
 // ============================================

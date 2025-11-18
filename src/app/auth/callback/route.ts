@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { Database } from '@/types/database-generated'
+import { downloadImage } from '@/lib/utils/download-image'
 
 type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 
@@ -38,6 +39,63 @@ function sanitizeUrl(url: string | undefined, allowedHosts: string[] = ['linkedi
 
     return parsed.toString().substring(0, 500) // Limit URL length
   } catch {
+    return null
+  }
+}
+
+/**
+ * Downloads LinkedIn profile picture and uploads to Supabase Storage
+ * Returns the Supabase storage URL or null if failed
+ */
+async function downloadAndStoreAvatar(
+  supabase: any,
+  userId: string,
+  linkedinImageUrl: string
+): Promise<string | null> {
+  try {
+    console.log('📸 [AUTH-CALLBACK] Downloading LinkedIn profile picture...')
+
+    // Download the image
+    const imageResult = await downloadImage(linkedinImageUrl)
+
+    if (!imageResult) {
+      console.warn('⚠️ [AUTH-CALLBACK] Failed to download LinkedIn image')
+      return null
+    }
+
+    const { blob, extension } = imageResult
+
+    // Upload to Supabase Storage
+    const fileName = `${userId}/profile.${extension}`
+    console.log(`📤 [AUTH-CALLBACK] Uploading avatar to storage: ${fileName}`)
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, blob, {
+        contentType: imageResult.mimeType,
+        upsert: true, // Replace if exists
+        cacheControl: '3600',
+      })
+
+    if (uploadError) {
+      console.error('❌ [AUTH-CALLBACK] Error uploading avatar:', uploadError)
+      return null
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    if (!publicUrlData?.publicUrl) {
+      console.error('❌ [AUTH-CALLBACK] Failed to get public URL for avatar')
+      return null
+    }
+
+    console.log('✅ [AUTH-CALLBACK] Avatar uploaded successfully:', publicUrlData.publicUrl)
+    return publicUrlData.publicUrl
+  } catch (error) {
+    console.error('❌ [AUTH-CALLBACK] Error in downloadAndStoreAvatar:', error)
     return null
   }
 }
@@ -122,6 +180,26 @@ export async function GET(request: Request) {
         // Try to create profile with original username
         let username = baseUsername
 
+        // Download and store LinkedIn profile picture if available
+        const linkedinImageUrl = data.user.user_metadata?.picture || data.user.user_metadata?.avatar_url
+        let storedAvatarUrl: string | null = null
+
+        if (linkedinImageUrl) {
+          // Validate it's a LinkedIn URL before attempting download
+          const sanitizedLinkedinUrl = sanitizeUrl(
+            linkedinImageUrl,
+            ['linkedin.com', 'licdn.com', 'media.licdn.com']
+          )
+
+          if (sanitizedLinkedinUrl) {
+            storedAvatarUrl = await downloadAndStoreAvatar(
+              supabase,
+              data.user.id,
+              sanitizedLinkedinUrl
+            )
+          }
+        }
+
         // Sanitize all user metadata before storing
         const profileData: ProfileInsert = {
           id: data.user.id,
@@ -130,10 +208,8 @@ export async function GET(request: Request) {
             data.user.user_metadata?.name || data.user.user_metadata?.full_name,
             100
           ),
-          avatar_url: sanitizeUrl(
-            data.user.user_metadata?.picture || data.user.user_metadata?.avatar_url,
-            ['linkedin.com', 'licdn.com', 'media.licdn.com']
-          ),
+          // Use stored avatar URL if available, otherwise null
+          avatar_url: storedAvatarUrl,
           linkedin_url: sanitizeUrl(
             data.user.user_metadata?.linkedin_url,
             ['linkedin.com']
