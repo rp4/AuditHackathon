@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Header from "@/components/layouts/Header"
 import { QueryProvider } from "@/components/providers/QueryProvider"
+import { SessionProvider } from "@/components/providers/SessionProvider"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Toaster } from "sonner"
 import Link from "next/link"
@@ -35,7 +36,8 @@ export function RootLayoutClient({
 
   return (
     <ErrorBoundary>
-      <QueryProvider>
+      <SessionProvider>
+        <QueryProvider>
         <Toaster position="top-right" richColors closeButton />
         {isBrowsePage ? (
           <div className="h-screen flex flex-col overflow-hidden">
@@ -74,7 +76,8 @@ export function RootLayoutClient({
             </footer>
           </>
         )}
-      </QueryProvider>
+        </QueryProvider>
+      </SessionProvider>
     </ErrorBoundary>
   )
 }

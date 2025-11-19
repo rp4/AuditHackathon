@@ -1,38 +1,23 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, TrendingUp } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
-import { getAgents, getPlatforms, getPlatformCounts } from '@/lib/supabase/queries'
-import { AgentCard } from '@/components/agents/AgentCard'
+import { getFeaturedTools } from '@/lib/db/tools'
+import { getPlatformsWithCounts } from '@/lib/db/categories'
+import { ToolCard } from '@/components/tools/ToolCard'
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Redirect logged-in users to browse page
-  if (user) {
-    redirect('/browse')
-  }
-
-  // Fetch featured/trending agents
-  let featuredAgents: any[] = []
+  // Fetch featured/trending tools
+  let featuredTools: any[] = []
   try {
-    featuredAgents = await getAgents({
-      sortBy: 'popular',
-      limit: 3,
-      isPublic: true,
-    })
+    featuredTools = await getFeaturedTools(3)
   } catch (error) {
-    console.error('Error fetching featured agents:', error)
+    console.error('Error fetching featured tools:', error)
   }
 
   // Fetch platforms and their counts
   let platforms: any[] = []
-  let platformCounts: Record<string, number> = {}
   try {
-    platforms = await getPlatforms()
-    platformCounts = await getPlatformCounts()
+    platforms = await getPlatformsWithCounts()
   } catch (error) {
     console.error('Error fetching platforms:', error)
   }
@@ -81,7 +66,7 @@ export default async function HomePage() {
           </div>
 
           {/* Trending Tools */}
-          {featuredAgents.length > 0 && (
+          {featuredTools.length > 0 && (
             <div className="animate-in">
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-2">
@@ -97,8 +82,8 @@ export default async function HomePage() {
               </div>
 
               <div className="grid md:grid-cols-3 gap-8">
-                {featuredAgents.map((agent) => (
-                  <AgentCard key={agent.id} agent={agent} />
+                {featuredTools.map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
                 ))}
               </div>
             </div>
@@ -129,7 +114,7 @@ export default async function HomePage() {
                     <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
                   </div>
                   <p className="text-sm text-gray-500">
-                    {platformCounts[platform.id] || 0} tools
+                    {platform.toolCount || 0} tools
                   </p>
                 </div>
               </Link>

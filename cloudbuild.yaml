@@ -1,0 +1,54 @@
+# Google Cloud Build configuration for Cloud Run deployment
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:latest'
+      - '.'
+
+  # Push the Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'openauditswarms'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--add-cloudsql-instances'
+      - 'toolbox-478717:us-central1:toolbox-db'
+      - '--set-env-vars'
+      - 'NODE_ENV=production'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--timeout'
+      - '60'
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/openauditswarms:latest'
+
+# Build timeout
+timeout: 1200s

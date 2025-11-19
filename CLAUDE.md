@@ -6,6 +6,8 @@ This file provides guidance to Claude Code agents (claude.ai/code) when working 
 
 OpenAuditSwarms is an AI tool sharing platform for auditors. It allows auditors to share platform-agnostic AI tools (OpenAI, Google Gemini, Claude, LangChain, Copilot) with full documentation for recreation. The platform uses Supabase for backend/storage and Next.js for the frontend.
 
+**Terminology Note**: Throughout this codebase and documentation, the terms "agent" and "tool" are used interchangeably to refer to the same concept - AI assistants/configurations shared on the platform.
+
 ## Tech Stack
 
 ### Frontend
