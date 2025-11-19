@@ -151,7 +151,7 @@ export default function Header() {
             <Link href="/add" className="hidden md:block">
               <Button variant="outline" className="font-semibold border-2 hover:bg-gray-50">
                 <Upload className="h-4 w-4 mr-2" />
-                Upload
+                Add
               </Button>
             </Link>
 

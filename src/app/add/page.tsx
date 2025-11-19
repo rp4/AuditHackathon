@@ -196,12 +196,12 @@ export default function AddAgentPage() {
               Sign In Required
             </CardTitle>
             <CardDescription>
-              You must be signed in to create an agent
+              You must be signed in to create a tool
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Please sign in with your LinkedIn account to share your AI agents with the community.
+              Please sign in with your LinkedIn account to share your tools with the community.
             </p>
             <Button onClick={handleSignIn} className="w-full" size="lg">
               <Linkedin className="mr-2 h-5 w-5" />
@@ -231,7 +231,7 @@ export default function AddAgentPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Add New Tool</h1>
         <p className="text-muted-foreground">
-          Share your AI agent with the auditing community
+          Share your tool with the auditing community
         </p>
       </div>
 
