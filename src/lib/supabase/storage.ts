@@ -1,4 +1,5 @@
 import { createClient, STORAGE_BUCKET } from './client'
+import { logger } from '@/lib/utils/logger'
 
 // Get singleton instance
 const supabase = createClient()
@@ -68,7 +69,7 @@ export async function uploadFile(
       })
 
     if (error) {
-      console.error('Upload error:', error)
+      logger.error('Upload error', { error: error instanceof Error ? error.message : String(error) })
       return { success: false, error: error.message }
     }
 
@@ -83,7 +84,7 @@ export async function uploadFile(
       publicUrl,
     }
   } catch (error) {
-    console.error('Upload error:', error)
+    logger.error('Upload error', { error: error instanceof Error ? error.message : String(error) })
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -112,13 +113,13 @@ export async function deleteFile(path: string): Promise<{ success: boolean; erro
       .remove([path])
 
     if (error) {
-      console.error('Delete error:', error)
+      logger.error('Delete error', { error: error instanceof Error ? error.message : String(error) })
       return { success: false, error: error.message }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Delete error:', error)
+    logger.error('Delete error', { error: error instanceof Error ? error.message : String(error) })
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -136,13 +137,13 @@ export async function downloadFile(path: string): Promise<Blob | null> {
       .download(path)
 
     if (error) {
-      console.error('Download error:', error)
+      logger.error('Download error', { error: error instanceof Error ? error.message : String(error) })
       return null
     }
 
     return data
   } catch (error) {
-    console.error('Download error:', error)
+    logger.error('Download error', { error: error instanceof Error ? error.message : String(error) })
     return null
   }
 }
@@ -160,13 +161,13 @@ export async function getSignedUrl(
       .createSignedUrl(path, expiresIn)
 
     if (error) {
-      console.error('Signed URL error:', error)
+      logger.error('Signed URL error', { error: error instanceof Error ? error.message : String(error) })
       return { url: null, error: error.message }
     }
 
     return { url: data.signedUrl }
   } catch (error) {
-    console.error('Signed URL error:', error)
+    logger.error('Signed URL error', { error: error instanceof Error ? error.message : String(error) })
     return {
       url: null,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -187,13 +188,13 @@ export async function listFiles(folder: string = '') {
       })
 
     if (error) {
-      console.error('List files error:', error)
+      logger.error('List files error', { error: error instanceof Error ? error.message : String(error) })
       return { files: [], error: error.message }
     }
 
     return { files: data || [], error: null }
   } catch (error) {
-    console.error('List files error:', error)
+    logger.error('List files error', { error: error instanceof Error ? error.message : String(error) })
     return {
       files: [],
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -282,7 +283,7 @@ export async function validateFile(
           }
         }
       } catch (error) {
-        console.error('Magic number validation error:', error)
+        logger.warn('Magic number validation error', { error })
         // Don't fail validation if magic number check fails
         // Just log the error and continue
       }

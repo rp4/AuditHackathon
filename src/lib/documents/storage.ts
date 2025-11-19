@@ -4,14 +4,78 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+import { fileTypeFromBuffer } from 'file-type'
 
 const DOCUMENTATION_BUCKET = 'agents-storage'
+
+// Image upload constraints
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 
 export interface ImageUploadResult {
   success: boolean
   url?: string
   path?: string
   error?: string
+}
+
+/**
+ * Validate image file using magic bytes (server-side safe)
+ * @param file - The file to validate
+ * @returns Validation result
+ */
+async function validateImageFile(file: File): Promise<{ valid: boolean; error?: string; detectedType?: string }> {
+  try {
+    // Check file size first (cheap check)
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        valid: false,
+        error: `File too large. Maximum size is ${MAX_IMAGE_SIZE / 1024 / 1024}MB, got ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+      }
+    }
+
+    if (file.size === 0) {
+      return {
+        valid: false,
+        error: 'File is empty',
+      }
+    }
+
+    // Read file buffer for magic byte validation
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = new Uint8Array(arrayBuffer)
+
+    // Detect actual file type using magic bytes (not trusting client-provided MIME type)
+    const detectedType = await fileTypeFromBuffer(buffer)
+
+    if (!detectedType) {
+      return {
+        valid: false,
+        error: 'Unable to detect file type. File may be corrupted.',
+      }
+    }
+
+    // Validate detected type against allowed types
+    if (!ALLOWED_IMAGE_TYPES.includes(detectedType.mime)) {
+      return {
+        valid: false,
+        error: `Invalid file type. Expected image (JPEG, PNG, WebP, or GIF), got ${detectedType.mime}`,
+        detectedType: detectedType.mime,
+      }
+    }
+
+    return {
+      valid: true,
+      detectedType: detectedType.mime,
+    }
+  } catch (error) {
+    logger.error('Image validation error', { error })
+    return {
+      valid: false,
+      error: 'Failed to validate file',
+    }
+  }
 }
 
 /**
@@ -27,21 +91,40 @@ export async function uploadDocumentImage(
   try {
     const supabase = createClient()
 
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+    // Validate file before upload (server-side validation with magic bytes)
+    const validation = await validateImageFile(file)
+    if (!validation.valid) {
+      logger.warn('Image upload rejected', {
+        agentSlug,
+        fileName: file.name,
+        clientType: file.type,
+        detectedType: validation.detectedType,
+        error: validation.error
+      })
+      return {
+        success: false,
+        error: validation.error || 'Invalid file'
+      }
+    }
+
+    // Use detected MIME type (not client-provided)
+    const detectedMimeType = validation.detectedType!
+
+    // Generate unique filename with correct extension
+    const extension = detectedMimeType.split('/')[1] // e.g., 'jpeg' from 'image/jpeg'
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`
     const filePath = `${agentSlug}/documentation/images/${fileName}`
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage with validated MIME type
     const { data, error } = await supabase.storage
       .from(DOCUMENTATION_BUCKET)
       .upload(filePath, file, {
-        contentType: file.type,
+        contentType: detectedMimeType, // Use detected type, not client-provided
         upsert: false,
       })
 
     if (error) {
-      console.error('Error uploading image:', error)
+      logger.error('Error uploading image', { agentSlug, error: error.message })
       return { success: false, error: error.message }
     }
 
@@ -50,13 +133,15 @@ export async function uploadDocumentImage(
       .from(DOCUMENTATION_BUCKET)
       .getPublicUrl(data.path)
 
+    logger.debug('Image uploaded successfully', { agentSlug, path: data.path })
+
     return {
       success: true,
       url: publicUrl,
       path: data.path,
     }
   } catch (error) {
-    console.error('Upload error:', error)
+    logger.error('Upload error', { agentSlug, error })
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -183,7 +268,7 @@ export async function cleanupOrphanedImages(
   try {
     const supabase = createClient()
 
-    // List all images for this agent
+    // List all images for this tool
     const { data: files, error: listError } = await supabase.storage
       .from(DOCUMENTATION_BUCKET)
       .list(`${agentSlug}/documentation/images`)

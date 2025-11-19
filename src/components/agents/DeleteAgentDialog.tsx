@@ -33,18 +33,18 @@ export function DeleteAgentDialog({
   const [confirmText, setConfirmText] = useState("")
 
   const handleDelete = () => {
-    console.log('🗑️ Attempting to delete agent:', agentId)
+    console.log('🗑️ Attempting to delete tool:', agentId)
     deleteAgent(agentId, {
       onSuccess: () => {
-        console.log('✅ Agent deleted successfully')
-        toast.success("Agent deleted successfully")
+        console.log('✅ Tool deleted successfully')
+        toast.success("Tool deleted successfully")
         onOpenChange(false)
         // Redirect to browse page
         router.push("/browse")
       },
       onError: (error: any) => {
         console.error("❌ Error deleting agent:", error)
-        toast.error(error.message || "Failed to delete agent. Please try again.")
+        toast.error(error.message || "Failed to delete tool. Please try again.")
       },
     })
   }
@@ -55,10 +55,10 @@ export function DeleteAgentDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="h-5 w-5" />
-            Delete Agent
+            Delete Tool
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your agent
+            This action cannot be undone. This will permanently delete your tool
             <span className="font-semibold"> "{agentName}"</span> and remove all associated data.
           </DialogDescription>
         </DialogHeader>
@@ -101,7 +101,7 @@ export function DeleteAgentDialog({
             ) : (
               <>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Agent
+                Delete Tool
               </>
             )}
           </Button>

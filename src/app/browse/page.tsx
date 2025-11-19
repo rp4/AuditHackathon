@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Filter, Search, Star } from 'lucide-react'
+import { Filter, Search, Star, Loader2 } from 'lucide-react'
 import { useAgents } from '@/hooks/useAgents'
 import { getPlatforms } from '@/lib/supabase/queries'
 import { AgentCard } from '@/components/agents/AgentCard'
+import { useProgressiveLoad } from '@/hooks/useProgressiveLoad'
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 import type { Platform } from '@/types/database'
 
 export default function BrowsePage() {
@@ -18,6 +20,47 @@ export default function BrowsePage() {
   const [minRating, setMinRating] = useState<number | null>(null)
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'favorites'>('popular')
   const [showFilters, setShowFilters] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [lastScrollY, setLastScrollY] = useState(0)
+
+  // Smart header: hide on scroll down, show on scroll up
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const currentScrollY = container.scrollTop
+
+      // Show header when scrolling up or at top
+      if (currentScrollY < lastScrollY || currentScrollY < 50) {
+        window.dispatchEvent(new CustomEvent('browseHeaderVisibility', {
+          detail: { visible: true }
+        }))
+      }
+      // Hide header when scrolling down past threshold
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        window.dispatchEvent(new CustomEvent('browseHeaderVisibility', {
+          detail: { visible: false }
+        }))
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
+
+  // Get header visibility state from parent
+  const [showHeader, setShowHeader] = useState(true)
+  useEffect(() => {
+    const handleHeaderVisibility = (e: Event) => {
+      const customEvent = e as CustomEvent<{ visible: boolean }>
+      setShowHeader(customEvent.detail.visible)
+    }
+    window.addEventListener('browseHeaderVisibility', handleHeaderVisibility)
+    return () => window.removeEventListener('browseHeaderVisibility', handleHeaderVisibility)
+  }, [])
 
   // Fetch platforms
   const [platforms, setPlatforms] = useState<Platform[]>([])
@@ -75,20 +118,38 @@ export default function BrowsePage() {
   }, [allAgents, isLoading, error])
 
   // Filter agents by selected platforms on the client side
-  const agents = useMemo(() => {
+  const filteredAgents = useMemo(() => {
     if (selectedPlatformIds.length === 0) {
-      return allAgents.slice(0, 20) // Return first 20 if no platform filter
+      return allAgents
     }
 
     // Filter agents that have at least one of the selected platforms
-    const filtered = allAgents.filter((agent) => {
+    return allAgents.filter((agent) => {
       return agent.agent_platforms?.some((ap) =>
         selectedPlatformIds.includes(ap.platform_id || ap.platform?.id)
       )
     })
-
-    return filtered.slice(0, 20) // Return first 20 filtered results
   }, [allAgents, selectedPlatformIds])
+
+  // Use progressive loading for better UX
+  const {
+    visibleItems: agents,
+    hasMore,
+    isLoadingMore,
+    loadMore,
+  } = useProgressiveLoad({
+    items: filteredAgents,
+    initialBatch: 9, // Load 9 initially (3x3 grid)
+    batchSize: 6, // Load 6 more at a time (2 rows)
+    delay: 50,
+  })
+
+  // Auto-load more when scrolling near bottom
+  useIntersectionObserver({
+    onIntersect: loadMore,
+    enabled: hasMore && !isLoadingMore && !isLoading,
+    rootMargin: '400px', // Start loading 400px before reaching the sentinel
+  })
 
   // Fetch agents for counting (without platform filter to get accurate counts)
   const countQueryParams = useMemo(
@@ -135,49 +196,60 @@ export default function BrowsePage() {
   }, [selectedPlatformIds.length, minRating])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Search and Controls */}
-      <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            type="search"
-            placeholder="Search agents by name or description..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden relative"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-            {activeFilterCount > 0 && (
-              <Badge className="ml-2 bg-primary text-primary-foreground">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
-          <select
-            className="px-4 py-2 border rounded-md text-sm"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-          >
-            <option value="popular">Most Popular</option>
-            <option value="rating">Highest Rated</option>
-            <option value="recent">Most Recent</option>
-            <option value="favorites">Most Favorited</option>
-          </select>
+    <div className="flex flex-col h-full">
+      {/* Search and Controls - Sticky with smooth transition */}
+      <div
+        className="bg-background border-b shrink-0 transition-all duration-300 ease-in-out"
+        style={{
+          paddingTop: showHeader ? '1rem' : '2rem', // More space when header is hidden
+        }}
+      >
+        <div className="container mx-auto px-4 pb-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                type="search"
+                placeholder="Search tools by name or description..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="lg:hidden relative"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+                {activeFilterCount > 0 && (
+                  <Badge className="ml-2 bg-primary text-primary-foreground">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
+              <select
+                className="px-4 py-2 border rounded-md text-sm"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+              >
+                <option value="popular">Most Popular</option>
+                <option value="rating">Highest Rated</option>
+                <option value="recent">Most Recent</option>
+                <option value="favorites">Most Favorited</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-8">
-        {/* Filters Sidebar */}
-        <aside className={`w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden'} lg:block`}>
+      <div className="flex-1 overflow-y-auto">
+        <div className="container mx-auto px-4">
+          <div className="flex gap-8 relative">
+            {/* Filters Sidebar - Sticky */}
+            <aside className={`w-64 flex-shrink-0 py-6 sticky top-0 self-start ${showFilters ? 'block' : 'hidden'} lg:block`}>
           <div className="space-y-6">
             {/* Platform Filter */}
             <div>
@@ -260,64 +332,90 @@ export default function BrowsePage() {
               </Button>
             )}
           </div>
-        </aside>
+            </aside>
 
-        {/* Agents Grid/List */}
-        <div className="flex-1 flex flex-col">
-          <div className="mb-4 text-sm text-muted-foreground">
-            {isLoading ? (
-              'Please Refresh the Page'
-            ) : error ? (
-              'Error loading agents'
-            ) : (
-              `Showing ${agents.length} agent${agents.length !== 1 ? 's' : ''}`
-            )}
-          </div>
+            {/* Agents Grid/List */}
+            <div className="flex-1 py-6" ref={scrollContainerRef}>
+              <div className="mb-4 text-sm text-muted-foreground">
+                {isLoading ? (
+                  'Loading tools...'
+                ) : error ? (
+                  'Error loading tools'
+                ) : (
+                  `Showing ${agents.length} of ${filteredAgents.length} tool${filteredAgents.length !== 1 ? 's' : ''}`
+                )}
+              </div>
 
-          {/* Scrollable container for agents */}
-          <div className="flex-1 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 250px)' }}>
-            {isLoading ? (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-64 bg-muted rounded-lg"></div>
+              {isLoading ? (
+                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-64 bg-muted rounded-lg"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">Failed to load tools</p>
+                  <Button onClick={() => window.location.reload()}>Retry</Button>
+                </div>
+              ) : filteredAgents.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-2">No tools found</p>
+                  <p className="text-sm text-muted-foreground">
+                    Try adjusting your filters or search query
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {agents.map((agent, index) => (
+                      <div
+                        key={agent.id}
+                        className="animate-in fade-in slide-in-from-bottom-4"
+                        style={{
+                          animationDelay: `${(index % 9) * 30}ms`,
+                          animationDuration: '400ms',
+                          animationFillMode: 'backwards',
+                        }}
+                      >
+                        <AgentCard agent={agent} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">Failed to load agents</p>
-                <Button onClick={() => window.location.reload()}>Retry</Button>
-              </div>
-            ) : agents.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-2">No agents found</p>
-                <p className="text-sm text-muted-foreground">
-                  Try adjusting your filters or search query
-                </p>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {agents.map((agent) => (
-                  <AgentCard key={agent.id} agent={agent} />
-                ))}
-              </div>
-            )}
 
-            {/* Pagination - Future Enhancement */}
-            {/* <div className="mt-8 flex justify-center">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-                  1
-                </Button>
-                <Button variant="outline" size="sm">
-                  Next
-                </Button>
-              </div>
-            </div> */}
+                  {/* Loading More Indicator */}
+                  {hasMore && (
+                    <div
+                      id="load-more-sentinel"
+                      className="flex justify-center items-center py-8 mt-6"
+                    >
+                      {isLoadingMore ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span className="text-sm">Loading more tools...</span>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          onClick={loadMore}
+                          className="min-w-[200px]"
+                        >
+                          Load More
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* End of Results */}
+                  {!hasMore && agents.length > 9 && (
+                    <div className="text-center py-8 text-sm text-muted-foreground">
+                      You've reached the end of the results
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

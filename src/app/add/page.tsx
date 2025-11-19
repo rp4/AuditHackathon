@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,9 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Upload, Linkedin, ArrowLeft, Check, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useAuth } from "@/hooks/useAuth"
 import { useCreateAgent } from "@/hooks/useAgents"
 import { useQuery } from "@tanstack/react-query"
 import { getPlatforms } from "@/lib/supabase/queries"
+import { generateUniqueSlug } from "@/lib/supabase/mutations"
 import { createAgentSchema, type CreateAgentInput } from "@/lib/validations/agent"
 import Link from "next/link"
 import dynamic from "next/dynamic"
@@ -25,8 +27,7 @@ const DocumentEditor = dynamic(
 )
 
 export default function AddAgentPage() {
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, loading: isLoading } = useAuth()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [documentationContent, setDocumentationContent] = useState<JSONContent | null>(null)
@@ -64,39 +65,28 @@ export default function AddAgentPage() {
   // Create agent mutation
   const { mutate: createAgent, isPending } = useCreateAgent()
 
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Error checking user:', error)
-        setIsLoading(false)
-      }
-    }
-
-    checkUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase])
-
   const handleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'linkedin_oidc',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/add`,
-      },
-    })
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        // In development, redirect to dev login page
+        router.push('/dev-login')
+      } else {
+        // In production, use LinkedIn OAuth
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'linkedin_oidc',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?redirect=/add`,
+          },
+        })
 
-    if (error) {
-      console.error('Error logging in with LinkedIn:', error.message)
-      setSubmitError('Failed to sign in with LinkedIn. Please try again.')
-      toast.error('Failed to sign in with LinkedIn')
+        if (error) {
+          throw new Error(error.message)
+        }
+      }
+    } catch (error) {
+      console.error('Error logging in:', error)
+      setSubmitError('Failed to sign in. Please try again.')
+      toast.error('Failed to sign in')
     }
   }
 
@@ -120,15 +110,16 @@ export default function AddAgentPage() {
     }
 
     try {
-      // Extract platforms from form data
+      // Validate platform selection
       const platformIds = data.platforms || []
+      if (platformIds.length === 0) {
+        setSubmitError('Please select at least one platform')
+        toast.error('Please select at least one platform')
+        return
+      }
 
-      // Generate slug from name
-      const slug = data.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-        .substring(0, 100)
+      // Generate unique slug from name
+      const slug = await generateUniqueSlug(data.name, 'agents')
 
       // Prepare agent data - only include fields that have values
       const agentData: any = {
@@ -155,12 +146,14 @@ export default function AddAgentPage() {
         agentData.category_id = data.category_id
       }
 
+      console.log('Creating agent with data:', { agentData, platformIds, userId: user.id })
+
       createAgent(
         { agent: agentData, platformIds },
         {
           onSuccess: (newAgent) => {
             setSubmitSuccess(true)
-            toast.success('Agent created successfully!')
+            toast.success('Tool created successfully!')
 
             // Redirect to the agent detail page after a short delay
             setTimeout(() => {
@@ -169,7 +162,8 @@ export default function AddAgentPage() {
           },
           onError: (error: any) => {
             console.error('Error creating agent:', error)
-            setSubmitError(error.message || 'Failed to create agent. Please try again.')
+            const errorMessage = error?.message || error?.error_description || 'Failed to create agent. Please try again.'
+            setSubmitError(errorMessage)
             toast.error('Failed to create agent')
           }
         }
@@ -177,6 +171,7 @@ export default function AddAgentPage() {
     } catch (error: any) {
       console.error('Error in onSubmit:', error)
       setSubmitError(error.message || 'An unexpected error occurred')
+      toast.error('An unexpected error occurred')
     }
   }
 
@@ -234,7 +229,7 @@ export default function AddAgentPage() {
       </div>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Add New Agent</h1>
+        <h1 className="text-3xl font-bold mb-2">Add New Tool</h1>
         <p className="text-muted-foreground">
           Share your AI agent with the auditing community
         </p>
@@ -244,8 +239,8 @@ export default function AddAgentPage() {
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
           <Check className="h-5 w-5 text-green-600 mt-0.5" />
           <div>
-            <p className="font-medium text-green-900">Agent created successfully!</p>
-            <p className="text-sm text-green-700">Redirecting to your agent...</p>
+            <p className="font-medium text-green-900">Tool created successfully!</p>
+            <p className="text-sm text-green-700">Redirecting to your tool...</p>
           </div>
         </div>
       )}
@@ -265,14 +260,14 @@ export default function AddAgentPage() {
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Provide the essential details about your agent
+              Provide the essential details about your tool
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Agent Name */}
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
-                Agent Name <span className="text-red-500">*</span>
+                Tool Name <span className="text-red-500">*</span>
               </label>
               <Input
                 id="name"
@@ -293,7 +288,7 @@ export default function AddAgentPage() {
               <textarea
                 id="description"
                 {...register('description')}
-                placeholder="Describe what your agent does and how it helps auditors..."
+                placeholder="Describe what your tool does and how it helps auditors..."
                 rows={4}
                 className={`w-full px-3 py-2 border rounded-md resize-none ${
                   errors.description ? 'border-red-500' : 'border-input'
@@ -310,7 +305,7 @@ export default function AddAgentPage() {
                 Platforms <span className="text-red-500">*</span>
               </label>
               <p className="text-xs text-muted-foreground">
-                Select all platforms where this agent can be used
+                Select all platforms where this tool can be used
               </p>
               {loadingPlatforms ? (
                 <div className="text-sm text-muted-foreground">Loading platforms...</div>
@@ -345,7 +340,7 @@ export default function AddAgentPage() {
           <CardHeader>
             <CardTitle>Documentation</CardTitle>
             <CardDescription>
-              Write comprehensive documentation for your agent
+              Write comprehensive documentation for your tool
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -358,7 +353,7 @@ export default function AddAgentPage() {
                 setDocumentationImages(images)
               }}
               autoSave={false}
-              placeholder="Write your agent's documentation here. Include setup instructions, usage examples, and any important notes..."
+              placeholder="Write your tool's documentation here. Include setup instructions, usage examples, and any important notes..."
             />
           </CardContent>
         </Card>
@@ -368,7 +363,7 @@ export default function AddAgentPage() {
           <Button
             type="submit"
             disabled={isSubmitting || isPending || submitSuccess}
-            className="flex-1 bg-purple-600 hover:bg-purple-700"
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
             size="lg"
           >
             {isSubmitting || isPending ? (
@@ -384,7 +379,7 @@ export default function AddAgentPage() {
             ) : (
               <>
                 <Upload className="h-4 w-4 mr-2" />
-                Create Agent
+                Add Tool
               </>
             )}
           </Button>

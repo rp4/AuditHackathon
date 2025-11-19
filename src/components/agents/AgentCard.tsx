@@ -13,7 +13,7 @@ interface AgentCardProps {
 function AgentCardComponent({ agent, showAuthor = true }: AgentCardProps) {
   return (
     <Link href={`/agents/${agent.slug}`}>
-      <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+      <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer bg-white">
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
             <CardTitle className="text-lg line-clamp-2">{agent.name}</CardTitle>

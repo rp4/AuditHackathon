@@ -64,7 +64,7 @@ export default function SignUpPage() {
             <div className="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-xl">
               🤖
             </div>
-            <span className="font-semibold text-xl">Audit Agents</span>
+            <span className="font-semibold text-xl">Audit Toolbox</span>
           </Link>
           <h1 className="text-2xl font-bold">Create an account</h1>
           <p className="text-muted-foreground mt-2">Join the audit AI community</p>

@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod'
+import { logger } from '@/lib/utils/logger'
 
 // Define the schema for environment variables
 const envSchema = z.object({
@@ -51,9 +52,9 @@ function validateEnv(): Env {
   })
 
   if (!parsed.success) {
-    console.error('❌ Invalid environment variables:')
-    console.error(JSON.stringify(parsed.error.format(), null, 2))
-    throw new Error('Invalid environment variables. Check the console for details.')
+    const errors = JSON.stringify(parsed.error.format(), null, 2)
+    logger.error('Invalid environment variables', { errors })
+    throw new Error('Invalid environment variables. Check logs for details.')
   }
 
   return parsed.data
@@ -76,26 +77,24 @@ export const isSentryConfigured = !!env.NEXT_PUBLIC_SENTRY_DSN
 
 // Warn about missing optional configurations
 if (!isRedisConfigured && isProduction) {
-  console.warn('⚠️  WARNING: Upstash Redis is not configured. Rate limiting will use in-memory storage.')
-  console.warn('   This is not recommended for production. Please configure UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
+  logger.warn('Upstash Redis is not configured. Rate limiting will use in-memory storage. This is not recommended for production.')
 }
 
 if (!isSentryConfigured && isProduction) {
-  console.warn('⚠️  WARNING: Sentry is not configured. Error tracking will not be available.')
-  console.warn('   Consider setting NEXT_PUBLIC_SENTRY_DSN for production error monitoring.')
+  logger.warn('Sentry is not configured. Error tracking will not be available.')
 }
 
 // Production safety checks
 if (isProduction) {
   // Ensure service role key is not exposed in production builds
   if (typeof window !== 'undefined' && env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('❌ CRITICAL: Service role key detected in client bundle!')
+    logger.error('CRITICAL: Service role key detected in client bundle!')
     throw new Error('Service role key must never be exposed to the client')
   }
 
   // Ensure dev auth is disabled in production
   if (env.ENABLE_DEV_AUTH === 'true') {
-    console.error('❌ CRITICAL: Dev auth is enabled in production!')
+    logger.error('CRITICAL: Dev auth is enabled in production!')
     throw new Error('Dev auth must be disabled in production')
   }
 }

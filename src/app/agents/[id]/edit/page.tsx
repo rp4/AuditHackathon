@@ -10,9 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Save, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useAuth } from "@/hooks/useAuth"
 import { useAgent, useUpdateAgent } from "@/hooks/useAgents"
 import { useQuery } from "@tanstack/react-query"
 import { getPlatforms } from "@/lib/supabase/queries"
+import { generateUniqueSlug } from "@/lib/supabase/mutations"
 import { createAgentSchema, type CreateAgentInput } from "@/lib/validations/agent"
 import Link from "next/link"
 import dynamic from "next/dynamic"
@@ -31,35 +33,12 @@ export default function EditAgentPage({
   params: Promise<{ id: string }>
 }) {
   const { id: slug } = use(params)
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, loading: isLoading } = useAuth()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [documentationContent, setDocumentationContent] = useState<JSONContent | null>(null)
   const [documentationImages, setDocumentationImages] = useState<string[]>([])
   const router = useRouter()
   const supabase = createClient()
-
-  // Fetch current user
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Error checking user:', error)
-        setIsLoading(false)
-      }
-    }
-
-    checkUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase])
 
   // Fetch agent data
   const { data: agent, isLoading: loadingAgent, error: agentError } = useAgent(slug, user?.id)
@@ -100,7 +79,7 @@ export default function EditAgentPage({
     if (agent) {
       // Check if user is the owner
       if (user && agent.user_id !== user.id) {
-        toast.error('You do not have permission to edit this agent')
+        toast.error('You do not have permission to edit this tool')
         router.push(`/agents/${slug}`)
         return
       }
@@ -140,7 +119,7 @@ export default function EditAgentPage({
     }
 
     if (agent.user_id !== user.id) {
-      setSubmitError('You do not have permission to edit this agent')
+      setSubmitError('You do not have permission to edit this tool')
       return
     }
 
@@ -156,6 +135,11 @@ export default function EditAgentPage({
         documentation_full: documentationContent,
         documentation_preview_images: documentationImages,
         documentation_full_images: documentationImages,
+      }
+
+      // Generate new slug if name changed
+      if (data.name !== agent.name) {
+        agentUpdates.slug = await generateUniqueSlug(data.name, 'agents')
       }
 
       // Only add tags if provided
@@ -176,7 +160,7 @@ export default function EditAgentPage({
         },
         {
           onSuccess: (updatedAgent) => {
-            toast.success('Agent updated successfully!')
+            toast.success('Tool updated successfully!')
             // Redirect to the agent detail page
             setTimeout(() => {
               router.push(`/agents/${updatedAgent.slug}`)
@@ -217,7 +201,7 @@ export default function EditAgentPage({
   }
 
   if (agent.user_id !== user.id) {
-    toast.error('You do not have permission to edit this agent')
+    toast.error('You do not have permission to edit this tool')
     router.push(`/agents/${slug}`)
     return null
   }
@@ -234,7 +218,7 @@ export default function EditAgentPage({
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Edit Agent</h1>
         <p className="text-muted-foreground">
-          Update your agent's information and documentation
+          Update your tool's information and documentation
         </p>
       </div>
 
@@ -253,14 +237,14 @@ export default function EditAgentPage({
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Update the essential details about your agent
+              Update the essential details about your tool
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Agent Name */}
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
-                Agent Name <span className="text-red-500">*</span>
+                Tool Name <span className="text-red-500">*</span>
               </label>
               <Input
                 id="name"
@@ -281,7 +265,7 @@ export default function EditAgentPage({
               <textarea
                 id="description"
                 {...register('description')}
-                placeholder="Describe what your agent does and how it helps auditors..."
+                placeholder="Describe what your tool does and how it helps auditors..."
                 rows={4}
                 className={`w-full px-3 py-2 border rounded-md resize-none ${
                   errors.description ? 'border-red-500' : 'border-input'
@@ -298,7 +282,7 @@ export default function EditAgentPage({
                 Platforms <span className="text-red-500">*</span>
               </label>
               <p className="text-xs text-muted-foreground">
-                Select all platforms where this agent can be used
+                Select all platforms where this tool can be used
               </p>
               {loadingPlatforms ? (
                 <div className="text-sm text-muted-foreground">Loading platforms...</div>
@@ -333,7 +317,7 @@ export default function EditAgentPage({
           <CardHeader>
             <CardTitle>Documentation</CardTitle>
             <CardDescription>
-              Update your agent's documentation
+              Update your tool's documentation
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -346,7 +330,7 @@ export default function EditAgentPage({
                 setDocumentationImages(images)
               }}
               autoSave={false}
-              placeholder="Write your agent's documentation here. Include setup instructions, usage examples, and any important notes..."
+              placeholder="Write your tool's documentation here. Include setup instructions, usage examples, and any important notes..."
             />
           </CardContent>
         </Card>
@@ -365,7 +349,7 @@ export default function EditAgentPage({
           <Button
             type="submit"
             disabled={isSubmitting || isPending}
-            className="flex-1 bg-purple-600 hover:bg-purple-700"
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
             size="lg"
           >
             {isSubmitting || isPending ? (
@@ -376,7 +360,7 @@ export default function EditAgentPage({
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Update Agent
+                Update Tool
               </>
             )}
           </Button>

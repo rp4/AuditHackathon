@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import { logger } from '@/lib/utils/logger'
 import html2canvas from 'html2canvas'
 
 export interface PDFGenerationOptions {

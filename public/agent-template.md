@@ -1,14 +1,14 @@
 # Agent Name
 
-Replace this with your agent's name.
+Replace this with your tool's name.
 
 ## Description
 
-Provide a comprehensive description of what your agent does, the problems it solves, and its key capabilities.
+Provide a comprehensive description of what your tool does, the problems it solves, and its key capabilities.
 
 ## Platforms
 
-List the platforms this agent supports:
+List the platforms this tool supports:
 - [ ] OpenAI
 - [ ] Claude
 - [ ] Google Gemini
@@ -18,7 +18,7 @@ List the platforms this agent supports:
 
 ## Prerequisites
 
-List any requirements needed before using this agent:
+List any requirements needed before using this tool:
 
 - API keys or authentication credentials
 - Required software or tools
@@ -39,13 +39,13 @@ List any requirements needed before using this agent:
 3. Configure using the settings below
 
 ### For Other Platforms
-Provide step-by-step instructions for setting up this agent on each supported platform.
+Provide step-by-step instructions for setting up this tool on each supported platform.
 
 ## Configuration
 
 ### System Prompt
 ```
-Paste your system prompt here. This is the core instruction set that defines your agent's behavior.
+Paste your system prompt here. This is the core instruction set that defines your tool's behavior.
 
 Be specific about:
 - The agent's role and expertise
@@ -75,12 +75,12 @@ Be specific about:
 
 **Input:**
 ```
-Provide an example input that demonstrates how to use your agent
+Provide an example input that demonstrates how to use your tool
 ```
 
 **Output:**
 ```
-Show the expected output from your agent
+Show the expected output from your tool
 ```
 
 **Explanation:**
@@ -107,7 +107,7 @@ Expected response
 
 ## Limitations
 
-Be transparent about what your agent cannot do:
+Be transparent about what your tool cannot do:
 - Known edge cases
 - Unsupported scenarios
 - Accuracy limitations
@@ -116,7 +116,7 @@ Be transparent about what your agent cannot do:
 ## Version History
 
 - **v1.0.0** (YYYY-MM-DD): Initial release
-- Add version notes as you update your agent
+- Add version notes as you update your tool
 
 ## Credits & References
 
@@ -126,7 +126,7 @@ Be transparent about what your agent cannot do:
 
 ## License
 
-Specify the license under which you're sharing this agent (e.g., MIT, Apache 2.0, Creative Commons).
+Specify the license under which you're sharing this tool (e.g., MIT, Apache 2.0, Creative Commons).
 
 ---
 

@@ -1,4 +1,5 @@
 /**
+import { logger } from '@/lib/utils/logger'
  * Document Conversion Utilities
  * Converts Word documents (.docx) to Tiptap JSON format
  */

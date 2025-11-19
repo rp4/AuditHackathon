@@ -1,4 +1,5 @@
 /**
+import { logger } from '@/lib/utils/logger'
  * Utility functions for downloading and processing remote images
  */
 

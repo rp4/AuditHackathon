@@ -170,7 +170,7 @@ COMMENT ON COLUMN agents.documentation_preview IS 'Public preview of documentati
 COMMENT ON COLUMN agents.documentation_full IS 'Complete documentation (Tiptap JSON format) - requires purchase for premium agents';
 COMMENT ON COLUMN agents.documentation_preview_images IS 'Array of Supabase Storage URLs for images in preview';
 COMMENT ON COLUMN agents.documentation_full_images IS 'Array of Supabase Storage URLs for images in full documentation';
-COMMENT ON COLUMN agents.is_premium IS 'Whether this agent requires payment to access full documentation';
+COMMENT ON COLUMN agents.is_premium IS 'Whether this tool requires payment to access full documentation';
 COMMENT ON COLUMN agents.price IS 'Price in specified currency (0.00 for free agents)';
 COMMENT ON COLUMN agents.currency IS 'Currency code (USD, EUR, GBP, etc.)';
 COMMENT ON COLUMN agents.preview_paragraph_count IS 'Number of paragraphs to show in preview (used if preview not manually set)';

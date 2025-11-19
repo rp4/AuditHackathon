@@ -158,7 +158,7 @@ GRANT SELECT ON active_collections TO authenticated, anon;
 CREATE OR REPLACE FUNCTION cleanup_deleted_items()
 RETURNS void AS $$
 BEGIN
-  -- Delete agents soft-deleted more than 30 days ago
+  -- Delete tools soft-deleted more than 30 days ago
   DELETE FROM agents
   WHERE is_deleted = true
     AND deleted_at < NOW() - INTERVAL '30 days';

@@ -87,10 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log('🔐 [AUTH-PROVIDER] Initializing auth state...')
-    const DEV_USER_ID = '51b0255c-de4d-45d5-90fb-af62e5291435'
-    const isDevelopment = process.env.NODE_ENV === 'development' &&
-                          typeof window !== 'undefined' &&
-                          window.location.hostname === 'localhost'
 
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -102,44 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         timestamp: new Date().toISOString()
       })
 
-      // Auto-login in development mode if not already logged in
-      if (isDevelopment && !session) {
-        console.log('🔧 [AUTH-PROVIDER] DEV MODE: No session found, attempting auto-login...')
-        try {
-          const response = await fetch('/api/dev-auth', {
-            method: 'POST',
-            credentials: 'include'
-          })
-          const data = await response.json()
-
-          if (data.success && data.session) {
-            // Set the session directly using the tokens
-            const { data: authData, error } = await supabase.auth.setSession({
-              access_token: data.session.access_token,
-              refresh_token: data.session.refresh_token
-            })
-
-            if (error) {
-              console.error('❌ [AUTH-PROVIDER] DEV MODE: Failed to set session:', error)
-            } else if (authData.session) {
-              console.log('✅ [AUTH-PROVIDER] DEV MODE: Auto-logged in as user:', DEV_USER_ID)
-              setSession(authData.session)
-              setUser(authData.user)
-            }
-          } else {
-            console.error('❌ [AUTH-PROVIDER] DEV MODE: Auto-login failed:', data.error || 'Unknown error')
-            if (data.details) {
-              console.error('[AUTH-PROVIDER] Details:', data.details)
-            }
-          }
-        } catch (error) {
-          console.error('❌ [AUTH-PROVIDER] DEV MODE: Auto-login request failed:', error)
-        }
-      } else {
-        console.log('📝 [AUTH-PROVIDER] Setting initial session state')
-        setSession(session)
-        setUser(session?.user ?? null)
-      }
+      // Auto-login disabled - using manual dev-login page instead
+      console.log('📝 [AUTH-PROVIDER] Setting initial session state')
+      setSession(session)
+      setUser(session?.user ?? null)
       setLoading(false)
       console.log('✅ [AUTH-PROVIDER] Initial auth state set, loading complete')
     })

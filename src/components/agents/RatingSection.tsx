@@ -95,10 +95,10 @@ export function RatingSection({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {userRating ? 'Update Your Review' : 'Rate This Agent'}
+              {userRating ? 'Update Your Review' : 'Rate This Tool'}
             </CardTitle>
             <CardDescription>
-              Share your experience with this agent
+              Share your experience with this tool
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -133,7 +133,7 @@ export function RatingSection({
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Share your thoughts about this agent (optional)..."
+              placeholder="Share your thoughts about this tool (optional)..."
               className="w-full min-h-[100px] px-3 py-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               maxLength={1000}
             />
@@ -159,7 +159,7 @@ export function RatingSection({
           <div className="text-sm text-muted-foreground">Loading reviews...</div>
         ) : ratings.length === 0 ? (
           <div className="text-sm text-muted-foreground">
-            No reviews yet. Be the first to review this agent!
+            No reviews yet. Be the first to review this tool!
           </div>
         ) : (
           ratings.map((rating) => (

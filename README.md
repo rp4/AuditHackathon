@@ -7,7 +7,7 @@ AI Agent Sharing Platform for Auditors - A centralized platform where auditors c
 - 🤖 **Platform Agnostic**: Share agents across OpenAI, Claude, Gemini, LangChain, and Copilot
 - 🔍 **Advanced Search & Filtering**: Find the perfect agent for your audit needs
 - 👥 **Community Driven**: Upvote, rate, and review agents from the audit community
-- 📊 **User Dashboard**: Track your agents' performance and manage your uploads
+- 📊 **User Dashboard**: Track your tools' performance and manage your uploads
 - 🔐 **Secure Authentication**: Sign up/sign in with email or OAuth providers
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 

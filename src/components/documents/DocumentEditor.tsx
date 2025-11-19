@@ -32,7 +32,7 @@ export function DocumentEditor({
   initialContent,
   onSave,
   onContentChange,
-  placeholder = 'Start writing your agent documentation...',
+  placeholder = 'Start writing your tool documentation...',
   editable = true,
   autoSave = true,
   autoSaveDelay = 3000,

@@ -119,7 +119,7 @@ Banner component for premium content upsell.
 
 **Props:**
 - `agentId` (string, required): Agent ID
-- `agentName` (string, required): Agent name for display
+- `agentName` (string, required): Tool name for display
 - `price` (number, required): Price in specified currency
 - `currency` (string, required): Currency code (USD, EUR, etc.)
 - `onPurchase` (function, optional): Custom purchase handler

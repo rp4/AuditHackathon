@@ -136,7 +136,7 @@ export default function AgentDetailPage({
   // Handle report
   const handleReport = async () => {
     if (!user) {
-      toast.error('Please sign in to report this agent.')
+      toast.error('Please sign in to report this tool.')
       return
     }
 
@@ -145,11 +145,11 @@ export default function AgentDetailPage({
     setIsReporting(true)
     try {
       await createReport(agent.id, user.id)
-      toast.success('Report submitted. Thank you for reporting. We will review this agent.')
+      toast.success('Report submitted. Thank you for reporting. We will review this tool.')
     } catch (error: any) {
       // Check if already reported
       if (error?.code === '23505') {
-        toast.error('You have already reported this agent.')
+        toast.error('You have already reported this tool.')
       } else {
         toast.error('Failed to submit report. Please try again.')
       }
@@ -339,7 +339,7 @@ export default function AgentDetailPage({
                   </>
                 ) : (
                   <div className="p-8 text-center text-gray-500">
-                    <p>No documentation available for this agent.</p>
+                    <p>No documentation available for this tool.</p>
                   </div>
                 )}
               </div>

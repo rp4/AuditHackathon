@@ -78,12 +78,12 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Manage your agents and track performance</p>
+          <p className="text-muted-foreground">Manage your tools and track performance</p>
         </div>
         <Link href="/add">
           <Button className="mt-4 md:mt-0">
             <Plus className="h-4 w-4 mr-2" />
-            Upload New Agent
+            Upload New Tool
           </Button>
         </Link>
       </div>
@@ -397,7 +397,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Performance Overview</CardTitle>
-              <CardDescription>Track your agents' performance over time</CardDescription>
+              <CardDescription>Track your tools' performance over time</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64 flex items-center justify-center text-muted-foreground">

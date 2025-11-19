@@ -11,6 +11,7 @@ import type {
   Agent as AgentRow,
   AgentPlatformInsert,
 } from '@/types/database-generated'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================
 // AGENT MUTATIONS
@@ -19,8 +20,7 @@ import type {
 export async function createAgent(agent: AgentInsert, platformIds: string[]): Promise<AgentRow> {
   const supabase = createClient()
 
-  console.log('📝 Creating agent with data:', JSON.stringify(agent, null, 2))
-  console.log('🔗 Platform IDs:', platformIds)
+  logger.debug('Creating agent', { agentName: agent.name, platformCount: platformIds.length })
 
   // Insert agent
   const { data: agentData, error: agentError } = await supabase
@@ -30,13 +30,24 @@ export async function createAgent(agent: AgentInsert, platformIds: string[]): Pr
     .select()
     .single<AgentRow>()
 
-  if (agentError || !agentData) {
-    console.error('❌ Error creating agent:', agentError)
-    console.error('❌ Full error details:', JSON.stringify(agentError, null, 2))
-    throw agentError || new Error('Failed to create agent')
+  if (agentError) {
+    logger.error('Error creating agent', {
+      error: agentError,
+      message: agentError.message,
+      code: agentError.code,
+      details: agentError.details,
+      hint: agentError.hint
+    })
+    throw agentError
   }
 
-  console.log('✅ Agent created successfully:', agentData.id)
+  if (!agentData) {
+    const noDataError = new Error('Failed to create agent: No data returned')
+    logger.error('Error creating agent', noDataError)
+    throw noDataError
+  }
+
+  logger.debug('Agent created successfully', { agentId: agentData.id })
 
   // Insert agent platforms
   if (platformIds.length > 0) {
@@ -51,12 +62,12 @@ export async function createAgent(agent: AgentInsert, platformIds: string[]): Pr
       .insert(agentPlatforms)
 
     if (platformError) {
-      console.error('Error creating agent platforms:', platformError)
+      logger.error('Error creating agent platforms', { error: platformError.message })
       // Rollback agent creation - log but don't fail if rollback fails
       try {
         await supabase.from('agents').delete().eq('id', agentData.id)
       } catch (rollbackError) {
-        console.error('Failed to rollback agent creation:', rollbackError)
+        logger.error('Failed to rollback agent creation', rollbackError)
       }
       throw platformError
     }
@@ -78,7 +89,7 @@ export async function updateAgent(agentId: string, updates: AgentUpdate, platfor
     .single<AgentRow>()
 
   if (agentError || !agentData) {
-    console.error('Error updating agent:', agentError)
+    logger.error('Error updating agent', { agentId, error: agentError?.message })
     throw agentError || new Error('Failed to update agent')
   }
 
@@ -103,7 +114,7 @@ export async function updateAgent(agentId: string, updates: AgentUpdate, platfor
         .insert(agentPlatforms)
 
       if (platformError) {
-        console.error('Error updating agent platforms:', platformError)
+        logger.error('Error updating agent platforms', { agentId, error: platformError.message })
         throw platformError
       }
     }
@@ -115,7 +126,7 @@ export async function updateAgent(agentId: string, updates: AgentUpdate, platfor
 export async function deleteAgent(agentId: string) {
   const supabase = createClient()
 
-  console.log('🔧 Deleting agent with ID:', agentId)
+  logger.debug('Deleting agent', { agentId })
 
   // Soft delete: set is_deleted to true and record deletion time
   const { data, error } = await supabase
@@ -129,11 +140,11 @@ export async function deleteAgent(agentId: string) {
     .select()
 
   if (error) {
-    console.error('❌ Error deleting agent:', error)
+    logger.error('Error deleting agent', { agentId, error: error.message })
     throw error
   }
 
-  console.log('✅ Agent soft-deleted:', data)
+  logger.debug('Agent soft-deleted', { agentId })
   return true
 }
 
@@ -160,7 +171,7 @@ export async function toggleFavorite(agentId: string, userId: string) {
       .eq('id', existing.id)
 
     if (error) {
-      console.error('Error removing favorite:', error)
+      logger.error('Error removing favorite', { agentId, userId, error: error.message })
       throw error
     }
 
@@ -173,7 +184,7 @@ export async function toggleFavorite(agentId: string, userId: string) {
       .insert({ agent_id: agentId, user_id: userId })
 
     if (error) {
-      console.error('Error adding favorite:', error)
+      logger.error('Error adding favorite', { agentId, userId, error: error.message })
       throw error
     }
 
@@ -190,7 +201,7 @@ export async function addFavorite(agentId: string, userId: string) {
     .insert({ agent_id: agentId, user_id: userId })
 
   if (error) {
-    console.error('Error adding favorite:', error)
+    logger.error('Error adding favorite', { agentId, userId, error: error.message })
     throw error
   }
 
@@ -207,7 +218,7 @@ export async function removeFavorite(agentId: string, userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error removing favorite:', error)
+    logger.error('Error removing favorite', { agentId, userId, error: error.message })
     throw error
   }
 
@@ -243,7 +254,7 @@ export async function createOrUpdateRating(rating: RatingInsert) {
       .single()
 
     if (error) {
-      console.error('Error updating rating:', error)
+      logger.error('Error updating rating', { agentId: rating.agent_id, userId: rating.user_id, error: error.message })
       throw error
     }
 
@@ -258,7 +269,7 @@ export async function createOrUpdateRating(rating: RatingInsert) {
       .single()
 
     if (error) {
-      console.error('Error creating rating:', error)
+      logger.error('Error creating rating', { agentId: rating.agent_id, userId: rating.user_id, error: error.message })
       throw error
     }
 
@@ -276,7 +287,7 @@ export async function deleteRating(ratingId: string, userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error deleting rating:', error)
+    logger.error('Error deleting rating', { ratingId, userId, error: error.message })
     throw error
   }
 
@@ -301,7 +312,7 @@ export async function createComment(comment: CommentInsert) {
     .single()
 
   if (error) {
-    console.error('Error creating comment:', error)
+    logger.error('Error creating comment', { agentId: comment.agent_id, error: error.message })
     throw error
   }
 
@@ -327,7 +338,7 @@ export async function updateComment(commentId: string, content: string, userId: 
     .single()
 
   if (error) {
-    console.error('Error updating comment:', error)
+    logger.error('Error updating comment', { commentId, userId, error: error.message })
     throw error
   }
 
@@ -346,7 +357,7 @@ export async function deleteComment(commentId: string, userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error deleting comment:', error)
+    logger.error('Error deleting comment', { commentId, userId, error: error.message })
     throw error
   }
 
@@ -366,7 +377,7 @@ export async function trackDownload(download: DownloadInsert) {
     .insert(download)
 
   if (error) {
-    console.error('Error tracking download:', error)
+    logger.error('Error tracking download', { agentId: download.agent_id, error: error.message })
     // Don't throw - download tracking shouldn't block the download
   }
 
@@ -385,7 +396,7 @@ export async function incrementViews(agentId: string) {
     .rpc('increment_agent_views', { p_agent_id: agentId })
 
   if (error) {
-    console.error('Error incrementing views:', error)
+    logger.error('Error incrementing views', { agentId, error: error.message })
     // Don't throw - view tracking shouldn't block the page
   }
 
@@ -408,7 +419,7 @@ export async function updateProfile(userId: string, updates: ProfileUpdate) {
     .single()
 
   if (error) {
-    console.error('Error updating profile:', error)
+    logger.error('Error updating profile', { userId, error: error.message })
     throw error
   }
 
@@ -456,7 +467,7 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
       }
     }
   } catch (error) {
-    console.warn('Failed to delete old avatar:', error)
+    logger.warn('Failed to delete old avatar', { userId, error })
     // Continue anyway - not critical
   }
 
@@ -471,7 +482,7 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
     })
 
   if (uploadError) {
-    console.error('Error uploading avatar:', uploadError)
+    logger.error('Error uploading avatar', { userId, error: uploadError.message })
     throw new Error('Failed to upload avatar. Please try again.')
   }
 
@@ -492,7 +503,7 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
     .eq('id', userId)
 
   if (updateError) {
-    console.error('Error updating profile with avatar URL:', updateError)
+    logger.error('Error updating profile with avatar URL', { userId, error: updateError.message })
     throw new Error('Failed to update profile with new avatar')
   }
 
@@ -526,7 +537,7 @@ export async function deleteAvatar(userId: string): Promise<void> {
       .remove([filePath])
 
     if (deleteError) {
-      console.error('Error deleting avatar from storage:', deleteError)
+      logger.error('Error deleting avatar from storage', { userId, error: deleteError.message })
       throw new Error('Failed to delete avatar')
     }
   }
@@ -539,7 +550,7 @@ export async function deleteAvatar(userId: string): Promise<void> {
     .eq('id', userId)
 
   if (updateError) {
-    console.error('Error updating profile to remove avatar:', updateError)
+    logger.error('Error updating profile to remove avatar', { userId, error: updateError.message })
     throw new Error('Failed to update profile')
   }
 }
@@ -556,11 +567,8 @@ export async function createCollection(
 ) {
   const supabase = createClient()
 
-  // Generate slug from name
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+  // Generate unique slug from name
+  const slug = await generateUniqueSlug(name, 'collections')
 
   const { data, error } = await supabase
     .from('collections')
@@ -576,7 +584,7 @@ export async function createCollection(
     .single()
 
   if (error) {
-    console.error('Error creating collection:', error)
+    logger.error('Error creating collection', { userId, name, error: error.message })
     throw error
   }
 
@@ -596,7 +604,7 @@ export async function addAgentToCollection(collectionId: string, agentId: string
     })
 
   if (error) {
-    console.error('Error adding agent to collection:', error)
+    logger.error('Error adding agent to collection', { collectionId, agentId, error: error.message })
     throw error
   }
 
@@ -613,7 +621,7 @@ export async function removeAgentFromCollection(collectionId: string, agentId: s
     .eq('agent_id', agentId)
 
   if (error) {
-    console.error('Error removing agent from collection:', error)
+    logger.error('Error removing agent from collection', { collectionId, agentId, error: error.message })
     throw error
   }
 
@@ -630,7 +638,7 @@ export async function deleteCollection(collectionId: string, userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error deleting collection:', error)
+    logger.error('Error deleting collection', { collectionId, userId, error: error.message })
     throw error
   }
 
@@ -654,7 +662,7 @@ export async function createReport(agentId: string, userId: string, reason?: str
     })
 
   if (error) {
-    console.error('Error creating report:', error)
+    logger.error('Error creating report', { agentId, userId, error: error.message })
     throw error
   }
 
@@ -671,7 +679,7 @@ export async function removeReport(agentId: string, userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error removing report:', error)
+    logger.error('Error removing report', { agentId, userId, error: error.message })
     throw error
   }
 

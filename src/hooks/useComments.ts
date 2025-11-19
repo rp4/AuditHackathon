@@ -30,7 +30,7 @@ export function useCreateComment() {
   return useMutation({
     mutationFn: (comment: CommentInsert) => createComment(comment),
     onSuccess: (data: any) => {
-      // Invalidate comments for this agent
+      // Invalidate comments for this tool
       queryClient.invalidateQueries({ queryKey: ['comments', data.agent_id] })
     },
   })

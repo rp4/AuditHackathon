@@ -94,18 +94,27 @@ export default function Header() {
 
 
   const handleSignIn = async () => {
-    console.log('🔐 [HEADER] Initiating LinkedIn OAuth sign-in...')
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'linkedin_oidc',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    const isDev = process.env.NODE_ENV === 'development'
 
-    if (error) {
-      console.error('❌ [HEADER] Error logging in with LinkedIn:', error.message)
+    if (isDev) {
+      // In development, redirect to email/password login page
+      console.log('🔧 [HEADER] Redirecting to dev login page...')
+      router.push('/dev-login')
     } else {
-      console.log('✅ [HEADER] OAuth sign-in initiated successfully')
+      // In production, use LinkedIn OAuth
+      console.log('🔐 [HEADER] Initiating LinkedIn OAuth sign-in...')
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'linkedin_oidc',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        console.error('❌ [HEADER] Error logging in with LinkedIn:', error.message)
+      } else {
+        console.log('✅ [HEADER] OAuth sign-in initiated successfully')
+      }
     }
   }
 
@@ -118,20 +127,14 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-gray-200">
       <div className="container mx-auto px-4">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/50 group-hover:shadow-xl group-hover:shadow-purple-500/60 transition-all overflow-hidden">
-              <Image
-                src="/logo.png"
-                alt="Audit Agents Logo"
-                width={48}
-                height={48}
-                className="object-contain"
-              />
+            <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/50 group-hover:shadow-xl group-hover:shadow-purple-500/60 transition-all text-3xl">
+              🧰
             </div>
             <div className="hidden sm:block">
-              <div className="font-black text-xl">Audit Agents</div>
+              <div className="font-black text-xl">Audit Toolbox</div>
               <div className="text-xs text-gray-500">For Auditors By Auditors</div>
             </div>
           </Link>
@@ -175,10 +178,20 @@ export default function Header() {
             ) : (
               <Button
                 onClick={handleSignIn}
-                className="font-semibold bg-[#0A66C2] hover:bg-[#004182] text-white shadow-lg hover:shadow-xl transition-all"
+                className={`font-semibold shadow-lg hover:shadow-xl transition-all ${
+                  process.env.NODE_ENV === 'development'
+                    ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                    : 'bg-[#0A66C2] hover:bg-[#004182] text-white'
+                }`}
               >
-                <Linkedin className="h-4 w-4 mr-2" />
-                Sign In
+                {process.env.NODE_ENV === 'development' ? (
+                  <>🔧 Dev Login</>
+                ) : (
+                  <>
+                    Sign
+                    <Linkedin className="h-4 w-4 ml-1" />
+                  </>
+                )}
               </Button>
             )}
           </div>

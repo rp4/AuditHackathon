@@ -1,4 +1,5 @@
 import { createClient } from './client'
+import { logger } from '@/lib/utils/logger'
 import type { User, Session } from '@supabase/supabase-js'
 import zxcvbn from 'zxcvbn'
 
@@ -340,14 +341,14 @@ export async function devAutoLogin(userId: string): Promise<AuthResponse> {
     // Use Supabase admin API to sign in as the user
     // Note: This requires the service role key, so we'll use a workaround
     // by fetching the user from the database and creating a mock session
-    console.log('🔧 DEV MODE: Auto-logging in as user:', userId)
+    logger.debug('DEV MODE: Auto-logging in', { userId })
 
     // For now, we'll just fetch the current session
     // In a real implementation, you'd need backend support to create a valid session
     const { data } = await supabase.auth.getUser()
 
     if (data.user?.id === userId) {
-      console.log('✅ DEV MODE: Already logged in as target user')
+      logger.debug('DEV MODE: Already logged in as target user')
       const { data: sessionData } = await supabase.auth.getSession()
       return { user: data.user, session: sessionData.session, error: null }
     }

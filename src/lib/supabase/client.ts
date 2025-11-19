@@ -1,5 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/types/database-generated'
+import { logger } from '@/lib/utils/logger'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -18,17 +19,17 @@ let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = nul
 export function createClient() {
   // SSR/Build time: create temporary instance
   if (typeof window === 'undefined') {
-    console.log('🔧 [SUPABASE-CLIENT] Creating server-side client instance')
+    logger.debug('Creating server-side client instance')
     return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
   }
 
   // Browser: Use singleton pattern
   if (browserClient) {
-    console.log('♻️ [SUPABASE-CLIENT] Returning existing singleton client')
+    logger.debug('Returning existing singleton client')
     return browserClient
   }
 
-  console.log('🆕 [SUPABASE-CLIENT] Creating new singleton browser client')
+  logger.debug('Creating new singleton browser client')
   // Create singleton with proper auth persistence
   browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -41,7 +42,7 @@ export function createClient() {
         // Log Supabase auth cookies for debugging
         const authCookies = cookies.filter(c => c.name.includes('supabase') || c.name.includes('sb-'))
         if (authCookies.length > 0) {
-          console.log('🍪 [SUPABASE-CLIENT] Auth cookies found:', authCookies.map(c => c.name))
+          logger.debug('Auth cookies found', { cookieNames: authCookies.map(c => c.name) })
         }
 
         return cookies
@@ -60,7 +61,7 @@ export function createClient() {
 
           // Log cookie setting for debugging
           if (name.includes('supabase') || name.includes('sb-')) {
-            console.log('🍪 [SUPABASE-CLIENT] Setting auth cookie:', name)
+            logger.debug('Setting auth cookie', { cookieName: name })
           }
         })
       },
@@ -72,7 +73,7 @@ export function createClient() {
     },
   })
 
-  console.log('✅ [SUPABASE-CLIENT] Singleton client created successfully')
+  logger.debug('Singleton client created successfully')
   return browserClient
 }
 

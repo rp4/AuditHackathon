@@ -12,6 +12,7 @@ import type {
 } from '@/types/database'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database-generated'
+import { logger } from '@/lib/utils/logger'
 
 // CRITICAL: Always get the singleton instance to ensure auth state is shared
 function getClient() {
@@ -25,11 +26,11 @@ function getClient() {
 async function handleInvalidSession(supabase: ReturnType<typeof createClient>) {
   if (typeof window === 'undefined') return // Server-side, do nothing
 
-  console.warn('Invalid session detected - auto-logging out and refreshing')
+  logger.warn('Invalid session detected - auto-logging out and refreshing')
   try {
     await supabase.auth.signOut()
   } catch (e) {
-    console.error('Error during auto-logout:', e)
+    logger.error('Error during auto-logout', e)
   }
 
   // Hard reload to clear all stale state
@@ -55,44 +56,40 @@ export interface GetAgentsParams {
 }
 
 export async function getAgents(params: GetAgentsParams = {}) {
-  console.log('🔍 [QUERIES] getAgents called with params:', params)
+  logger.debug('getAgents called', { hasSearch: !!params.search, categoryId: params.categoryId })
   const supabase = getClient()
 
   // Check if user is authenticated (with error handling)
   let user = null
   try {
-    console.log('👤 [QUERIES] Checking user authentication...')
+    logger.debug('Checking user authentication')
     const { data, error } = await supabase.auth.getUser()
     user = data?.user
 
     if (user) {
-      console.log('✅ [QUERIES] User authenticated:', {
-        userId: user.id,
-        email: user.email,
-        timestamp: new Date().toISOString()
-      })
+      logger.debug('User authenticated', { userId: user.id })
     } else {
-      console.log('ℹ️ [QUERIES] No authenticated user')
+      logger.debug('No authenticated user')
     }
 
     // Only trigger auto-logout if there's an auth error AND we think we're logged in
     // (Don't trigger for users who were never logged in)
     if (error && typeof window !== 'undefined') {
-      console.warn('⚠️ [QUERIES] Auth error detected:', error)
+      logger.warn('Auth error detected', { code: error.code })
       // Check if there's a session cookie/token present
       const { data: sessionData } = await supabase.auth.getSession()
       if (sessionData.session) {
         // We have a session but getUser failed - session is invalid
-        console.error('❌ [QUERIES] Invalid session detected, triggering auto-logout')
+        logger.error('Invalid session detected, triggering auto-logout')
         await handleInvalidSession(supabase)
         return []
       }
-      console.log('ℹ️ [QUERIES] No session present - user is simply not logged in')
+      logger.debug('No session present - user is simply not logged in')
       // No session present - user is simply not logged in, continue normally
     }
   } catch (error) {
     // Silent fail - just continue without user
-    console.error('❌ [QUERIES] Auth check failed:', error)
+    logger.error('Auth check failed', error)
   }
 
   let query = supabase
@@ -152,7 +149,8 @@ export async function getAgents(params: GetAgentsParams = {}) {
       .substring(0, 100) // Limit length
 
     if (sanitizedSearch) {
-      query = query.or(`name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`)
+      // Search across name, description, tags, and documentation content
+      query = query.or(`name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%,documentation_searchable_text.ilike.%${sanitizedSearch}%`)
     }
   }
 
@@ -182,27 +180,24 @@ export async function getAgents(params: GetAgentsParams = {}) {
     query = query.range(params.offset, params.offset + (params.limit || 20) - 1)
   }
 
-  console.log('📡 [QUERIES] Executing query...')
+  logger.debug('Executing agents query')
   const { data, error } = await query
 
   if (error) {
-    console.error('❌ [QUERIES] Error fetching agents:', {
-      error,
+    logger.error('Error fetching agents', {
       message: error.message,
       code: error.code,
-      details: error.details,
       hint: error.hint,
-      timestamp: new Date().toISOString()
     })
 
     // Check if it's an auth error (JWT expired, invalid session, etc.)
     if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
-      console.warn('⚠️ [QUERIES] Auth error in query, checking session validity...')
+      logger.warn('Auth error in query, checking session validity')
       // Only auto-logout if we actually have a session that's invalid
       if (typeof window !== 'undefined') {
         const { data: sessionData } = await supabase.auth.getSession()
         if (sessionData.session) {
-          console.error('❌ [QUERIES] Invalid session in query, triggering auto-logout')
+          logger.error('Invalid session in query, triggering auto-logout')
           await handleInvalidSession(supabase)
           return []
         }
@@ -212,10 +207,7 @@ export async function getAgents(params: GetAgentsParams = {}) {
     throw error
   }
 
-  console.log('✅ [QUERIES] Agents fetched successfully:', {
-    count: data?.length || 0,
-    timestamp: new Date().toISOString()
-  })
+  logger.debug('Agents fetched successfully', { count: data?.length || 0 })
 
   return (data || []) as AgentWithRelations[]
 }
@@ -240,13 +232,13 @@ export async function getAgentBySlug(slug: string, userId?: string) {
     .single()
 
   if (error) {
-    console.error('Error fetching agent:', error)
+    logger.error('Error fetching agent by slug', { slug, error: error.message })
     return null
   }
 
   let agent = data as AgentWithRelations
 
-  // Check if user has favorited this agent
+  // Check if user has favorited this tool
   if (userId) {
     const { data: favoriteData } = await supabase
       // @ts-expect-error - Supabase client RPC type inference issue
@@ -284,7 +276,7 @@ export async function getAgentById(id: string, userId?: string) {
     .single()
 
   if (error) {
-    console.error('Error fetching agent:', error)
+    logger.error('Error fetching agent by ID', { id, error: error.message })
     return null
   }
 
@@ -321,7 +313,7 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
     .limit(limit)
 
   if (error) {
-    console.error('Error fetching categories:', error)
+    logger.error('Error fetching categories', { error: error.message, code: error.code })
 
     // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
@@ -335,10 +327,10 @@ export async function getCategories(limit: number = 100): Promise<Category[]> {
 }
 
 export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
-  console.log('🏢 [QUERIES] getPlatforms called with limit:', limit)
+  logger.debug('getPlatforms called', { limit })
   const supabase = getClient()
 
-  console.log('📡 [QUERIES] Fetching platforms from database...')
+  logger.debug('Fetching platforms from database')
   const { data, error } = await supabase
     .from('platforms')
     .select('*')
@@ -346,23 +338,20 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
     .limit(limit)
 
   if (error) {
-    console.error('❌ [QUERIES] Error fetching platforms:', {
-      error,
+    logger.error('Error fetching platforms', {
       message: error.message,
       code: error.code,
-      details: error.details,
       hint: error.hint,
-      timestamp: new Date().toISOString()
     })
 
     // Check if it's an auth error (JWT expired, invalid session, etc.)
     if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('session')) {
-      console.warn('⚠️ [QUERIES] Auth error in getPlatforms, checking session validity...')
+      logger.warn('Auth error in getPlatforms, checking session validity')
       // Only auto-logout if we actually have a session that's invalid
       if (typeof window !== 'undefined') {
         const { data: sessionData } = await supabase.auth.getSession()
         if (sessionData.session) {
-          console.error('❌ [QUERIES] Invalid session in getPlatforms, triggering auto-logout')
+          logger.error('Invalid session in getPlatforms, triggering auto-logout')
           await handleInvalidSession(supabase)
           return []
         }
@@ -371,17 +360,14 @@ export async function getPlatforms(limit: number = 100): Promise<Platform[]> {
 
     // If table doesn't exist, return empty array
     if (error.code === 'PGRST116' || error.message.includes('does not exist')) {
-      console.warn('⚠️ [QUERIES] Platforms table does not exist')
+      logger.warn('Platforms table does not exist')
       return []
     }
 
     throw error
   }
 
-  console.log('✅ [QUERIES] Platforms fetched successfully:', {
-    count: data?.length || 0,
-    timestamp: new Date().toISOString()
-  })
+  logger.debug('Platforms fetched successfully', { count: data?.length || 0 })
 
   return (data || []) as Platform[]
 }
@@ -394,7 +380,7 @@ export async function getPlatformCounts(): Promise<Record<string, number>> {
     .select('platform_id')
 
   if (error) {
-    console.error('❌ Error fetching platform counts:', error)
+    logger.error('Error fetching platform counts', { error: error.message })
     return {}
   }
 
@@ -421,7 +407,7 @@ export async function getUserProfile(username: string) {
     .single()
 
   if (error) {
-    console.error('Error fetching profile:', error)
+    logger.error('Error fetching profile', { username, error: error.message })
     return null
   }
 
@@ -438,7 +424,7 @@ export async function getUserProfileById(userId: string) {
     .single()
 
   if (error) {
-    console.error('Error fetching profile:', error)
+    logger.error('Error fetching profile by ID', { userId, error: error.message })
     return null
   }
 
@@ -473,7 +459,7 @@ export async function getAgentRatings(agentId: string, limit = 10, offset = 0) {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('Error fetching ratings:', error)
+    logger.error('Error fetching ratings', { agentId, error: error.message })
     throw error
   }
 
@@ -491,7 +477,7 @@ export async function getUserRating(agentId: string, userId: string) {
     .single()
 
   if (error && error.code !== 'PGRST116') { // Not found error is ok
-    console.error('Error fetching user rating:', error)
+    logger.error('Error fetching user rating', { agentId, userId, error: error.message })
   }
 
   return data as Rating | null
@@ -515,7 +501,7 @@ export async function getAgentComments(agentId: string) {
     .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('Error fetching comments:', error)
+    logger.error('Error fetching comments', { agentId, error: error.message })
     throw error
   }
 
@@ -572,7 +558,7 @@ export async function getUserFavorites(userId: string, limit = 20, offset = 0) {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('Error fetching favorites:', error)
+    logger.error('Error fetching favorites', { userId, error: error.message })
     throw error
   }
 
@@ -593,7 +579,7 @@ export async function checkUserFavorited(agentId: string, userId: string) {
     .rpc('has_user_favorited', { p_agent_id: agentId, p_user_id: userId })
 
   if (error) {
-    console.error('Error checking favorite:', error)
+    logger.error('Error checking favorite', { agentId, userId, error: error.message })
     return false
   }
 
@@ -614,7 +600,7 @@ export async function getAgentStats(agentId: string) {
     .single()
 
   if (error) {
-    console.error('Error fetching agent stats:', error)
+    logger.error('Error fetching agent stats', { agentId, error: error.message })
     return null
   }
 
@@ -635,7 +621,7 @@ export async function getUserCollections(userId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching collections:', error)
+    logger.error('Error fetching collections', { userId, error: error.message })
     throw error
   }
 
@@ -663,7 +649,7 @@ export async function getCollectionAgents(collectionId: string) {
     .order('added_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching collection agents:', error)
+    logger.error('Error fetching collection agents', { collectionId, error: error.message })
     throw error
   }
 

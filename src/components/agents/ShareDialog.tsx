@@ -33,7 +33,7 @@ export function ShareDialog({ open, onOpenChange, agent }: ShareDialogProps) {
     : ''
 
   // Create default share message
-  const defaultMessage = `Check out "${agent.name}" on Audit Agents!\n\n${agent.description}\n\n${agentUrl}`
+  const defaultMessage = `Check out "${agent.name}" on Audit Toolbox!\n\n${agent.description}\n\n${agentUrl}`
 
   const [message, setMessage] = useState(defaultMessage)
 
@@ -77,12 +77,12 @@ export function ShareDialog({ open, onOpenChange, agent }: ShareDialogProps) {
           <div className="flex items-center gap-3 mb-2">
             <Image
               src="/logo.png"
-              alt="Audit Agents"
+              alt="Audit Toolbox"
               width={40}
               height={40}
               className="rounded"
             />
-            <DialogTitle>Share Agent</DialogTitle>
+            <DialogTitle>Share Tool</DialogTitle>
           </div>
           <DialogDescription>
             Choose how you&apos;d like to share &quot;{agent.name}&quot; with others
