@@ -222,17 +222,18 @@ export async function updateTool(
   const { platformIds, ...updateData } = data
 
   // If changing to public and not yet published, set publishedAt
+  const finalUpdateData: any = { ...updateData }
   if (data.is_public) {
     const tool = await prisma.tool.findUnique({ where: { id } })
     if (tool && !tool.publishedAt) {
-      updateData.publishedAt = new Date()
+      finalUpdateData.publishedAt = new Date()
     }
   }
 
   return prisma.tool.update({
     where: { id },
     data: {
-      ...updateData,
+      ...finalUpdateData,
       ...(platformIds && {
         tool_platforms: {
           deleteMany: {},
@@ -316,7 +317,7 @@ export async function getFeaturedTools(limit: number = 6) {
 /**
  * Helper to get Prisma orderBy based on sort option
  */
-function getOrderBy(sortBy: ToolFilters['sortBy']): Prisma.ToolOrderByWithRelationInput {
+function getOrderBy(sortBy: ToolFilters['sortBy']): any {
   switch (sortBy) {
     case 'popular':
       return { favorites_count: 'desc' }

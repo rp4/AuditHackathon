@@ -8,8 +8,9 @@ RUN apt-get update -y && apt-get install -y openssl
 FROM base AS deps
 WORKDIR /app
 
-# Copy package files
+# Copy package files and Prisma schema (needed for prisma generate in postinstall)
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
 
 # Install dependencies
 RUN npm ci

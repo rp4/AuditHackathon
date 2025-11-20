@@ -5,7 +5,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
       - '-t'
       - 'gcr.io/$PROJECT_ID/openauditswarms:latest'
       - '.'
@@ -14,7 +14,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -24,7 +24,7 @@ steps:
       - 'deploy'
       - 'openauditswarms'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -43,12 +43,18 @@ steps:
       - '--cpu'
       - '1'
       - '--timeout'
-      - '60'
+      - '300'
+      - '--port'
+      - '3000'
 
 # Store images in Container Registry
 images:
-  - 'gcr.io/$PROJECT_ID/openauditswarms:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
   - 'gcr.io/$PROJECT_ID/openauditswarms:latest'
 
 # Build timeout
 timeout: 1200s
+
+# Substitutions for manual builds
+substitutions:
+  _TAG: 'latest'

@@ -145,17 +145,23 @@ async function main() {
       name: 'Financial Statement Analyzer',
       slug: 'financial-statement-analyzer',
       description: 'An AI-powered tool that analyzes financial statements and identifies potential red flags, unusual transactions, and areas requiring deeper audit attention.',
-      short_description: 'Analyze financial statements with AI to identify audit risks',
+      documentation: `## Setup Instructions
+
+1. Create a new ChatGPT Assistant or Claude Project
+2. Copy the following system prompt:
+
+"You are a financial statement analysis assistant for auditors. Your role is to analyze financial statements and identify potential red flags, unusual transactions, and areas requiring deeper audit attention. Use GPT-4 for optimal performance with temperature 0.2 for consistent results."
+
+3. Configure the model:
+   - Model: GPT-4 or Claude 3.5 Sonnet
+   - Temperature: 0.2
+
+4. Upload financial statements and ask the assistant to analyze them for audit risks.`,
       userId: devUser.id,
       categoryId: categories[0].id,
       is_public: true,
       is_featured: true,
       publishedAt: new Date(),
-      configuration: {
-        prompt: 'You are a financial statement analysis assistant for auditors...',
-        model: 'gpt-4',
-        temperature: 0.2,
-      },
       tool_platforms: {
         create: [
           { platformId: platforms[0].id }, // OpenAI

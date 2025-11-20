@@ -210,7 +210,7 @@ export default function AddToolPage() {
                 disabled={loadingCategories}
               >
                 <option value="">Select a category...</option>
-                {categories.map((category) => (
+                {categories.map((category: { id: string; name: string }) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
@@ -225,7 +225,7 @@ export default function AddToolPage() {
                 {loadingPlatforms ? (
                   <p className="text-sm text-muted-foreground">Loading platforms...</p>
                 ) : (
-                  platforms.map((platform) => (
+                  platforms.map((platform: { id: string; name: string }) => (
                     <Badge
                       key={platform.id}
                       variant={formData.platformIds.includes(platform.id) ? "default" : "outline"}

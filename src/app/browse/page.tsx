@@ -107,7 +107,7 @@ export default function BrowsePage() {
               <div>
                 <h3 className="font-semibold text-sm mb-2">Platforms</h3>
                 <div className="flex flex-wrap gap-2">
-                  {platforms.map((platform) => (
+                  {platforms.map((platform: { id: string; name: string; toolCount?: number }) => (
                     <Badge
                       key={platform.id}
                       variant={selectedPlatformIds.includes(platform.id) ? "default" : "outline"}
@@ -127,7 +127,7 @@ export default function BrowsePage() {
               <div>
                 <h3 className="font-semibold text-sm mb-2">Categories</h3>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => (
+                  {categories.map((category: { id: string; name: string; toolCount?: number }) => (
                     <Badge
                       key={category.id}
                       variant={selectedCategoryId === category.id ? "default" : "outline"}
