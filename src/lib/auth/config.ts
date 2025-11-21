@@ -85,15 +85,46 @@ export const authOptions: NextAuthOptions = {
       // Initial sign in
       if (user) {
         token.id = user.id
+
+        // Fetch the user's username
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { username: true }
+        })
+        token.username = dbUser?.username
       }
 
-      // LinkedIn OAuth - update user profile with LinkedIn data
+      // LinkedIn OAuth - update user profile with LinkedIn data and generate username if needed
       if (account?.provider === 'linkedin' && profile) {
+        const updates: any = {
+          linkedin_url: profile.sub ? `https://www.linkedin.com/in/${profile.sub}` : null,
+        }
+
+        // Generate username from name if not exists
+        const existingUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { username: true, name: true }
+        })
+
+        if (!existingUser?.username && existingUser?.name) {
+          // Generate username from name
+          let baseUsername = existingUser.name.toLowerCase().replace(/\s+/g, '')
+          let username = baseUsername
+          let counter = 1
+
+          // Check for uniqueness
+          while (await prisma.user.findUnique({ where: { username } })) {
+            username = `${baseUsername}${counter}`
+            counter++
+          }
+
+          updates.username = username
+          token.username = username
+        }
+
         await prisma.user.update({
           where: { id: token.id as string },
-          data: {
-            linkedin_url: profile.sub ? `https://www.linkedin.com/in/${profile.sub}` : null,
-          },
+          data: updates,
         })
       }
 
@@ -103,6 +134,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.username = token.username as string
       }
       return session
     },

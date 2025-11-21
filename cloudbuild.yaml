@@ -32,8 +32,10 @@ steps:
       - '--allow-unauthenticated'
       - '--add-cloudsql-instances'
       - 'toolbox-478717:us-central1:toolbox-db'
+      - '--update-secrets'
+      - 'DATABASE_URL=database-url:latest,NEXTAUTH_SECRET=nextauth-secret:latest,LINKEDIN_CLIENT_ID=linkedin-client-id:latest,LINKEDIN_CLIENT_SECRET=linkedin-client-secret:latest'
       - '--set-env-vars'
-      - 'NODE_ENV=production'
+      - 'NODE_ENV=production,GCP_PROJECT_ID=toolbox-478717,GCS_BUCKET_NAME=toolbox-478717-storage,NEXTAUTH_URL=https://openauditswarms-780194186888.us-central1.run.app'
       - '--min-instances'
       - '0'
       - '--max-instances'
@@ -45,7 +47,8 @@ steps:
       - '--timeout'
       - '300'
       - '--port'
-      - '3000'
+      - '8080'
+      - '--no-cpu-throttling'
 
 # Store images in Container Registry
 images:

@@ -1,26 +1,54 @@
 'use client'
 
-import { use } from 'react'
+import { use, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Heart, Star, Download, Eye, Edit, Trash2 } from 'lucide-react'
-import { useTool, useToggleFavorite, useDeleteTool } from '@/hooks/useTools'
+import { ArrowLeft, Heart, Star, Edit, Trash2, Share2, MessageSquare } from 'lucide-react'
+import { useTool, useToggleFavorite, useDeleteTool, useFavorites, useRateTool, useToolRatings, useUserRating } from '@/hooks/useTools'
 import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
   const { data: tool, isLoading } = useTool(resolvedParams.slug)
+  const { data: favorites } = useFavorites()
+  const { data: ratings } = useToolRatings(tool?.id || '')
+  const { data: existingRating } = useUserRating(tool?.id || '')
   const toggleFavorite = useToggleFavorite()
   const deleteTool = useDeleteTool(resolvedParams.slug)
+  const rateTool = useRateTool()
+
+  const [userRating, setUserRating] = useState(0)
+  const [reviewText, setReviewText] = useState('')
+  const [localFavorited, setLocalFavorited] = useState<boolean | null>(null)
+  const [localFavoritesCount, setLocalFavoritesCount] = useState<number | null>(null)
+
+  // Set initial rating if user has already rated
+  useEffect(() => {
+    if (existingRating) {
+      setUserRating(existingRating.rating)
+      setReviewText(existingRating.review || '')
+    }
+  }, [existingRating])
+
+  // Initialize local favorite state only once when tool loads
+  useEffect(() => {
+    if (tool && localFavorited === null && localFavoritesCount === null) {
+      const initialFavorited = tool.isFavorited || favorites?.tools?.some((f: any) => f.id === tool.id) || false
+      setLocalFavorited(initialFavorited)
+      setLocalFavoritesCount(tool.favorites_count || 0)
+    }
+  }, [tool, favorites, localFavorited, localFavoritesCount])
 
   const isOwner = user && tool && user.id === tool.userId
+  const isFavorited = localFavorited === true
 
   const handleFavorite = () => {
     if (!isAuthenticated) {
@@ -28,14 +56,66 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
       return
     }
 
+    // Optimistically update the UI
+    const wasFavorited = isFavorited
+    const currentCount = localFavoritesCount ?? tool?.favorites_count ?? 0
+    setLocalFavorited(!isFavorited)
+    setLocalFavoritesCount(isFavorited ? currentCount - 1 : currentCount + 1)
+
     toggleFavorite.mutate(
-      { toolId: tool!.id, isFavorited: false }, // TODO: track if favorited
+      { toolId: tool!.id, isFavorited },
       {
         onSuccess: () => {
-          toast.success('Added to favorites')
+          toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites')
         },
         onError: () => {
+          // Revert on error
+          setLocalFavorited(wasFavorited)
+          const currentCount = localFavoritesCount ?? tool?.favorites_count ?? 0
+          setLocalFavoritesCount(wasFavorited ? currentCount : currentCount - 1)
           toast.error('Failed to update favorite')
+        },
+      }
+    )
+  }
+
+  const handleShare = () => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success('Link copied to clipboard')
+    }).catch(() => {
+      toast.error('Failed to copy link')
+    })
+  }
+
+  const handleRating = (rating: number) => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to rate tools')
+      return
+    }
+    setUserRating(rating)
+  }
+
+  const submitRating = () => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to submit a review')
+      return
+    }
+
+    if (userRating === 0) {
+      toast.error('Please select a rating')
+      return
+    }
+
+    rateTool.mutate(
+      { toolId: tool!.id, rating: userRating, review: reviewText },
+      {
+        onSuccess: () => {
+          toast.success('Review submitted successfully')
+          setReviewText('')
+        },
+        onError: () => {
+          toast.error('Failed to submit review')
         },
       }
     )
@@ -94,166 +174,244 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
         </Button>
       </Link>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Header */}
-          <div>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold mb-2">{tool.name}</h1>
-              </div>
-              {tool.is_featured && (
-                <Badge className="ml-4">Featured</Badge>
-              )}
-            </div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header Section */}
+        <div>
+          {/* Title with Featured Badge */}
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="text-4xl font-bold">{tool.name}</h1>
+            {tool.is_featured && (
+              <Badge className="ml-4">Featured</Badge>
+            )}
+          </div>
 
-            {/* Stats */}
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold text-foreground">
-                  {tool.rating_avg.toFixed(1)}
-                </span>
-                <span>({tool.rating_count} ratings)</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Heart className="h-4 w-4" />
-                <span>{tool.favorites_count}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Download className="h-4 w-4" />
-                <span>{tool.downloads_count}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
-                <span>{tool.views_count}</span>
-              </div>
+          {/* Platforms and Categories as colored badges */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {tool.tool_platforms && tool.tool_platforms.length > 0 &&
+              tool.tool_platforms.map((tp: any) => (
+                <Badge
+                  key={tp.id}
+                  className="bg-purple-100 text-purple-700 border-purple-200"
+                >
+                  {tp.platform.name}
+                </Badge>
+              ))
+            }
+            {tool.category && (
+              <Badge
+                className="bg-green-100 text-green-700 border-green-200"
+              >
+                {tool.category.name}
+              </Badge>
+            )}
+          </div>
+
+          {/* Creator and Date Info */}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+            <span>
+              Created by <span className="font-semibold text-foreground">{tool.user.name || tool.user.email}</span>
+            </span>
+            <span>•</span>
+            <span>{new Date(tool.createdAt).toLocaleDateString()}</span>
+            {tool.updatedAt && tool.updatedAt !== tool.createdAt && (
+              <>
+                <span>•</span>
+                <span>Updated {new Date(tool.updatedAt).toLocaleDateString()}</span>
+              </>
+            )}
+          </div>
+
+          {/* Stats - only ratings and favorites */}
+          <div className="flex items-center gap-6 text-sm text-muted-foreground mb-4">
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span className="font-semibold text-foreground">
+                {tool.rating_avg.toFixed(1)}
+              </span>
+              <span>({tool.rating_count} ratings)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Heart className="h-4 w-4" />
+              <span>{localFavoritesCount ?? tool.favorites_count} favorites</span>
             </div>
           </div>
 
-          {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap">{tool.description}</p>
-            </CardContent>
-          </Card>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={handleFavorite}
+              variant={isFavorited ? "default" : "outline"}
+              disabled={toggleFavorite.isPending}
+            >
+              <Heart
+                className={`mr-2 h-4 w-4 ${isFavorited ? 'fill-pink-500 text-pink-500' : ''}`}
+              />
+              {isFavorited ? 'Favorited' : 'Add to Favorites'}
+            </Button>
 
-          {/* Documentation */}
-          {tool.documentation && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Documentation</CardTitle>
-                <CardDescription>
-                  Setup instructions and configuration details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm whitespace-pre-wrap">
-                    {tool.documentation}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            <Button
+              onClick={handleShare}
+              variant="outline"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                className="w-full"
-                onClick={handleFavorite}
-                variant="outline"
-                disabled={toggleFavorite.isPending}
-              >
-                <Heart className="mr-2 h-4 w-4" />
-                Add to Favorites
-              </Button>
-
-              {isOwner && (
-                <>
-                  <Link href={`/tools/${tool.slug}/edit`} className="block">
-                    <Button className="w-full" variant="outline">
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Tool
-                    </Button>
-                  </Link>
-                  <Button
-                    className="w-full"
-                    variant="destructive"
-                    onClick={handleDelete}
-                    disabled={deleteTool.isPending}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Tool
+            {isOwner && (
+              <>
+                <Link href={`/tools/${tool.slug}/edit`}>
+                  <Button variant="outline">
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Tool
                   </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                </Link>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={deleteTool.isPending}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Tool
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
 
-          {/* Platforms */}
-          {tool.tool_platforms && tool.tool_platforms.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Platforms</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {tool.tool_platforms.map((tp) => (
-                    <Badge key={tp.id} variant="secondary">
-                      {tp.platform.name}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+        {/* Description */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Description</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-wrap">{tool.description}</p>
+          </CardContent>
+        </Card>
 
-          {/* Category */}
-          {tool.category && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Category</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="outline">{tool.category.name}</Badge>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Author */}
+        {/* Documentation */}
+        {tool.documentation && (
           <Card>
             <CardHeader>
-              <CardTitle>Created By</CardTitle>
+              <CardTitle>Documentation</CardTitle>
+              <CardDescription>
+                Setup instructions and configuration details
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-semibold">
-                  {(tool.user.name || tool.user.email).charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-semibold">
-                    {tool.user.name || tool.user.email}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(tool.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
+              <div
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: tool.documentation }}
+              />
             </CardContent>
           </Card>
-        </div>
+        )}
+
+        {/* Ratings & Reviews Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              Ratings & Reviews
+            </CardTitle>
+            <CardDescription>
+              Share your experience and discuss this tool
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Rating Input */}
+            {isAuthenticated ? (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-2">Your Rating</p>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => handleRating(star)}
+                        className="focus:outline-none transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className={`h-6 w-6 ${
+                            star <= userRating
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300 hover:text-yellow-400'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium mb-2">Your Review (optional)</p>
+                  <Textarea
+                    placeholder="Share your experience, ask questions, or discuss this tool..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                <Button
+                  onClick={submitRating}
+                  disabled={rateTool.isPending || userRating === 0}
+                >
+                  Submit Review
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-muted rounded-lg">
+                <p className="text-muted-foreground mb-4">
+                  Sign in to leave a rating and review
+                </p>
+                <Link href="/api/auth/signin">
+                  <Button>Sign In</Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Display existing reviews */}
+            <div className="pt-6 border-t space-y-4">
+              {ratings?.ratings && ratings.ratings.length > 0 ? (
+                ratings.ratings.map((rating: any) => (
+                  <div key={rating.id} className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">
+                            {rating.user.name || rating.user.email}
+                          </p>
+                          <div className="flex">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= rating.rating
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(rating.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    {rating.review && (
+                      <p className="text-sm">{rating.review}</p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No reviews yet. Be the first to review this tool!
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

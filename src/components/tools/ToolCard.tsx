@@ -14,6 +14,7 @@ interface ToolCardProps {
     rating_avg: number
     rating_count: number
     favorites_count: number
+    isFavorited?: boolean
     category?: {
       id: string
       name: string
@@ -78,9 +79,17 @@ function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Heart className="h-4 w-4" />
-              <span>{tool.favorites_count}</span>
+            <div className="flex items-center gap-1">
+              <Heart
+                className={`h-4 w-4 ${
+                  tool.isFavorited
+                    ? 'fill-pink-500 text-pink-500'
+                    : 'text-muted-foreground'
+                }`}
+              />
+              <span className={tool.isFavorited ? 'text-pink-500' : 'text-muted-foreground'}>
+                {tool.favorites_count}
+              </span>
             </div>
           </div>
 

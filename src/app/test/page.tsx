@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { signIn as nextAuthSignIn } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 
 export default function TestPage() {
@@ -119,7 +120,7 @@ export default function TestPage() {
                 </button>
 
                 <button
-                  onClick={() => signIn('credentials', {
+                  onClick={() => nextAuthSignIn('credentials', {
                     callbackUrl: '/test',
                     email: 'dev@openauditswarms.com',
                     password: 'devpassword123'

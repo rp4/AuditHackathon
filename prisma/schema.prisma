@@ -57,6 +57,7 @@ model VerificationToken {
 model User {
   id            String    @id @default(cuid())
   name          String?
+  username      String?   @unique // URL-friendly username for profile URLs
   email         String    @unique
   emailVerified DateTime?
   image         String?
@@ -82,6 +83,7 @@ model User {
   collections   Collection[]
 
   @@index([email])
+  @@index([username])
   @@map("users")
 }
 

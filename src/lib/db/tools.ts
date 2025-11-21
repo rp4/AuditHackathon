@@ -40,7 +40,7 @@ export type ToolFilters = {
 /**
  * Get tools with filtering, sorting, and pagination
  */
-export async function getTools(filters: ToolFilters = {}) {
+export async function getTools(filters: ToolFilters & { currentUserId?: string } = {}) {
   const {
     search,
     categoryId,
@@ -51,6 +51,7 @@ export async function getTools(filters: ToolFilters = {}) {
     limit = 20,
     offset = 0,
     sortBy = 'recent',
+    currentUserId,
   } = filters
 
   const where: Prisma.ToolWhereInput = {
@@ -92,6 +93,12 @@ export async function getTools(filters: ToolFilters = {}) {
             platform: true,
           },
         },
+        ...(currentUserId && {
+          favorites: {
+            where: { userId: currentUserId },
+            select: { id: true },
+          },
+        }),
       },
       orderBy,
       take: limit,
@@ -100,8 +107,15 @@ export async function getTools(filters: ToolFilters = {}) {
     prisma.tool.count({ where }),
   ])
 
+  // Transform the tools to include isFavorited flag
+  const toolsWithFavorites = tools.map((tool: any) => ({
+    ...tool,
+    isFavorited: currentUserId ? tool.favorites?.length > 0 : false,
+    favorites: undefined, // Remove the raw favorites data
+  }))
+
   return {
-    tools,
+    tools: toolsWithFavorites,
     total,
     hasMore: offset + tools.length < total,
   }

@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { ArrowLeft, Loader2, Save } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useTool, useUpdateTool, usePlatforms, useCategories } from '@/hooks/useTools'
 
@@ -25,12 +26,10 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
 
   const [formData, setFormData] = useState({
     name: '',
-    slug: '',
     description: '',
     documentation: '',
     categoryId: '',
     platformIds: [] as string[],
-    is_public: true,
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -40,25 +39,13 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
     if (tool) {
       setFormData({
         name: tool.name,
-        slug: tool.slug,
         description: tool.description,
         documentation: tool.documentation || '',
         categoryId: tool.categoryId || '',
         platformIds: tool.tool_platforms?.map((tp) => tp.platformId) || [],
-        is_public: tool.is_public,
       })
     }
   }, [tool])
-
-  // Auto-generate slug from name
-  const handleNameChange = (name: string) => {
-    setFormData(prev => ({
-      ...prev,
-      name,
-      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-    }))
-    setErrors(prev => ({ ...prev, name: '' }))
-  }
 
   const togglePlatform = (platformId: string) => {
     setFormData(prev => ({
@@ -70,11 +57,17 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
     setErrors(prev => ({ ...prev, platformIds: '' }))
   }
 
+  const toggleCategory = (categoryId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      categoryId: prev.categoryId === categoryId ? '' : categoryId,
+    }))
+  }
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) newErrors.name = 'Name is required'
-    if (!formData.slug.trim()) newErrors.slug = 'Slug is required'
     if (!formData.description.trim()) newErrors.description = 'Description is required'
     if (formData.platformIds.length === 0) newErrors.platformIds = 'Select at least one platform'
 
@@ -97,7 +90,7 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
         documentation: formData.documentation || undefined,
         categoryId: formData.categoryId || undefined,
         platformIds: formData.platformIds,
-        is_public: formData.is_public,
+        is_public: true, // Always public per requirements
       },
       {
         onSuccess: (data) => {
@@ -192,25 +185,11 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleNameChange(e.target.value)}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Financial Statement Analyzer"
                 className={errors.name ? 'border-red-500' : ''}
               />
               {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
-            </div>
-
-            {/* Slug (read-only after creation) */}
-            <div>
-              <Label htmlFor="slug">Slug (URL)</Label>
-              <Input
-                id="slug"
-                value={formData.slug}
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                URL slug cannot be changed after creation
-              </p>
             </div>
 
             {/* Description */}
@@ -220,48 +199,42 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe what your tool does, how it works, and how to use it..."
-                rows={6}
+                placeholder="Describe what your tool does, how it works, and its key benefits..."
+                rows={4}
                 className={errors.description ? 'border-red-500' : ''}
               />
               {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
             </div>
 
-            {/* Documentation */}
+            {/* Category - Badge Style */}
             <div>
-              <Label htmlFor="documentation">Documentation</Label>
-              <Textarea
-                id="documentation"
-                value={formData.documentation}
-                onChange={(e) => setFormData({ ...formData, documentation: e.target.value })}
-                placeholder="Provide detailed documentation, instructions, or configuration details to help others recreate your tool..."
-                rows={10}
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Include setup steps, configuration examples, API keys needed, or any other information to help others recreate this tool on their platform
-              </p>
+              <Label>Category</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {loadingCategories ? (
+                  <p className="text-sm text-muted-foreground">Loading categories...</p>
+                ) : (
+                  categories.map((category) => (
+                    <Badge
+                      key={category.id}
+                      variant={formData.categoryId === category.id ? "default" : "outline"}
+                      className={`cursor-pointer transition-all ${
+                        formData.categoryId === category.id
+                          ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+                          : "hover:bg-muted"
+                      }`}
+                      onClick={() => toggleCategory(category.id)}
+                    >
+                      {category.name}
+                      {category.toolCount !== undefined && (
+                        <span className="ml-1 opacity-60">({category.toolCount})</span>
+                      )}
+                    </Badge>
+                  ))
+                )}
+              </div>
             </div>
 
-            {/* Category */}
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <select
-                id="category"
-                value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2"
-                disabled={loadingCategories}
-              >
-                <option value="">Select a category...</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Platforms */}
+            {/* Platforms - Badge Style */}
             <div>
               <Label>Platforms * <span className="text-sm font-normal text-muted-foreground">(Select at least one)</span></Label>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -272,10 +245,17 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
                     <Badge
                       key={platform.id}
                       variant={formData.platformIds.includes(platform.id) ? "default" : "outline"}
-                      className="cursor-pointer"
+                      className={`cursor-pointer transition-all ${
+                        formData.platformIds.includes(platform.id)
+                          ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200"
+                          : "hover:bg-muted"
+                      }`}
                       onClick={() => togglePlatform(platform.id)}
                     >
                       {platform.name}
+                      {platform.toolCount !== undefined && (
+                        <span className="ml-1 opacity-60">({platform.toolCount})</span>
+                      )}
                     </Badge>
                   ))
                 )}
@@ -283,29 +263,38 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
               {errors.platformIds && <p className="text-sm text-red-500 mt-1">{errors.platformIds}</p>}
             </div>
 
-            {/* Visibility */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_public"
-                checked={formData.is_public}
-                onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
-                className="rounded"
+            {/* Documentation - Rich Text Editor */}
+            <div>
+              <Label htmlFor="documentation">Documentation</Label>
+              <RichTextEditor
+                content={formData.documentation}
+                onChange={(content) => setFormData({ ...formData, documentation: content })}
+                placeholder="Provide detailed documentation, setup steps, configuration examples, tables, images, or any other information to help others recreate this tool..."
+                disabled={updateTool.isPending}
               />
-              <Label htmlFor="is_public" className="font-normal cursor-pointer">
-                Make this tool public (visible to everyone)
-              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Include setup steps, configuration examples, API keys needed, or any other information to help others recreate this tool on their platform
+              </p>
             </div>
 
-            {/* Submit */}
+            {/* Submit Buttons */}
             <div className="flex gap-4">
               <Button
                 type="submit"
                 disabled={updateTool.isPending}
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
               >
-                {updateTool.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Tool
+                {updateTool.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating Tool...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Update Tool
+                  </>
+                )}
               </Button>
               <Link href={`/tools/${resolvedParams.slug}`}>
                 <Button type="button" variant="outline">

@@ -10,16 +10,6 @@ async function main() {
   console.log('Creating platforms...')
   const platforms = await Promise.all([
     prisma.platform.upsert({
-      where: { slug: 'openai' },
-      update: {},
-      create: {
-        name: 'OpenAI',
-        slug: 'openai',
-        description: 'ChatGPT, GPT-4, and custom GPTs',
-        website: 'https://platform.openai.com',
-      },
-    }),
-    prisma.platform.upsert({
       where: { slug: 'claude' },
       update: {},
       create: {
@@ -30,33 +20,43 @@ async function main() {
       },
     }),
     prisma.platform.upsert({
-      where: { slug: 'gemini' },
+      where: { slug: 'microsoft-copilot' },
+      update: {},
+      create: {
+        name: 'Microsoft Copilot',
+        slug: 'microsoft-copilot',
+        description: 'Microsoft Copilot AI Assistant',
+        website: 'https://copilot.microsoft.com',
+      },
+    }),
+    prisma.platform.upsert({
+      where: { slug: 'openai' },
+      update: {},
+      create: {
+        name: 'OpenAI',
+        slug: 'openai',
+        description: 'ChatGPT, GPT-4, and custom GPTs',
+        website: 'https://platform.openai.com',
+      },
+    }),
+    prisma.platform.upsert({
+      where: { slug: 'google-gemini' },
       update: {},
       create: {
         name: 'Google Gemini',
-        slug: 'gemini',
+        slug: 'google-gemini',
         description: 'Google Gemini AI',
         website: 'https://gemini.google.com',
       },
     }),
     prisma.platform.upsert({
-      where: { slug: 'langchain' },
+      where: { slug: 'other' },
       update: {},
       create: {
-        name: 'LangChain',
-        slug: 'langchain',
-        description: 'Build LLM applications',
-        website: 'https://www.langchain.com',
-      },
-    }),
-    prisma.platform.upsert({
-      where: { slug: 'copilot' },
-      update: {},
-      create: {
-        name: 'GitHub Copilot',
-        slug: 'copilot',
-        description: 'AI pair programmer',
-        website: 'https://github.com/features/copilot',
+        name: 'Other',
+        slug: 'other',
+        description: 'Other AI platforms and tools',
+        website: null,
       },
     }),
   ])
@@ -66,57 +66,48 @@ async function main() {
   console.log('Creating categories...')
   const categories = await Promise.all([
     prisma.category.upsert({
-      where: { slug: 'financial-analysis' },
+      where: { slug: 'preplanning' },
       update: {},
       create: {
-        name: 'Financial Analysis',
-        slug: 'financial-analysis',
-        description: 'Tools for analyzing financial statements and data',
+        name: 'PrePlanning',
+        slug: 'preplanning',
+        description: 'Tools for pre-planning phase of audit engagement',
       },
     }),
     prisma.category.upsert({
-      where: { slug: 'audit-procedures' },
+      where: { slug: 'planning' },
       update: {},
       create: {
-        name: 'Audit Procedures',
-        slug: 'audit-procedures',
-        description: 'Automated audit testing and sampling tools',
+        name: 'Planning',
+        slug: 'planning',
+        description: 'Tools for planning phase of audit engagement',
       },
     }),
     prisma.category.upsert({
-      where: { slug: 'risk-assessment' },
+      where: { slug: 'fieldwork' },
       update: {},
       create: {
-        name: 'Risk Assessment',
-        slug: 'risk-assessment',
-        description: 'Tools for evaluating and analyzing audit risks',
+        name: 'Fieldwork',
+        slug: 'fieldwork',
+        description: 'Tools for fieldwork phase of audit engagement',
       },
     }),
     prisma.category.upsert({
-      where: { slug: 'documentation' },
+      where: { slug: 'reporting' },
       update: {},
       create: {
-        name: 'Documentation',
-        slug: 'documentation',
-        description: 'Generate and organize audit documentation',
+        name: 'Reporting',
+        slug: 'reporting',
+        description: 'Tools for reporting phase of audit engagement',
       },
     }),
     prisma.category.upsert({
-      where: { slug: 'data-analysis' },
+      where: { slug: 'other' },
       update: {},
       create: {
-        name: 'Data Analysis',
-        slug: 'data-analysis',
-        description: 'Analyze large datasets and identify patterns',
-      },
-    }),
-    prisma.category.upsert({
-      where: { slug: 'compliance' },
-      update: {},
-      create: {
-        name: 'Compliance',
-        slug: 'compliance',
-        description: 'Regulatory compliance and monitoring tools',
+        name: 'Other',
+        slug: 'other',
+        description: 'Other audit-related tools',
       },
     }),
   ])
@@ -164,8 +155,8 @@ async function main() {
       publishedAt: new Date(),
       tool_platforms: {
         create: [
-          { platformId: platforms[0].id }, // OpenAI
-          { platformId: platforms[1].id }, // Claude
+          { platformId: platforms[0].id }, // Claude
+          { platformId: platforms[2].id }, // OpenAI
         ],
       },
     },

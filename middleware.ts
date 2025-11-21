@@ -35,9 +35,10 @@ export async function middleware(request: NextRequest) {
     request.headers.get('x-forwarded-for')?.split(',')[0] ??
     '127.0.0.1'
 
-  // Try to get user ID from session cookie for better rate limiting
-  const userId = request.cookies.get('sb-user-id')?.value
-  const identifier = userId ? `user:${userId}` : `ip:${ip}`
+  // Try to get user ID from NextAuth session cookie for better rate limiting
+  const sessionToken = request.cookies.get('next-auth.session-token')?.value ||
+                      request.cookies.get('__Secure-next-auth.session-token')?.value
+  const identifier = sessionToken ? `session:${sessionToken.slice(0, 16)}` : `ip:${ip}`
 
   // Get appropriate rate limiter for this path
   const { limiter, config } = getLimiterForPath(pathname)
@@ -74,9 +75,9 @@ export async function middleware(request: NextRequest) {
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' data: https://*.supabase.co https://media.licdn.com https://*.licdn.com blob:;
+    img-src 'self' data: https://storage.googleapis.com https://media.licdn.com https://*.licdn.com blob:;
     font-src 'self' data:;
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://vercel.live;
+    connect-src 'self' https://storage.googleapis.com https://vercel.live;
     frame-src 'self' https://vercel.live;
     object-src 'none';
     base-uri 'self';

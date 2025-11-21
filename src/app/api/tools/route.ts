@@ -7,6 +7,7 @@ import { z } from 'zod'
 // GET /api/tools - List tools with filtering
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
     const { searchParams } = new URL(request.url)
 
     const filters = {
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '20'),
       offset: parseInt(searchParams.get('offset') || '0'),
       sortBy: (searchParams.get('sortBy') as any) || 'recent',
+      currentUserId: session?.user?.id, // Pass the current user's ID for favorite status
     }
 
     const result = await getTools(filters)

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code agents (claude.ai/code) when working 
 
 ## Project Overview
 
-OpenAuditSwarms is an AI tool sharing platform for auditors. It allows auditors to share platform-agnostic AI tools (OpenAI, Google Gemini, Claude, LangChain, Copilot) with full documentation for recreation. The platform uses Supabase for backend/storage and Next.js for the frontend.
+OpenAuditSwarms is an AI tool sharing platform for auditors. It allows auditors to share platform-agnostic AI tools (OpenAI, Google Gemini, Claude, LangChain, Copilot) with full documentation for recreation. The platform is deployed on Google Cloud Platform (GCP) using Cloud Run, Cloud SQL (PostgreSQL), and Cloud Storage.
 
 **Terminology Note**: Throughout this codebase and documentation, the terms "agent" and "tool" are used interchangeably to refer to the same concept - AI assistants/configurations shared on the platform.
 
@@ -18,10 +18,11 @@ OpenAuditSwarms is an AI tool sharing platform for auditors. It allows auditors 
 - **Forms**: React Hook Form with Zod validation
 
 ### Backend
-- **Database & Auth**: Supabase (PostgreSQL with Row Level Security)
-- **Storage**: Supabase Storage
-- **Real-time**: Supabase Realtime
-- **Edge Functions**: Supabase Edge Functions for serverless logic
+- **Database**: Cloud SQL (PostgreSQL) with Prisma ORM
+- **Authentication**: NextAuth.js with LinkedIn OAuth
+- **Storage**: Google Cloud Storage
+- **Hosting**: Google Cloud Run (containerized deployment)
+- **Rate Limiting**: Upstash Redis
 
 ## Development Commands
 
@@ -32,13 +33,16 @@ npm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Configure Supabase URL and anon key in .env.local
+# Configure database URL, NextAuth, and GCP credentials in .env.local
+
+# Generate Prisma client
+npx prisma generate
 
 # Run database migrations
-npx supabase migration up
+npx prisma migrate dev
 
-# Generate TypeScript types from database
-npx supabase gen types typescript --local > src/types/supabase.ts
+# Seed database (optional)
+npx prisma db seed
 ```
 
 ### Development
@@ -46,11 +50,11 @@ npx supabase gen types typescript --local > src/types/supabase.ts
 # Start development server
 npm run dev
 
-# Start Supabase locally
-npx supabase start
+# Start Cloud SQL Proxy (for local development)
+./cloud-sql-proxy --port 5432 toolbox-478717:us-central1:toolbox-db
 
-# Stop Supabase
-npx supabase stop
+# View Prisma Studio
+npx prisma studio
 ```
 
 ### Testing & Quality
@@ -77,13 +81,16 @@ npm run format
 ### Database
 ```bash
 # Create new migration
-npx supabase migration new <migration_name>
+npx prisma migrate dev --name <migration_name>
 
 # Reset local database
-npx supabase db reset
+npx prisma migrate reset
 
-# Push to production
-npx supabase db push
+# Deploy migrations to production
+npx prisma migrate deploy
+
+# Generate Prisma client after schema changes
+npx prisma generate
 ```
 
 ### Build & Deploy
@@ -91,11 +98,16 @@ npx supabase db push
 # Build for production
 npm run build
 
-# Preview production build
-npm run preview
+# Build Docker image
+docker build -t openauditswarms .
 
-# Deploy to Vercel (automatic with git push)
-git push origin main
+# Deploy to Cloud Run (via Cloud Build)
+gcloud builds submit --config cloudbuild.yaml
+
+# Or deploy directly
+gcloud run deploy openauditswarms \
+  --image gcr.io/toolbox-478717/openauditswarms \
+  --region us-central1
 ```
 
 ## Architecture Overview
@@ -117,18 +129,18 @@ The application follows a user-centric model with these core relationships:
    - Multi-step form captures platform-agnostic tool data
    - Stores configurations as JSONB for flexibility
    - Generates unique slug for URL routing
-   - Triggers RLS policies for ownership
+   - Files uploaded to Google Cloud Storage
 
 2. **Discovery System**
-   - Full-text search using Supabase's PostgreSQL capabilities
+   - Full-text search using PostgreSQL capabilities
    - Faceted filtering on platform, category, ratings
    - Sorting algorithms factor in recency, popularity, and quality
 
 3. **Authentication Flow**
-   - Supabase Auth with LinkedIn OAuth (OIDC) for professional networking
+   - NextAuth.js with LinkedIn OAuth for professional networking
    - Guest users can browse but not interact
    - Registered users can save favorites, rate, comment, and create tools
-   - RLS policies enforce access control at database level
+   - Session-based authentication with JWT tokens
 
 ### Frontend Structure
 
@@ -143,23 +155,25 @@ src/
 │   ├── ui/                # Shadcn/ui components
 │   └── layouts/           # Layout components
 ├── lib/
-│   ├── supabase/          # Supabase client and helpers
+│   ├── api/               # API utilities and helpers
+│   ├── auth/              # Authentication configuration
+│   ├── db/                # Database utilities and Prisma client
 │   └── utils/             # Utility functions
 ├── hooks/                 # Custom React hooks
 └── types/                 # TypeScript type definitions
 ```
 
-### Supabase Configuration
+### Database Configuration
 
-The project uses Supabase's Row Level Security (RLS) extensively:
+The project uses Prisma ORM with PostgreSQL:
 - Public read access for tools marked as `is_public`
 - Authenticated write access for user's own content
 - Cascading deletes for data integrity
-- Real-time subscriptions for live updates
+- Optimized queries with selective field loading
 
 ### State Management Patterns
 
-- **Server State**: React Query/SWR for Supabase data
+- **Server State**: React Query for API data fetching
 - **Client State**: Zustand for UI state (modals, filters)
 - **Form State**: React Hook Form for complex forms
 - **URL State**: Next.js router for shareable states
@@ -168,13 +182,14 @@ The project uses Supabase's Row Level Security (RLS) extensively:
 
 ### Security
 - All user inputs must be sanitized before database storage
-- File uploads should validate MIME types and scan for malware
-- Rate limiting on API routes and Supabase Edge Functions
-- Implement CAPTCHA for signup and tool upload
+- File uploads validated and stored in Google Cloud Storage
+- Rate limiting via Upstash Redis on all API routes
+- CSRF protection and security headers in middleware
+- Session-based authentication with secure cookies
 
 ### Performance
 - Implement pagination (limit 20-50 items per page)
-- Use Supabase's query builders efficiently (select only needed columns)
+- Use Prisma's select queries efficiently (select only needed columns)
 - Lazy load images and heavy components
 - Cache tool data that doesn't change frequently
 

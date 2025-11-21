@@ -26,6 +26,7 @@ export type Tool = {
   createdAt: string
   updatedAt: string
   publishedAt?: string
+  isFavorited?: boolean
   user: {
     id: string
     name?: string
@@ -55,6 +56,9 @@ export type UserProfile = {
   image?: string
   bio?: string
   linkedin_url?: string
+  website?: string
+  company?: string
+  role?: string
   createdAt: string
 }
 
@@ -106,6 +110,11 @@ export function useTool(slug: string) {
       return res.json()
     },
     enabled: !!slug,
+    // Prevent refetching when window regains focus or reconnects
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    // Keep the data fresh for longer
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
 
@@ -232,7 +241,7 @@ export function useToggleFavorite() {
           method: 'DELETE',
         })
         if (!res.ok) throw new Error('Failed to remove favorite')
-        return res.json()
+        return { action: 'removed', toolId }
       } else {
         // Add favorite
         const res = await fetch('/api/favorites', {
@@ -241,12 +250,12 @@ export function useToggleFavorite() {
           body: JSON.stringify({ toolId }),
         })
         if (!res.ok) throw new Error('Failed to add favorite')
-        return res.json()
+        return { action: 'added', toolId }
       }
     },
+    // Don't invalidate any queries - let the local state handle everything
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tools'] })
-      queryClient.invalidateQueries({ queryKey: ['favorites'] })
+      // Don't invalidate anything to prevent refetching
     },
   })
 }
@@ -289,10 +298,44 @@ export function useRateTool() {
 
       return res.json()
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tools'] })
-      queryClient.invalidateQueries({ queryKey: ['ratings'] })
+      queryClient.invalidateQueries({ queryKey: ['tool', variables.toolId] })
+      queryClient.invalidateQueries({ queryKey: ['ratings', variables.toolId] })
     },
+  })
+}
+
+/**
+ * Fetch ratings for a tool
+ */
+export function useToolRatings(toolId: string) {
+  return useQuery({
+    queryKey: ['ratings', toolId],
+    queryFn: async () => {
+      const res = await fetch(`/api/ratings?toolId=${toolId}`)
+      if (!res.ok) throw new Error('Failed to fetch ratings')
+      return res.json()
+    },
+    enabled: !!toolId,
+  })
+}
+
+/**
+ * Get current user's rating for a tool
+ */
+export function useUserRating(toolId: string) {
+  const { user } = useAuth()
+
+  return useQuery({
+    queryKey: ['user-rating', toolId, user?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/ratings?toolId=${toolId}&checkUser=true`)
+      if (!res.ok) throw new Error('Failed to fetch user rating')
+      const data = await res.json()
+      return data.rating
+    },
+    enabled: !!toolId && !!user,
   })
 }
 

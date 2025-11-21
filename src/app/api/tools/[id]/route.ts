@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { getToolBySlug, updateTool, deleteTool, incrementToolViews } from '@/lib/db/tools'
+import { isFavorited } from '@/lib/db/favorites'
 import { z } from 'zod'
 
 // GET /api/tools/[id] - Get a single tool
@@ -11,6 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const session = await getServerSession(authOptions)
     const tool = await getToolBySlug(id)
 
     if (!tool) {
@@ -23,7 +25,13 @@ export async function GET(
     // Increment view count asynchronously
     incrementToolViews(tool.id).catch(console.error)
 
-    return NextResponse.json(tool)
+    // Check if the current user has favorited this tool
+    let userFavorited = false
+    if (session?.user?.id) {
+      userFavorited = await isFavorited(session.user.id, tool.id)
+    }
+
+    return NextResponse.json({ ...tool, isFavorited: userFavorited })
   } catch (error) {
     console.error('Error fetching tool:', error)
     return NextResponse.json(

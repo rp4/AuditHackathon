@@ -14,7 +14,15 @@ export function useAuth() {
     session,
     isAuthenticated: !!session?.user,
     isLoading: status === 'loading',
-    signIn,
+    signIn: (callbackUrl?: string) => {
+      // In production, go directly to LinkedIn. In dev, show all options.
+      const redirectUrl = callbackUrl || '/browse'
+      if (process.env.NODE_ENV === 'production') {
+        signIn('linkedin', { callbackUrl: redirectUrl })
+      } else {
+        signIn(undefined, { callbackUrl: redirectUrl })
+      }
+    },
     signOut: () => signOut({ callbackUrl: '/' }),
   }
 }
@@ -26,7 +34,12 @@ export function useRequireAuth() {
   const { isAuthenticated, isLoading } = useAuth()
 
   if (!isLoading && !isAuthenticated) {
-    signIn()
+    // In production, go directly to LinkedIn. In dev, show all options.
+    if (process.env.NODE_ENV === 'production') {
+      signIn('linkedin')
+    } else {
+      signIn()
+    }
   }
 
   return { isAuthenticated, isLoading }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 
-// GET /api/users/[id] - Get user profile
+// GET /api/users/[id] - Get user profile (by ID or username)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -9,15 +9,25 @@ export async function GET(
   try {
     const { id } = await params
 
-    const user = await prisma.user.findUnique({
-      where: { id },
+    // Try to find by username first, then by ID
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: id },
+          { id: id }
+        ]
+      },
       select: {
         id: true,
         name: true,
+        username: true,
         email: true,
         image: true,
         bio: true,
         linkedin_url: true,
+        website: true,
+        company: true,
+        role: true,
         createdAt: true,
       },
     })
