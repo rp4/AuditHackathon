@@ -76,10 +76,10 @@ export default function BrowsePage() {
               variant={showFilters ? "default" : "outline"}
               onClick={() => setShowFilters(!showFilters)}
               size="lg"
-              className="gap-2 h-12 md:h-14 px-6 text-base md:text-lg"
+              className="gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg"
             >
               <Filter className="h-5 w-5" />
-              Filters
+              <span className="hidden sm:inline">Filters</span>
             </Button>
           </div>
 

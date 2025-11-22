@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Heart, Star, Edit, Trash2, Share2, MessageSquare } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { ArrowLeft, Heart, Star, Edit, Trash2, Share2, MessageSquare, User } from 'lucide-react'
 import { useTool, useToggleFavorite, useDeleteTool, useFavorites, useRateTool, useToolRatings, useUserRating } from '@/hooks/useTools'
 import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
@@ -208,17 +209,22 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
 
           {/* Creator and Date Info */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-            <span>
-              Created by <span className="font-semibold text-foreground">{tool.user.name || tool.user.email}</span>
-            </span>
+            <Link
+              href={`/profile/${tool.user.id}`}
+              className="hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={tool.user.image || undefined} alt={tool.user.name || 'User'} />
+                <AvatarFallback>
+                  {tool.user.name
+                    ? tool.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                    : <User className="h-4 w-4" />
+                  }
+                </AvatarFallback>
+              </Avatar>
+            </Link>
             <span>•</span>
-            <span>{new Date(tool.createdAt).toLocaleDateString()}</span>
-            {tool.updatedAt && tool.updatedAt !== tool.createdAt && (
-              <>
-                <span>•</span>
-                <span>Updated {new Date(tool.updatedAt).toLocaleDateString()}</span>
-              </>
-            )}
+            <span>Updated {new Date(tool.updatedAt).toLocaleDateString()}</span>
           </div>
 
           {/* Stats - only ratings and favorites */}

@@ -41,11 +41,11 @@ export default async function HomePage() {
           </div>
 
           {/* Main heading */}
-          <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight leading-[1.1] animate-in">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-6 tracking-tight leading-[1.1] animate-in">
             Audit Toolbox
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in">
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in px-4">
             Discover, share, and implement cutting-edge AI tools across OpenAI, Claude, Gemini, and more.
             Accelerate your audit workflows with community-tested solutions.
           </p>
@@ -53,13 +53,13 @@ export default async function HomePage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-in">
             <Link href="/browse">
-              <Button size="lg" className="min-w-[240px] h-14 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-200 bg-purple-600 hover:bg-purple-700 text-white">
+              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-200 bg-purple-600 hover:bg-purple-700 text-white">
                 Explore Tools
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
             </Link>
             <Link href="/add">
-              <Button size="lg" variant="outline" className="min-w-[240px] h-14 text-lg font-semibold border-2 bg-white hover:bg-gray-50">
+              <Button size="lg" variant="outline" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 bg-white hover:bg-gray-50">
                 Share Your Tool
               </Button>
             </Link>
@@ -95,10 +95,10 @@ export default async function HomePage() {
       <section className="py-32 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-black mb-4">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-4">
               Explore by Platform
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600">
               Find the perfect AI tool for your preferred platform
             </p>
           </div>
@@ -124,17 +124,17 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-4 bg-purple-600 text-white">
+      <section className="py-20 sm:py-32 px-4 bg-purple-600 text-white">
         <div className="container mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-black mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6">
             Ready to 10x Your Audit Efficiency?
           </h2>
-          <p className="text-xl mb-12 max-w-2xl mx-auto opacity-90">
+          <p className="text-lg sm:text-xl mb-12 max-w-2xl mx-auto opacity-90">
             Join other audit innovators leveraging AI to deliver better, faster, and more accurate audits.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/browse">
-              <Button size="lg" className="min-w-[240px] h-14 text-lg font-semibold bg-white text-purple-600 hover:bg-gray-100">
+              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-white text-purple-600 hover:bg-gray-100">
                 Start Now
               </Button>
             </Link>

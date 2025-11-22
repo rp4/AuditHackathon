@@ -25,8 +25,18 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build Next.js
+# Accept build arguments
+ARG GCS_BUCKET_NAME
+ARG GCP_PROJECT_ID
+ARG NEXTAUTH_URL
+
+# Set build-time environment variables
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
+ENV GCP_PROJECT_ID=${GCP_PROJECT_ID}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
+
+# Build Next.js
 RUN npm run build
 
 # Production image, copy all the files and run next

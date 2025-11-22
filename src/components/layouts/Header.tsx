@@ -44,20 +44,20 @@ export default function Header() {
   return (
     <header className={`border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
-        <Link href="/browse" className="flex items-center space-x-4 hover:opacity-80 transition-opacity">
-          <div className="bg-white rounded-xl w-14 h-14 md:w-16 md:h-16 shadow-lg shadow-purple-500/50 flex items-center justify-center">
-            <span className="text-4xl md:text-5xl">🧰</span>
+        <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-opacity">
+          <div className="bg-white rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-purple-500/50 flex items-center justify-center">
+            <span className="text-2xl sm:text-3xl md:text-5xl">🧰</span>
           </div>
           <div className="flex flex-col">
-            <span className="font-black text-2xl md:text-3xl">Audit Toolbox</span>
-            <span className="text-sm md:text-base text-gray-500">For Auditors By Auditors</span>
+            <span className="font-black text-lg sm:text-xl md:text-3xl">Audit Toolbox</span>
+            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">For Auditors By Auditors</span>
           </div>
         </Link>
 
-        <nav className="flex items-center space-x-3 md:space-x-4">
-          <Button variant="default" size="lg" className="gap-2 text-base md:text-lg" onClick={handleAddClick}>
+        <nav className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+          <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={handleAddClick}>
             <Upload className="h-5 w-5 md:h-6 md:w-6" />
-            Add
+            <span className="hidden sm:inline">Add</span>
           </Button>
 
           {isAuthenticated ? (
@@ -99,7 +99,7 @@ export default function Header() {
               </Link>
             </>
           ) : (
-            <Button variant="default" size="lg" className="text-base md:text-lg" onClick={() => signIn()}>
+            <Button variant="default" size="lg" className="text-sm sm:text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={() => signIn()}>
               Sign In
             </Button>
           )}
