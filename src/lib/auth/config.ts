@@ -14,11 +14,15 @@ export const authOptions: NextAuthOptions = {
     LinkedInProvider({
       clientId: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+      client: {
+        token_endpoint_auth_method: 'client_secret_post',
+      },
       authorization: {
         params: {
           scope: 'openid profile email',
         },
       },
+      issuer: 'https://www.linkedin.com/oauth',
       // Map LinkedIn profile to our user model
       profile(profile) {
         return {
