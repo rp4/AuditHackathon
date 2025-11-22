@@ -98,7 +98,7 @@ export default function BrowsePage() {
                     <Badge
                       key={option.value}
                       variant={sortBy === option.value ? "default" : "outline"}
-                      className={`cursor-pointer transition-all ${
+                      className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
                         sortBy === option.value
                           ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
                           : "hover:bg-muted"
@@ -119,7 +119,7 @@ export default function BrowsePage() {
                     <Badge
                       key={platform.id}
                       variant={selectedPlatformIds.includes(platform.id) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all ${
+                      className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
                         selectedPlatformIds.includes(platform.id)
                           ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200"
                           : "hover:bg-muted"
@@ -143,7 +143,7 @@ export default function BrowsePage() {
                     <Badge
                       key={category.id}
                       variant={selectedCategoryIds.includes(category.id) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all ${
+                      className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
                         selectedCategoryIds.includes(category.id)
                           ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
                           : "hover:bg-muted"
@@ -184,7 +184,7 @@ export default function BrowsePage() {
                 return platform ? (
                   <Badge
                     key={platformId}
-                    className="cursor-pointer bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 transition-all"
+                    className="cursor-pointer bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 transition-all duration-150 ease-out active:scale-95"
                     onClick={() => togglePlatform(platformId)}
                   >
                     {platform.name} ×
@@ -196,7 +196,7 @@ export default function BrowsePage() {
                 return category ? (
                   <Badge
                     key={categoryId}
-                    className="cursor-pointer bg-green-100 text-green-700 border-green-200 hover:bg-green-200 transition-all"
+                    className="cursor-pointer bg-green-100 text-green-700 border-green-200 hover:bg-green-200 transition-all duration-150 ease-out active:scale-95"
                     onClick={() => toggleCategory(categoryId)}
                   >
                     {category.name} ×

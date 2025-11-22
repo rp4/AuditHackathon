@@ -53,7 +53,7 @@ export default async function HomePage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-in">
             <Link href="/browse">
-              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-200 bg-purple-600 hover:bg-purple-700 text-white">
+              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white">
                 Explore Tools
                 <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
@@ -106,7 +106,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
             {platforms.map((platform) => (
               <Link key={platform.id} href={`/browse?platform=${platform.id}`}>
-                <div className="group cursor-pointer border-2 hover:border-purple-300 transition-all duration-200 hover:shadow-xl h-full rounded-lg p-6">
+                <div className="group cursor-pointer border-2 hover:border-purple-300 transition-all duration-150 ease-out hover:shadow-xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md h-full rounded-lg p-6">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-lg group-hover:text-purple-600 transition-colors">
                       {platform.name}

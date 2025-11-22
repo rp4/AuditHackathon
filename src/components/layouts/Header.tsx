@@ -44,7 +44,7 @@ export default function Header() {
   return (
     <header className={`border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
-        <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-opacity">
+        <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
           <div className="bg-white rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-purple-500/50 flex items-center justify-center">
             <span className="text-2xl sm:text-3xl md:text-5xl">🧰</span>
           </div>
@@ -63,7 +63,7 @@ export default function Header() {
           {isAuthenticated ? (
             <>
               {/* Desktop - show image only */}
-              <Link href={`/profile/${user?.username || user?.id}`} className="hidden md:block hover:opacity-80 transition-opacity">
+              <Link href={`/profile/${user?.username || user?.id}`} className="hidden md:block hover:opacity-80 transition-all duration-150 ease-out active:scale-90">
                 <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-400 to-purple-600">
                   {user?.image ? (
                     <Image
@@ -81,7 +81,7 @@ export default function Header() {
               </Link>
 
               {/* Mobile - show image only */}
-              <Link href={`/profile/${user?.username || user?.id}`} className="md:hidden">
+              <Link href={`/profile/${user?.username || user?.id}`} className="md:hidden transition-all duration-150 ease-out active:scale-90">
                 <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-400 to-purple-600">
                   {user?.image ? (
                     <Image
