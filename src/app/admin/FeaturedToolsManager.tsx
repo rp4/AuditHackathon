@@ -48,7 +48,7 @@ export default function FeaturedToolsManager() {
       setAvailable(data.available)
 
       // Initialize selected IDs with currently featured tools
-      const featuredIds = new Set(data.featured.map((t: Tool) => t.id))
+      const featuredIds = new Set<string>(data.featured.map((t: Tool) => t.id))
       setSelectedIds(featuredIds)
     } catch (error) {
       console.error('Error fetching tools:', error)
