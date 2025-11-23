@@ -191,15 +191,17 @@ async function getGrowthData(model: 'user' | 'tool', timeframe: string) {
     const end = new Date(start)
     end.setDate(end.getDate() + 1)
 
-    const count = await (model === 'user' ? prisma.user : prisma.tool).count({
-      where: {
-        isDeleted: false,
-        createdAt: {
-          gte: start,
-          lt: end
-        }
+    const whereClause = {
+      isDeleted: false,
+      createdAt: {
+        gte: start,
+        lt: end
       }
-    })
+    }
+
+    const count = model === 'user'
+      ? await prisma.user.count({ where: whereClause })
+      : await prisma.tool.count({ where: whereClause })
 
     data.push({
       date: start.toISOString().split('T')[0],
