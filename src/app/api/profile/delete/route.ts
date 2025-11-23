@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth/config'
-import { prisma } from '@/lib/db/client'
+import { prisma } from '@/lib/prisma/client'
 
-export async function DELETE(request: Request) {
+export async function DELETE() {
   try {
     // Get the current user session
     const session = await getServerSession(authOptions)
