@@ -18,11 +18,17 @@ export const authOptions: NextAuthOptions = {
         token_endpoint_auth_method: 'client_secret_post',
       },
       authorization: {
+        url: 'https://www.linkedin.com/oauth/v2/authorization',
         params: {
           scope: 'openid profile email',
         },
       },
+      token: 'https://www.linkedin.com/oauth/v2/accessToken',
+      userinfo: {
+        url: 'https://api.linkedin.com/v2/userinfo',
+      },
       issuer: 'https://www.linkedin.com/oauth',
+      jwks_endpoint: 'https://www.linkedin.com/oauth/openid/jwks',
       // Map LinkedIn profile to our user model
       profile(profile) {
         return {

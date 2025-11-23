@@ -18,8 +18,26 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   const { data: tools = [], isLoading: loadingTools } = useUserTools(resolvedParams.id)
   const { data: favoritesData, isLoading: loadingFavorites } = useFavorites()
 
-  const isOwnProfile = currentUser?.id === resolvedParams.id
+  // Check if the current user owns this profile
+  // Handle both ID and username comparisons
+  const isOwnProfile = currentUser && profile && (
+    currentUser.id === resolvedParams.id ||
+    currentUser.id === profile.id ||
+    (profile.username && currentUser.username === profile.username)
+  )
   const favorites = favoritesData?.favorites || []
+
+  // Debug logging
+  console.log('Profile Debug:', {
+    currentUserId: currentUser?.id,
+    currentUsername: currentUser?.username,
+    profileId: resolvedParams.id,
+    profileUserId: profile?.id,
+    profileUsername: profile?.username,
+    isOwnProfile,
+    currentUser,
+    profile
+  })
 
   if (loadingProfile) {
     return (
@@ -154,7 +172,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
               className="flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4"
             >
               <Upload className="h-4 w-4" />
-              Created Agents ({tools.length})
+              Created Tools ({tools.length})
             </TabsTrigger>
             {isOwnProfile && (
               <TabsTrigger
@@ -174,12 +192,12 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                Favorites ({favorites.length})
+                Favorited Tools ({favorites.length})
               </TabsTrigger>
             )}
           </TabsList>
 
-          {/* Created Agents Tab */}
+          {/* Created Tools Tab */}
           <TabsContent value="created">
             {loadingTools ? (
               <div className="flex items-center justify-center py-20">
@@ -190,13 +208,13 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                 <CardContent className="py-20">
                   <div className="text-center">
                     <p className="text-muted-foreground mb-8 text-lg">
-                      No agents created yet
+                      No tools created yet
                     </p>
                     {isOwnProfile && (
                       <Link href="/add">
                         <Button variant="outline" size="lg">
                           <Upload className="mr-2 h-5 w-5" />
-                          Upload Your First Agent
+                          Upload Your First Tool
                         </Button>
                       </Link>
                     )}
@@ -212,7 +230,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             )}
           </TabsContent>
 
-          {/* Favorites Tab */}
+          {/* Favorited Tools Tab */}
           {isOwnProfile && (
             <TabsContent value="favorites">
               {loadingFavorites ? (
@@ -224,7 +242,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                   <CardContent className="py-16">
                     <div className="text-center">
                       <p className="text-muted-foreground text-lg">
-                        No favorites yet
+                        No favorited tools yet
                       </p>
                     </div>
                   </CardContent>
