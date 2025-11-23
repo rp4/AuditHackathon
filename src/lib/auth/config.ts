@@ -63,6 +63,11 @@ export const authOptions: NextAuthOptions = {
                 throw new Error('Invalid credentials')
               }
 
+              // Check if user is soft deleted
+              if (user.isDeleted) {
+                throw new Error('This account has been deleted')
+              }
+
               const isValid = await bcrypt.compare(credentials.password, user.passwordHash)
 
               if (!isValid) {
@@ -96,11 +101,17 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
 
-        // Fetch the user's username
+        // Fetch the user's username and check if deleted
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { username: true }
+          select: { username: true, isDeleted: true }
         })
+
+        // If user is deleted, return null to invalidate the session
+        if (dbUser?.isDeleted) {
+          return null
+        }
+
         token.username = dbUser?.username
       }
 
@@ -142,6 +153,19 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
+      // Check if the user still exists and is not deleted
+      if (token?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isDeleted: true }
+        })
+
+        // If user is deleted, return null to invalidate the session
+        if (dbUser?.isDeleted) {
+          return null as any
+        }
+      }
+
       if (session.user) {
         session.user.id = token.id as string
         session.user.username = token.username as string

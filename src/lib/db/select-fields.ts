@@ -16,6 +16,7 @@ export const userProfileSelect = {
   ...userBasicSelect,
   bio: true,
   linkedin_url: true,
+  linkedin_visible: true,
   website: true,
   company: true,
   role: true,

@@ -115,7 +115,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                   )}
 
                   {/* Links */}
-                  {(profile.website || profile.linkedin_url) && (
+                  {(profile.website || (profile.linkedin_url && (profile.linkedin_visible || isOwnProfile))) && (
                     <div className="flex items-center gap-4 text-sm">
                       {profile.website && (
                         <a
@@ -127,7 +127,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                           Website
                         </a>
                       )}
-                      {profile.linkedin_url && (
+                      {profile.linkedin_url && (profile.linkedin_visible || isOwnProfile) && (
                         <a
                           href={profile.linkedin_url}
                           target="_blank"
@@ -144,19 +144,21 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
 
               {/* Action Buttons */}
               {isOwnProfile && (
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <Link href={`/profile/${profile.username || resolvedParams.id}/edit`}>
-                    <Button variant="outline">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit Profile
+                    <Button variant="outline" size="sm" className="sm:size-auto">
+                      <Edit className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Edit Profile</span>
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
+                    size="sm"
+                    className="sm:size-auto"
                     onClick={() => signOut({ callbackUrl: '/' })}
                   >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    <LogOut className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Sign Out</span>
                   </Button>
                 </div>
               )}

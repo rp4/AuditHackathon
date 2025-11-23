@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, TrendingUp } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import { getFeaturedTools } from '@/lib/db/tools'
-import { getPlatformsWithCounts } from '@/lib/db/categories'
 import { ToolCard } from '@/components/tools/ToolCard'
 
 export default async function HomePage() {
@@ -12,14 +11,6 @@ export default async function HomePage() {
     featuredTools = await getFeaturedTools(3)
   } catch (error) {
     console.error('Error fetching featured tools:', error)
-  }
-
-  // Fetch platforms and their counts
-  let platforms: any[] = []
-  try {
-    platforms = await getPlatformsWithCounts()
-  } catch (error) {
-    console.error('Error fetching platforms:', error)
   }
 
   return (
@@ -65,13 +56,13 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Trending Tools */}
+          {/* Featured Tools */}
           {featuredTools.length > 0 && (
             <div className="animate-in">
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-orange-600" />
-                  <h2 className="text-2xl font-bold">Trending Tools</h2>
+                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  <h2 className="text-2xl font-bold">Featured Tools</h2>
                 </div>
                 <Link href="/browse" className="hidden md:block">
                   <Button variant="outline" size="sm" className="bg-white">
@@ -88,38 +79,6 @@ export default async function HomePage() {
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Platforms Section */}
-      <section className="py-32 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-4">
-              Explore by Platform
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-600">
-              Find the perfect AI tool for your preferred platform
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-            {platforms.map((platform) => (
-              <Link key={platform.id} href={`/browse?platform=${platform.id}`}>
-                <div className="group cursor-pointer border-2 hover:border-purple-300 transition-all duration-150 ease-out hover:shadow-xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md h-full rounded-lg p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-bold text-lg group-hover:text-purple-600 transition-colors">
-                      {platform.name}
-                    </h3>
-                    <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    {platform.toolCount || 0} tools
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 

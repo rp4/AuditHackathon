@@ -8,9 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Loader2, Upload } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { ArrowLeft, Loader2, Upload, Trash2, Linkedin } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserProfile } from '@/hooks/useTools'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { signOut } from 'next-auth/react'
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -20,6 +33,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isDeletingProfile, setIsDeletingProfile] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -27,13 +41,22 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     bio: '',
     website: '',
     linkedin_url: '',
+    linkedin_visible: false,
     company: '',
     role: '',
     image: '',
   })
 
+  // Check if the current user owns this profile
+  // Handle both ID and username comparisons
+  const isOwnProfile = currentUser && profile && (
+    currentUser.id === resolvedParams.id ||
+    currentUser.id === profile.id ||
+    (profile.username && currentUser.username === profile.username)
+  )
+
   // Redirect if not own profile
-  if (!loadingProfile && currentUser?.id !== resolvedParams.id) {
+  if (!loadingProfile && profile && !isOwnProfile) {
     router.push(`/profile/${resolvedParams.id}`)
     return null
   }
@@ -46,6 +69,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       bio: profile.bio || '',
       website: profile.website || '',
       linkedin_url: profile.linkedin_url || '',
+      linkedin_visible: profile.linkedin_visible || false,
       company: profile.company || '',
       role: profile.role || '',
       image: profile.image || '',
@@ -122,6 +146,27 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       alert('Failed to update profile. Please try again.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteProfile = async () => {
+    setIsDeletingProfile(true)
+
+    try {
+      const res = await fetch('/api/profile/delete', {
+        method: 'DELETE',
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to delete profile')
+      }
+
+      // Sign out the user and redirect to home page
+      await signOut({ callbackUrl: '/' })
+    } catch (error) {
+      console.error('Error deleting profile:', error)
+      alert('Failed to delete profile. Please try again.')
+      setIsDeletingProfile(false)
     }
   }
 
@@ -287,16 +332,116 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               </div>
 
               {/* LinkedIn */}
-              <div>
-                <Label htmlFor="linkedin">LinkedIn URL</Label>
-                <Input
-                  id="linkedin"
-                  type="url"
-                  placeholder="https://linkedin.com/in/yourprofile"
-                  value={formData.linkedin_url}
-                  onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                  className="mt-2"
-                />
+              {formData.linkedin_url && (
+                <div className="space-y-3">
+                  <Label>LinkedIn Profile</Label>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
+                    <Linkedin className="h-5 w-5 text-blue-600" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Connected LinkedIn Account</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {formData.linkedin_url}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg border bg-card">
+                    <Switch
+                      id="linkedin-visible"
+                      checked={formData.linkedin_visible}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, linkedin_visible: checked })
+                      }
+                      className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-gray-300"
+                    />
+                    <Label
+                      htmlFor="linkedin-visible"
+                      className="text-sm font-normal cursor-pointer flex-1"
+                    >
+                      <span className="font-medium text-foreground">
+                        Show LinkedIn profile on my public profile page
+                      </span>
+                      <span className="block text-xs text-muted-foreground mt-1">
+                        {formData.linkedin_visible
+                          ? "✓ Your LinkedIn profile is visible to everyone"
+                          : "Your LinkedIn profile is hidden from public view"}
+                      </span>
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your LinkedIn profile is automatically connected through your sign-in.
+                    Toggle visibility to control whether others can see it.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Delete Profile Section */}
+          <Card className="mb-6 border-red-200">
+            <CardHeader>
+              <CardTitle className="text-red-600">Danger Zone</CardTitle>
+              <CardDescription>
+                Permanent actions that cannot be undone
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Delete Profile</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Permanently delete your profile and all your created tools. This action cannot be undone.
+                  </p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={isDeletingProfile}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Profile
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-2">
+                        <span className="block">
+                          This action cannot be undone. This will permanently delete:
+                        </span>
+                        <ul className="list-disc list-inside space-y-1 mt-2">
+                          <li>Your profile and all personal information</li>
+                          <li>All tools you've created</li>
+                          <li>Your favorites, ratings, and comments</li>
+                          <li>Your collections</li>
+                        </ul>
+                        <span className="block mt-3 font-semibold text-red-600">
+                          You will be immediately logged out after deletion.
+                        </span>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeletingProfile}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteProfile}
+                        disabled={isDeletingProfile}
+                        className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                      >
+                        {isDeletingProfile ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          'Delete My Profile'
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>

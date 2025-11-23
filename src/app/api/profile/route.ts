@@ -9,6 +9,7 @@ const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   website: z.string().url().optional().or(z.literal('')),
   linkedin_url: z.string().url().optional().or(z.literal('')),
+  linkedin_visible: z.boolean().optional(),
   company: z.string().max(100).optional(),
   role: z.string().max(100).optional(),
 })
@@ -36,6 +37,7 @@ export async function PATCH(request: NextRequest) {
         bio: validatedData.bio || null,
         website: validatedData.website || null,
         linkedin_url: validatedData.linkedin_url || null,
+        linkedin_visible: validatedData.linkedin_visible ?? false,
         company: validatedData.company || null,
         role: validatedData.role || null,
       },
@@ -47,6 +49,7 @@ export async function PATCH(request: NextRequest) {
         bio: true,
         website: true,
         linkedin_url: true,
+        linkedin_visible: true,
         company: true,
         role: true,
         createdAt: true,

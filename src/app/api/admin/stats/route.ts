@@ -1,0 +1,211 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminApi } from '@/lib/auth/admin'
+import { prisma } from '@/lib/prisma/client'
+
+// GET /api/admin/stats - Get platform statistics
+export async function GET(request: NextRequest) {
+  const authError = await requireAdminApi()
+  if (authError) return authError
+
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const timeframe = searchParams.get('timeframe') || '30d' // 7d, 30d, 90d, all
+
+    // Calculate date range
+    let dateFilter = {}
+    const now = new Date()
+
+    switch (timeframe) {
+      case '7d':
+        dateFilter = { gte: new Date(now.setDate(now.getDate() - 7)) }
+        break
+      case '30d':
+        dateFilter = { gte: new Date(now.setDate(now.getDate() - 30)) }
+        break
+      case '90d':
+        dateFilter = { gte: new Date(now.setDate(now.getDate() - 90)) }
+        break
+      case 'all':
+      default:
+        // No date filter
+        break
+    }
+
+    // Get statistics in parallel
+    const [
+      totalUsers,
+      newUsers,
+      activeUsers,
+      totalTools,
+      newTools,
+      topViewedTools,
+      topFavoritedTools,
+      recentProfiles
+    ] = await Promise.all([
+      // Total users
+      prisma.user.count({
+        where: { isDeleted: false }
+      }),
+
+      // New users (in timeframe)
+      prisma.user.count({
+        where: {
+          isDeleted: false,
+          createdAt: dateFilter
+        }
+      }),
+
+      // Active users (users who created tools or interacted in timeframe)
+      prisma.user.count({
+        where: {
+          isDeleted: false,
+          OR: [
+            { tools: { some: { createdAt: dateFilter } } },
+            { favorites: { some: { createdAt: dateFilter } } },
+            { ratings: { some: { createdAt: dateFilter } } },
+            { downloads: { some: { createdAt: dateFilter } } },
+            { comments: { some: { createdAt: dateFilter } } }
+          ]
+        }
+      }),
+
+      // Total tools
+      prisma.tool.count({
+        where: { isDeleted: false }
+      }),
+
+      // New tools (in timeframe)
+      prisma.tool.count({
+        where: {
+          isDeleted: false,
+          createdAt: dateFilter
+        }
+      }),
+
+      // Top viewed tools (all time)
+      prisma.tool.findMany({
+        where: { isDeleted: false, is_public: true },
+        orderBy: { views_count: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          views_count: true,
+          favorites_count: true,
+          rating_avg: true,
+          rating_count: true,
+          user: {
+            select: {
+              name: true,
+              username: true
+            }
+          }
+        }
+      }),
+
+      // Top favorited tools (all time)
+      prisma.tool.findMany({
+        where: { isDeleted: false, is_public: true },
+        orderBy: { favorites_count: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          views_count: true,
+          favorites_count: true,
+          rating_avg: true,
+          rating_count: true,
+          user: {
+            select: {
+              name: true,
+              username: true
+            }
+          }
+        }
+      }),
+
+      // Recent user profiles
+      prisma.user.findMany({
+        where: { isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          createdAt: true,
+          _count: {
+            select: {
+              tools: true,
+              favorites: true
+            }
+          }
+        }
+      })
+    ])
+
+    // Get growth data for charts
+    const userGrowth = await getGrowthData('user', timeframe)
+    const toolGrowth = await getGrowthData('tool', timeframe)
+
+    return NextResponse.json({
+      overview: {
+        totalUsers,
+        newUsers,
+        activeUsers,
+        totalTools,
+        newTools
+      },
+      topViewedTools,
+      topFavoritedTools,
+      recentProfiles,
+      charts: {
+        userGrowth,
+        toolGrowth
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin stats:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch statistics' },
+      { status: 500 }
+    )
+  }
+}
+
+// Helper function to get growth data for charts
+async function getGrowthData(model: 'user' | 'tool', timeframe: string) {
+  const now = new Date()
+  const data = []
+
+  const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : timeframe === '90d' ? 90 : 365
+
+  for (let i = days - 1; i >= 0; i--) {
+    const start = new Date(now)
+    start.setDate(start.getDate() - i)
+    start.setHours(0, 0, 0, 0)
+
+    const end = new Date(start)
+    end.setDate(end.getDate() + 1)
+
+    const count = await (model === 'user' ? prisma.user : prisma.tool).count({
+      where: {
+        isDeleted: false,
+        createdAt: {
+          gte: start,
+          lt: end
+        }
+      }
+    })
+
+    data.push({
+      date: start.toISOString().split('T')[0],
+      count
+    })
+  }
+
+  return data
+}

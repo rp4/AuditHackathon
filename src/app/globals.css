@@ -270,3 +270,19 @@
   padding: 1rem;
   min-height: auto;
 }
+
+/* YouTube Video Responsive Styles */
+.ProseMirror .youtube-video {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 1.5em auto;
+}
+
+.ProseMirror iframe[src*="youtube"],
+.ProseMirror iframe[src*="youtu.be"] {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 0.5em;
+  border: none;
+}

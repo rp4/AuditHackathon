@@ -65,9 +65,17 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Soft delete fields
+  deletedAt     DateTime? // When the user was deleted
+  isDeleted     Boolean   @default(false) // Flag for soft deletion
+
+  // Admin field
+  is_admin      Boolean   @default(false)
+
   // Profile fields
   bio           String?   @db.Text
   linkedin_url  String?
+  linkedin_visible Boolean @default(false) // Whether to show LinkedIn on public profile
   website       String?
   company       String?
   role          String?
@@ -135,6 +143,10 @@ model Tool {
   // Status
   is_public        Boolean  @default(true)
   is_featured      Boolean  @default(false)
+
+  // Soft delete fields
+  deletedAt        DateTime? // When the tool was deleted
+  isDeleted        Boolean  @default(false) // Flag for soft deletion
 
   // Stats (denormalized for performance)
   views_count      Int      @default(0)

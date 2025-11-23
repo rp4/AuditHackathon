@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Upload, User } from "lucide-react"
+import { Upload, User, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 
 export default function Header() {
@@ -13,6 +13,17 @@ export default function Header() {
   const { user, isAuthenticated, signIn } = useAuth()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // Check admin status
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      fetch('/api/user/admin-status')
+        .then(res => res.json())
+        .then(data => setIsAdmin(data.isAdmin))
+        .catch(console.error)
+    }
+  }, [isAuthenticated, user?.id])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,6 +70,15 @@ export default function Header() {
             <Upload className="h-5 w-5 md:h-6 md:w-6" />
             <span className="hidden sm:inline">Add</span>
           </Button>
+
+          {isAdmin && (
+            <Link href="/admin">
+              <Button variant="outline" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
+                <Shield className="h-5 w-5 md:h-6 md:w-6" />
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+            </Link>
+          )}
 
           {isAuthenticated ? (
             <>

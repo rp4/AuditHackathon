@@ -56,6 +56,10 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
 
   const where: Prisma.ToolWhereInput = {
     is_public: isPublic,
+    isDeleted: false, // Filter out soft-deleted tools
+    user: {
+      isDeleted: false, // Filter out tools from deleted users
+    },
     ...(isFeatured !== undefined && { is_featured: isFeatured }),
     ...(userId && { userId }),
     ...(categoryId && { categoryId }),
@@ -125,8 +129,14 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
  * Get a single tool by slug
  */
 export async function getToolBySlug(slug: string) {
-  return prisma.tool.findUnique({
-    where: { slug },
+  return prisma.tool.findFirst({
+    where: {
+      slug,
+      isDeleted: false,
+      user: {
+        isDeleted: false,
+      },
+    },
     include: {
       user: {
         select: {
