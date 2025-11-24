@@ -13,7 +13,7 @@ export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300)
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([])
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'downloads'>('popular')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -25,10 +25,10 @@ export default function BrowsePage() {
   const queryParams = useMemo(() => ({
     search: debouncedSearchQuery || undefined,
     platformId: selectedPlatformIds[0] || undefined, // Use first selected platform for now
-    categoryId: selectedCategoryIds[0] || undefined, // Use first selected category for now
+    categoryId: selectedCategoryId || undefined,
     sortBy,
     limit: 50,
-  }), [debouncedSearchQuery, selectedPlatformIds, selectedCategoryIds, sortBy])
+  }), [debouncedSearchQuery, selectedPlatformIds, selectedCategoryId, sortBy])
 
   // Fetch tools with filters
   const { data, isLoading: toolsLoading } = useTools(queryParams)
@@ -44,13 +44,9 @@ export default function BrowsePage() {
     )
   }
 
-  // Toggle category filter
+  // Toggle category filter (single selection)
   const toggleCategory = (categoryId: string) => {
-    setSelectedCategoryIds(prev =>
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    )
+    setSelectedCategoryId(prev => prev === categoryId ? '' : categoryId)
   }
 
   const isLoading = toolsLoading || platformsLoading || categoriesLoading
@@ -142,9 +138,9 @@ export default function BrowsePage() {
                   {categories.map((category: { id: string; name: string; toolCount?: number }) => (
                     <Badge
                       key={category.id}
-                      variant={selectedCategoryIds.includes(category.id) ? "default" : "outline"}
+                      variant={selectedCategoryId === category.id ? "default" : "outline"}
                       className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
-                        selectedCategoryIds.includes(category.id)
+                        selectedCategoryId === category.id
                           ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
                           : "hover:bg-muted"
                       }`}
@@ -160,13 +156,13 @@ export default function BrowsePage() {
               </div>
 
               {/* Clear Filters */}
-              {(selectedPlatformIds.length > 0 || selectedCategoryIds.length > 0 || searchQuery) && (
+              {(selectedPlatformIds.length > 0 || selectedCategoryId || searchQuery) && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
                     setSelectedPlatformIds([])
-                    setSelectedCategoryIds([])
+                    setSelectedCategoryId('')
                     setSearchQuery('')
                   }}
                 >
@@ -177,10 +173,10 @@ export default function BrowsePage() {
           )}
 
           {/* Active Filters Display */}
-          {(selectedPlatformIds.length > 0 || selectedCategoryIds.length > 0) && !showFilters && (
+          {(selectedPlatformIds.length > 0 || selectedCategoryId) && !showFilters && (
             <div className="flex flex-wrap gap-2 mt-2">
               {selectedPlatformIds.map((platformId) => {
-                const platform = platforms.find(p => p.id === platformId)
+                const platform = platforms.find((p: any) => p.id === platformId)
                 return platform ? (
                   <Badge
                     key={platformId}
@@ -191,18 +187,18 @@ export default function BrowsePage() {
                   </Badge>
                 ) : null
               })}
-              {selectedCategoryIds.map((categoryId) => {
-                const category = categories.find(c => c.id === categoryId)
+              {selectedCategoryId && (() => {
+                const category = categories.find((c: any) => c.id === selectedCategoryId)
                 return category ? (
                   <Badge
-                    key={categoryId}
+                    key={selectedCategoryId}
                     className="cursor-pointer bg-green-100 text-green-700 border-green-200 hover:bg-green-200 transition-all duration-150 ease-out active:scale-95"
-                    onClick={() => toggleCategory(categoryId)}
+                    onClick={() => toggleCategory(selectedCategoryId)}
                   >
                     {category.name} ×
                   </Badge>
                 ) : null
-              })}
+              })()}
             </div>
           )}
         </div>
@@ -253,7 +249,7 @@ export default function BrowsePage() {
                 onClick={() => {
                   setSearchQuery('')
                   setSelectedPlatformIds([])
-                  setSelectedCategoryIds([])
+                  setSelectedCategoryId('')
                 }}
               >
                 Clear All Filters

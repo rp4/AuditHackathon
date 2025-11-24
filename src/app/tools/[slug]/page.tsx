@@ -305,7 +305,7 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
             </CardHeader>
             <CardContent>
               <div
-                className="prose prose-sm max-w-none"
+                className="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline hover:[&_a]:text-blue-800"
                 dangerouslySetInnerHTML={{ __html: tool.documentation }}
               />
             </CardContent>
