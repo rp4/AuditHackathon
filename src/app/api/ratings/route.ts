@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { upsertRating, deleteRating, getToolRatings, getUserRating } from '@/lib/db/ratings'
+import { prisma } from '@/lib/prisma/client'
+import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
 // GET /api/ratings - Get ratings for a tool or user's rating
@@ -66,6 +68,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { toolId, rating, review } = ratingSchema.parse(body)
 
+    // Validate that the tool exists and is not deleted
+    const tool = await prisma.tool.findUnique({
+      where: { id: toolId },
+      select: { id: true, isDeleted: true }
+    })
+
+    if (!tool || tool.isDeleted) {
+      return NextResponse.json(
+        { error: 'Tool not found' },
+        { status: 404 }
+      )
+    }
+
     const result = await upsertRating(session.user.id, toolId, rating, review)
 
     return NextResponse.json(result, { status: 201 })
@@ -77,7 +92,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Error creating rating:', error)
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'POST /api/ratings' })
     return NextResponse.json(
       { error: 'Failed to create rating' },
       { status: 500 }

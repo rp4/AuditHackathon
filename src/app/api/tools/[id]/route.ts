@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { getToolBySlug, updateTool, deleteTool, incrementToolViews } from '@/lib/db/tools'
 import { isFavorited } from '@/lib/db/favorites'
+import { isAdmin } from '@/lib/auth/admin'
+import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
 // GET /api/tools/[id] - Get a single tool
@@ -23,7 +25,7 @@ export async function GET(
     }
 
     // Increment view count asynchronously
-    incrementToolViews(tool.id).catch(console.error)
+    incrementToolViews(tool.id).catch((error) => logger.serverError(error, { toolId: tool.id }))
 
     // Check if the current user has favorited this tool
     let userFavorited = false
@@ -33,7 +35,7 @@ export async function GET(
 
     return NextResponse.json({ ...tool, isFavorited: userFavorited })
   } catch (error) {
-    console.error('Error fetching tool:', error)
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'GET /api/tools/[id]' })
     return NextResponse.json(
       { error: 'Failed to fetch tool' },
       { status: 500 }
@@ -57,6 +59,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let existingTool
   try {
     const session = await getServerSession(authOptions)
 
@@ -69,7 +72,7 @@ export async function PATCH(
 
     // Get the tool to check ownership
     const { id } = await params
-    const existingTool = await getToolBySlug(id)
+    existingTool = await getToolBySlug(id)
 
     if (!existingTool) {
       return NextResponse.json(
@@ -86,6 +89,18 @@ export async function PATCH(
     }
 
     const body = await request.json()
+
+    // If user is trying to update is_featured, verify they are an admin
+    if (body.is_featured !== undefined) {
+      const userIsAdmin = await isAdmin()
+      if (!userIsAdmin) {
+        return NextResponse.json(
+          { error: 'Only admins can feature tools' },
+          { status: 403 }
+        )
+      }
+    }
+
     const validated = updateToolSchema.parse(body)
 
     const updatedTool = await updateTool(existingTool.id, validated)
@@ -99,7 +114,10 @@ export async function PATCH(
       )
     }
 
-    console.error('Error updating tool:', error)
+    logger.serverError(error instanceof Error ? error : String(error), {
+      endpoint: 'PATCH /api/tools/[id]',
+      toolId: existingTool?.id
+    })
     return NextResponse.json(
       { error: 'Failed to update tool' },
       { status: 500 }
@@ -112,6 +130,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let existingTool
   try {
     const session = await getServerSession(authOptions)
 
@@ -124,7 +143,7 @@ export async function DELETE(
 
     // Get the tool to check ownership
     const { id } = await params
-    const existingTool = await getToolBySlug(id)
+    existingTool = await getToolBySlug(id)
 
     if (!existingTool) {
       return NextResponse.json(
@@ -144,7 +163,10 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting tool:', error)
+    logger.serverError(error instanceof Error ? error : String(error), {
+      endpoint: 'DELETE /api/tools/[id]',
+      toolId: existingTool?.id
+    })
     return NextResponse.json(
       { error: 'Failed to delete tool' },
       { status: 500 }

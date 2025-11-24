@@ -55,21 +55,20 @@ export const authOptions: NextAuthOptions = {
                 throw new Error('Email and password required')
               }
 
+              // Only look up active users - deleted accounts cannot be restored via login
               const user = await prisma.user.findUnique({
-                where: { email: credentials.email },
+                where: {
+                  email: credentials.email,
+                  isDeleted: false // Explicitly exclude deleted users
+                },
               })
 
               if (!user || !user.passwordHash) {
                 throw new Error('Invalid credentials')
               }
 
-              // Check if user is soft deleted
-              if (user.isDeleted) {
-                throw new Error('This account has been deleted')
-              }
-
+              // Verify password
               const isValid = await bcrypt.compare(credentials.password, user.passwordHash)
-
               if (!isValid) {
                 throw new Error('Invalid credentials')
               }
@@ -104,11 +103,13 @@ export const authOptions: NextAuthOptions = {
         // Fetch the user's username and check if deleted
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { username: true, isDeleted: true }
+          select: { username: true, isDeleted: true, email: true, name: true }
         })
 
-        // If user is deleted, return null to invalidate the session
+        // If user is deleted, do not allow sign in (no automatic restoration)
         if (dbUser?.isDeleted) {
+          // Deleted accounts cannot be restored automatically
+          // User must contact support for account restoration
           return null
         }
 
@@ -124,29 +125,32 @@ export const authOptions: NextAuthOptions = {
         // Generate username from name if not exists
         const existingUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { username: true, name: true }
+          select: { username: true, name: true, isDeleted: true }
         })
 
-        if (!existingUser?.username && existingUser?.name) {
-          // Generate username from name
-          let baseUsername = existingUser.name.toLowerCase().replace(/\s+/g, '')
-          let username = baseUsername
-          let counter = 1
+        // Only process if user is not deleted (or was just restored above)
+        if (!existingUser?.isDeleted) {
+          if (!existingUser?.username && existingUser?.name) {
+            // Generate username from name
+            let baseUsername = existingUser.name.toLowerCase().replace(/\s+/g, '')
+            let username = baseUsername
+            let counter = 1
 
-          // Check for uniqueness
-          while (await prisma.user.findUnique({ where: { username } })) {
-            username = `${baseUsername}${counter}`
-            counter++
+            // Check for uniqueness
+            while (await prisma.user.findUnique({ where: { username } })) {
+              username = `${baseUsername}${counter}`
+              counter++
+            }
+
+            updates.username = username
+            token.username = username
           }
 
-          updates.username = username
-          token.username = username
+          await prisma.user.update({
+            where: { id: token.id as string },
+            data: updates,
+          })
         }
-
-        await prisma.user.update({
-          where: { id: token.id as string },
-          data: updates,
-        })
       }
 
       return token

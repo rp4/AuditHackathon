@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { getUserFavorites, addFavorite, removeFavorite, isFavorited } from '@/lib/db/favorites'
+import { prisma } from '@/lib/prisma/client'
+import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
 // GET /api/favorites - Get user's favorited tools
@@ -51,6 +53,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { toolId } = favoriteSchema.parse(body)
 
+    // Validate that the tool exists and is not deleted
+    const tool = await prisma.tool.findUnique({
+      where: { id: toolId },
+      select: { id: true, isDeleted: true }
+    })
+
+    if (!tool || tool.isDeleted) {
+      return NextResponse.json(
+        { error: 'Tool not found' },
+        { status: 404 }
+      )
+    }
+
     // Check if already favorited
     const alreadyFavorited = await isFavorited(session.user.id, toolId)
     if (alreadyFavorited) {
@@ -71,7 +86,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Error adding favorite:', error)
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'POST /api/favorites' })
     return NextResponse.json(
       { error: 'Failed to add favorite' },
       { status: 500 }

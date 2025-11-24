@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { bucket } from '@/lib/storage/client'
+import { logger } from '@/lib/utils/logger'
 import { randomUUID } from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
       type: file.type,
     })
   } catch (error) {
-    console.error('Upload error:', error)
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'POST /api/upload' })
     return NextResponse.json(
       { error: 'Failed to upload file' },
       { status: 500 }

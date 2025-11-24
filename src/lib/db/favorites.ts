@@ -25,7 +25,12 @@ export async function isFavorited(userId: string, toolId: string): Promise<boole
 export async function getUserFavorites(userId: string, limit = 50, offset = 0) {
   const [favorites, total] = await Promise.all([
     prisma.favorite.findMany({
-      where: { userId },
+      where: {
+        userId,
+        tool: {
+          isDeleted: false // Only return favorites for active tools
+        }
+      },
       include: {
         tool: {
           include: {
@@ -49,7 +54,14 @@ export async function getUserFavorites(userId: string, limit = 50, offset = 0) {
       take: limit,
       skip: offset,
     }),
-    prisma.favorite.count({ where: { userId } }),
+    prisma.favorite.count({
+      where: {
+        userId,
+        tool: {
+          isDeleted: false
+        }
+      }
+    }),
   ])
 
   return {

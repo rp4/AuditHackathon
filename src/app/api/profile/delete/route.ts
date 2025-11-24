@@ -17,8 +17,59 @@ export async function DELETE() {
 
     const userId = session.user.id
 
-    // Start a transaction to soft delete user and their tools
+    // Start a transaction to soft delete user and their tools, and hard delete their interactions
     await prisma.$transaction(async (tx) => {
+      // Hard delete all user's ratings
+      await tx.rating.deleteMany({
+        where: {
+          userId: userId
+        }
+      })
+
+      // Hard delete all user's comments
+      await tx.comment.deleteMany({
+        where: {
+          userId: userId
+        }
+      })
+
+      // Hard delete all user's favorites
+      await tx.favorite.deleteMany({
+        where: {
+          userId: userId
+        }
+      })
+
+      // Hard delete all user's downloads
+      await tx.download.deleteMany({
+        where: {
+          userId: userId
+        }
+      })
+
+      // Hard delete all collection tools first (junction table)
+      const userCollections = await tx.collection.findMany({
+        where: { userId: userId },
+        select: { id: true }
+      })
+
+      if (userCollections.length > 0) {
+        await tx.collectionTool.deleteMany({
+          where: {
+            collectionId: {
+              in: userCollections.map(c => c.id)
+            }
+          }
+        })
+      }
+
+      // Hard delete all user's collections
+      await tx.collection.deleteMany({
+        where: {
+          userId: userId
+        }
+      })
+
       // Soft delete all user's tools
       await tx.tool.updateMany({
         where: {

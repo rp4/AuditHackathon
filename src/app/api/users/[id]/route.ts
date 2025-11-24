@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
+import { logger } from '@/lib/utils/logger'
 
 // GET /api/users/[id] - Get user profile (by ID or username)
 export async function GET(
@@ -9,12 +10,17 @@ export async function GET(
   try {
     const { id } = await params
 
-    // Try to find by username first, then by ID
+    // Try to find by username first, then by ID - only return active users
     const user = await prisma.user.findFirst({
       where: {
-        OR: [
-          { username: id },
-          { id: id }
+        AND: [
+          {
+            OR: [
+              { username: id },
+              { id: id }
+            ]
+          },
+          { isDeleted: false } // Only return active users
         ]
       },
       select: {
@@ -42,7 +48,7 @@ export async function GET(
 
     return NextResponse.json(user)
   } catch (error) {
-    console.error('Error fetching user:', error)
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'GET /api/users/[id]' })
     return NextResponse.json(
       { error: 'Failed to fetch user' },
       { status: 500 }

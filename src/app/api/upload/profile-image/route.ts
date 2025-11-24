@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { bucket } from '@/lib/storage/client'
 import { prisma } from '@/lib/prisma/client'
+import { logger } from '@/lib/utils/logger'
 
 // POST /api/upload/profile-image - Upload profile image directly
 export async function POST(request: NextRequest) {
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
       user: updatedUser,
     })
   } catch (error) {
-    console.error('Error uploading profile image:', error)
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'POST /api/upload/profile-image' })
     return NextResponse.json(
       { error: 'Failed to upload image' },
       { status: 500 }

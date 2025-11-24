@@ -27,18 +27,6 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   )
   const favorites = favoritesData?.favorites || []
 
-  // Debug logging
-  console.log('Profile Debug:', {
-    currentUserId: currentUser?.id,
-    currentUsername: currentUser?.username,
-    profileId: resolvedParams.id,
-    profileUserId: profile?.id,
-    profileUsername: profile?.username,
-    isOwnProfile,
-    currentUser,
-    profile
-  })
-
   if (loadingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
