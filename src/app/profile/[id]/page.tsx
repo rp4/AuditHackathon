@@ -181,7 +181,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                       No tools created yet
                     </p>
                     {isOwnProfile && (
-                      <Link href="/add">
+                      <Link href="/upload">
                         <Button variant="outline" size="lg">
                           <Upload className="mr-2 h-5 w-5" />
                           Upload Your First Tool

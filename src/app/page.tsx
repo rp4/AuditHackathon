@@ -49,7 +49,7 @@ export default async function HomePage() {
                 <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
             </Link>
-            <Link href="/add">
+            <Link href="/upload">
               <Button size="lg" variant="outline" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 bg-white hover:bg-gray-50">
                 Share Your Tool
               </Button>
