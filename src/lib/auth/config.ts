@@ -6,8 +6,50 @@ import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma/client'
 import type { Adapter } from 'next-auth/adapters'
 
+// Custom adapter that handles soft-deleted users
+function customPrismaAdapter(prisma: any): Adapter {
+  const baseAdapter = PrismaAdapter(prisma) as Adapter
+
+  return {
+    ...baseAdapter,
+    async getUserByEmail(email: string) {
+      // First try the base adapter
+      const user = await baseAdapter.getUserByEmail!(email)
+
+      // If no user found, check for soft-deleted users
+      if (!user) {
+        const deletedUser = await prisma.user.findFirst({
+          where: {
+            email: {
+              startsWith: 'deleted_'
+            },
+            isDeleted: true
+          }
+        })
+        return deletedUser
+      }
+
+      return user
+    },
+    async getUserByAccount({ providerAccountId, provider }) {
+      const account = await prisma.account.findUnique({
+        where: {
+          provider_providerAccountId: {
+            provider,
+            providerAccountId
+          }
+        },
+        select: { user: true }
+      })
+
+      // Return user even if soft-deleted so OAuth can proceed
+      return account?.user ?? null
+    },
+  }
+}
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as Adapter,
+  adapter: customPrismaAdapter(prisma),
 
   providers: [
     // LinkedIn OAuth for production
@@ -95,21 +137,46 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Check if this is a soft-deleted user trying to sign back in
+      if (user?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { isDeleted: true, email: true, name: true }
+        })
+
+        // If user is soft-deleted, restore their account
+        if (dbUser?.isDeleted) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              isDeleted: false,
+              deletedAt: null,
+              email: user.email || dbUser.email,
+              name: user.name || dbUser.name,
+              image: user.image || null,
+              // Profile fields remain cleared - user starts fresh
+            }
+          })
+        }
+      }
+
+      return true
+    },
+
     async jwt({ token, user, account, profile }) {
       // Initial sign in
       if (user) {
         token.id = user.id
 
-        // Fetch the user's username and check if deleted
+        // Fetch the user's username
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { username: true, isDeleted: true, email: true, name: true }
+          select: { username: true, isDeleted: true }
         })
 
-        // If user is deleted, do not allow sign in (no automatic restoration)
+        // Should not be deleted at this point (restored in signIn callback)
         if (dbUser?.isDeleted) {
-          // Deleted accounts cannot be restored automatically
-          // User must contact support for account restoration
           return null
         }
 

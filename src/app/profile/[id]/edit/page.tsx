@@ -397,32 +397,60 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                       Delete Profile
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="max-w-md">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription className="space-y-2">
-                        <span className="block">
-                          This action cannot be undone. This will permanently delete:
-                        </span>
-                        <ul className="list-disc list-inside space-y-1 mt-2">
-                          <li>Your profile and all personal information</li>
-                          <li>All tools you've created</li>
-                          <li>Your favorites, ratings, and comments</li>
-                          <li>Your collections</li>
-                        </ul>
-                        <span className="block mt-3 font-semibold text-red-600">
-                          You will be immediately logged out after deletion.
-                        </span>
+                      <AlertDialogTitle className="text-2xl font-bold text-red-600">
+                        Delete Account?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-4 pt-2">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <p className="text-sm font-semibold text-red-900 mb-2">
+                            ⚠️ This action cannot be undone
+                          </p>
+                          <p className="text-sm text-red-800">
+                            This will permanently delete your account and all associated data from our servers.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium text-gray-900">
+                            The following will be permanently deleted:
+                          </p>
+                          <ul className="space-y-2 text-sm text-gray-700">
+                            <li className="flex items-start gap-2">
+                              <span className="text-red-500 mt-0.5">•</span>
+                              <span>Your profile and all personal information</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-red-500 mt-0.5">•</span>
+                              <span>All tools and agents you've created</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-red-500 mt-0.5">•</span>
+                              <span>Your favorites, ratings, and comments</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-red-500 mt-0.5">•</span>
+                              <span>All collections you've created</span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                          <p className="text-sm text-yellow-900">
+                            <strong>Note:</strong> You will be immediately logged out after deletion.
+                          </p>
+                        </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel disabled={isDeletingProfile}>
+                    <AlertDialogFooter className="gap-2 sm:gap-2">
+                      <AlertDialogCancel disabled={isDeletingProfile} className="flex-1 sm:flex-none">
                         Cancel
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDeleteProfile}
                         disabled={isDeletingProfile}
-                        className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        className="bg-red-600 hover:bg-red-700 focus:ring-red-600 flex-1 sm:flex-none"
                       >
                         {isDeletingProfile ? (
                           <>
@@ -430,7 +458,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                             Deleting...
                           </>
                         ) : (
-                          'Delete My Profile'
+                          'Yes, Delete My Account'
                         )}
                       </AlertDialogAction>
                     </AlertDialogFooter>
