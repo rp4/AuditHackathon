@@ -70,6 +70,13 @@ export async function DELETE() {
         }
       })
 
+      // Hard delete all OAuth account connections (so user can reconnect fresh)
+      await tx.account.deleteMany({
+        where: {
+          userId: userId
+        }
+      })
+
       // Soft delete all user's tools
       await tx.tool.updateMany({
         where: {

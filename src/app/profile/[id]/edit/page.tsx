@@ -397,47 +397,47 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                       Delete Profile
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="max-w-md">
+                  <AlertDialogContent className="max-w-md bg-white">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-2xl font-bold text-red-600">
                         Delete Account?
                       </AlertDialogTitle>
                       <AlertDialogDescription className="space-y-4 pt-2">
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                          <p className="text-sm font-semibold text-red-900 mb-2">
+                        <div className="bg-red-100 border-2 border-red-300 rounded-lg p-4">
+                          <p className="text-sm font-bold text-red-900 mb-2">
                             ⚠️ This action cannot be undone
                           </p>
-                          <p className="text-sm text-red-800">
+                          <p className="text-sm font-medium text-red-900">
                             This will permanently delete your account and all associated data from our servers.
                           </p>
                         </div>
 
                         <div className="space-y-3">
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900">
                             The following will be permanently deleted:
                           </p>
-                          <ul className="space-y-2 text-sm text-gray-700">
+                          <ul className="space-y-2 text-sm text-gray-900">
                             <li className="flex items-start gap-2">
-                              <span className="text-red-500 mt-0.5">•</span>
-                              <span>Your profile and all personal information</span>
+                              <span className="text-red-600 font-bold mt-0.5">•</span>
+                              <span className="font-medium">Your profile and all personal information</span>
                             </li>
                             <li className="flex items-start gap-2">
-                              <span className="text-red-500 mt-0.5">•</span>
-                              <span>All tools and agents you've created</span>
+                              <span className="text-red-600 font-bold mt-0.5">•</span>
+                              <span className="font-medium">All tools and agents you've created</span>
                             </li>
                             <li className="flex items-start gap-2">
-                              <span className="text-red-500 mt-0.5">•</span>
-                              <span>Your favorites, ratings, and comments</span>
+                              <span className="text-red-600 font-bold mt-0.5">•</span>
+                              <span className="font-medium">Your favorites, ratings, and comments</span>
                             </li>
                             <li className="flex items-start gap-2">
-                              <span className="text-red-500 mt-0.5">•</span>
-                              <span>All collections you've created</span>
+                              <span className="text-red-600 font-bold mt-0.5">•</span>
+                              <span className="font-medium">All collections you've created</span>
                             </li>
                           </ul>
                         </div>
 
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <p className="text-sm text-yellow-900">
+                        <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3">
+                          <p className="text-sm font-semibold text-yellow-900">
                             <strong>Note:</strong> You will be immediately logged out after deletion.
                           </p>
                         </div>
