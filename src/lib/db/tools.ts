@@ -55,7 +55,7 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
   } = filters
 
   const where: Prisma.ToolWhereInput = {
-    is_public: isPublic,
+    ...(isPublic !== undefined && { is_public: isPublic }),
     isDeleted: false, // Filter out soft-deleted tools
     user: {
       isDeleted: false, // Filter out tools from deleted users

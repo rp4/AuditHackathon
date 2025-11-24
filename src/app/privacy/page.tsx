@@ -133,7 +133,7 @@ export default function PrivacyPage() {
               <li><strong>Privacy settings:</strong> Control what information is public</li>
             </ul>
             <p className="text-gray-700 leading-relaxed mt-4">
-              To exercise these rights, please contact us at privacy@audittoolbox.com or through your account settings.
+              To exercise these rights, please contact us at support@audittoolbox.com or through your account settings.
             </p>
           </section>
           <section>
@@ -163,7 +163,7 @@ export default function PrivacyPage() {
               If you have any questions about this Privacy Policy or our data practices, please contact us:
             </p>
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-              <p className="text-gray-700"><strong>Email:</strong> privacy@audittoolbox.com</p>
+              <p className="text-gray-700"><strong>Email:</strong> support@audittoolbox.com</p>
               <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditToolbox</p>
             </div>
           </section>

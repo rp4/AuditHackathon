@@ -10,12 +10,18 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
     const { searchParams } = new URL(request.url)
 
+    const userId = searchParams.get('userId') || undefined
+    const isOwnProfile = session?.user?.id && userId && session.user.id === userId
+
     const filters = {
       search: searchParams.get('search') || undefined,
       categoryId: searchParams.get('categoryId') || undefined,
       platformId: searchParams.get('platformId') || undefined,
-      userId: searchParams.get('userId') || undefined,
+      userId: userId,
       isFeatured: searchParams.get('featured') === 'true' ? true : undefined,
+      // If viewing own profile, show all tools (public and private)
+      // Otherwise, only show public tools
+      isPublic: isOwnProfile ? undefined : true,
       limit: parseInt(searchParams.get('limit') || '20'),
       offset: parseInt(searchParams.get('offset') || '0'),
       sortBy: (searchParams.get('sortBy') as any) || 'recent',

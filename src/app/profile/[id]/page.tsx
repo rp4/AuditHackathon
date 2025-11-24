@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ExternalLink, Loader2, Upload, LogOut, Edit, Globe } from 'lucide-react'
+import { Loader2, Upload, LogOut, Edit } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserTools, useUserProfile, useFavorites } from '@/hooks/useTools'
 import { ToolCard } from '@/components/tools/ToolCard'
@@ -142,26 +142,6 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              {isOwnProfile && (
-                <div className="flex gap-2 sm:gap-3">
-                  <Link href={`/profile/${profile.username || resolvedParams.id}/edit`}>
-                    <Button variant="outline" size="sm" className="sm:size-auto">
-                      <Edit className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Edit Profile</span>
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="sm:size-auto"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                  >
-                    <LogOut className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Sign Out</span>
-                  </Button>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -264,6 +244,27 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
         <div className="text-center mt-16 mb-8 text-base text-muted-foreground">
           Member since {formatJoinDate(profile.createdAt)}
         </div>
+
+        {/* Account Actions - Bottom Section */}
+        {isOwnProfile && (
+          <div className="flex justify-center gap-3 mt-16 pb-8">
+            <Link href={`/profile/${profile.username || resolvedParams.id}/edit`}>
+              <Button variant="outline" size="lg">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 dark:hover:bg-red-950 dark:hover:border-red-700"
+              onClick={() => signOut({ callbackUrl: '/' })}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

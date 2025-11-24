@@ -331,46 +331,40 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 />
               </div>
 
-              {/* LinkedIn */}
+              {/* LinkedIn Profile */}
               {formData.linkedin_url && (
-                <div className="space-y-3">
+                <div>
                   <Label>LinkedIn Profile</Label>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
-                    <Linkedin className="h-5 w-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Connected LinkedIn Account</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {formData.linkedin_url}
-                      </p>
+                  <div className="mt-2 space-y-2">
+                    <Input
+                      type="url"
+                      value={formData.linkedin_url}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="linkedin_visibility"
+                          checked={formData.linkedin_visible}
+                          onChange={() => setFormData({ ...formData, linkedin_visible: true })}
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm">Public</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="linkedin_visibility"
+                          checked={!formData.linkedin_visible}
+                          onChange={() => setFormData({ ...formData, linkedin_visible: false })}
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm">Private</span>
+                      </label>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg border bg-card">
-                    <Switch
-                      id="linkedin-visible"
-                      checked={formData.linkedin_visible}
-                      onCheckedChange={(checked) =>
-                        setFormData({ ...formData, linkedin_visible: checked })
-                      }
-                      className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-gray-300"
-                    />
-                    <Label
-                      htmlFor="linkedin-visible"
-                      className="text-sm font-normal cursor-pointer flex-1"
-                    >
-                      <span className="font-medium text-foreground">
-                        Show LinkedIn profile on my public profile page
-                      </span>
-                      <span className="block text-xs text-muted-foreground mt-1">
-                        {formData.linkedin_visible
-                          ? "✓ Your LinkedIn profile is visible to everyone"
-                          : "Your LinkedIn profile is hidden from public view"}
-                      </span>
-                    </Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Your LinkedIn profile is automatically connected through your sign-in.
-                    Toggle visibility to control whether others can see it.
-                  </p>
                 </div>
               )}
             </CardContent>
