@@ -383,7 +383,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 <div>
                   <h3 className="font-medium">Delete Profile</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Permanently delete your profile and all your created tools. This action cannot be undone.
+                    Delete your account and all associated data. You can rejoin anytime by signing in again.
                   </p>
                 </div>
                 <AlertDialog>
@@ -403,12 +403,12 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                         Delete Account?
                       </AlertDialogTitle>
                       <AlertDialogDescription className="space-y-4 pt-2">
-                        <div className="bg-red-100 border-2 border-red-300 rounded-lg p-4">
-                          <p className="text-sm font-bold text-red-900 mb-2">
-                            ⚠️ This action cannot be undone
+                        <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+                          <p className="text-sm font-bold text-amber-900 mb-2">
+                            ⚠️ Your account will be deactivated
                           </p>
-                          <p className="text-sm font-medium text-red-900">
-                            This will permanently delete your account and all associated data from our servers.
+                          <p className="text-sm font-medium text-amber-900">
+                            You can reactivate your account anytime by signing in again with LinkedIn.
                           </p>
                         </div>
 
@@ -419,11 +419,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           <ul className="space-y-2 text-sm text-gray-900">
                             <li className="flex items-start gap-2">
                               <span className="text-red-600 font-bold mt-0.5">•</span>
-                              <span className="font-medium">Your profile and all personal information</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-red-600 font-bold mt-0.5">•</span>
-                              <span className="font-medium">All tools and agents you've created</span>
+                              <span className="font-medium">All tools you've created</span>
                             </li>
                             <li className="flex items-start gap-2">
                               <span className="text-red-600 font-bold mt-0.5">•</span>
@@ -436,9 +432,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           </ul>
                         </div>
 
-                        <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3">
-                          <p className="text-sm font-semibold text-yellow-900">
-                            <strong>Note:</strong> You will be immediately logged out after deletion.
+                        <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3">
+                          <p className="text-sm font-medium text-blue-900">
+                            💡 Your profile information will be preserved. When you sign in again, you'll start fresh with no tools or activity.
                           </p>
                         </div>
                       </AlertDialogDescription>

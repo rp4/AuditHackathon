@@ -6,50 +6,8 @@ import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma/client'
 import type { Adapter } from 'next-auth/adapters'
 
-// Custom adapter that handles soft-deleted users
-function customPrismaAdapter(prisma: any): Adapter {
-  const baseAdapter = PrismaAdapter(prisma) as Adapter
-
-  return {
-    ...baseAdapter,
-    async getUserByEmail(email: string) {
-      // First try the base adapter
-      const user = await baseAdapter.getUserByEmail!(email)
-
-      // If no user found, check for soft-deleted users
-      if (!user) {
-        const deletedUser = await prisma.user.findFirst({
-          where: {
-            email: {
-              startsWith: 'deleted_'
-            },
-            isDeleted: true
-          }
-        })
-        return deletedUser
-      }
-
-      return user
-    },
-    async getUserByAccount({ providerAccountId, provider }) {
-      const account = await prisma.account.findUnique({
-        where: {
-          provider_providerAccountId: {
-            provider,
-            providerAccountId
-          }
-        },
-        select: { user: true }
-      })
-
-      // Return user even if soft-deleted so OAuth can proceed
-      return account?.user ?? null
-    },
-  }
-}
-
 export const authOptions: NextAuthOptions = {
-  adapter: customPrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as Adapter,
 
   providers: [
     // LinkedIn OAuth for production
@@ -97,23 +55,21 @@ export const authOptions: NextAuthOptions = {
                 throw new Error('Email and password required')
               }
 
-              // Only look up active users - deleted accounts cannot be restored via login
               const user = await prisma.user.findUnique({
-                where: {
-                  email: credentials.email,
-                  isDeleted: false // Explicitly exclude deleted users
-                },
+                where: { email: credentials.email },
               })
 
               if (!user || !user.passwordHash) {
                 throw new Error('Invalid credentials')
               }
 
-              // Verify password
               const isValid = await bcrypt.compare(credentials.password, user.passwordHash)
+
               if (!isValid) {
                 throw new Error('Invalid credentials')
               }
+
+              // Note: We allow deleted users to sign in - they'll be restored in signIn callback
 
               return {
                 id: user.id,
@@ -137,25 +93,21 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       // Check if this is a soft-deleted user trying to sign back in
       if (user?.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { isDeleted: true, email: true, name: true }
+          select: { isDeleted: true }
         })
 
-        // If user is soft-deleted, restore their account
+        // If user is soft-deleted, restore their account by flipping the flag
         if (dbUser?.isDeleted) {
           await prisma.user.update({
             where: { id: user.id },
             data: {
               isDeleted: false,
-              deletedAt: null,
-              email: user.email || dbUser.email,
-              name: user.name || dbUser.name,
-              image: user.image || null,
-              // Profile fields remain cleared - user starts fresh
+              deletedAt: null
             }
           })
         }

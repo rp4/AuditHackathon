@@ -70,12 +70,7 @@ export async function DELETE() {
         }
       })
 
-      // Hard delete all OAuth account connections (so user can reconnect fresh)
-      await tx.account.deleteMany({
-        where: {
-          userId: userId
-        }
-      })
+      // Note: We keep OAuth Account records so user can sign back in
 
       // Soft delete all user's tools
       await tx.tool.updateMany({
@@ -89,24 +84,15 @@ export async function DELETE() {
         }
       })
 
-      // Soft delete the user
+      // Soft delete the user - keep all data intact, just mark as deleted
       await tx.user.update({
         where: {
           id: userId
         },
         data: {
           isDeleted: true,
-          deletedAt: new Date(),
-          // Clear sensitive data while preserving the record
-          email: `deleted_${userId}@deleted.com`,
-          name: 'Deleted User',
-          username: null, // Free up the username for reuse
-          image: null,
-          bio: null,
-          linkedin_url: null,
-          website: null,
-          company: null,
-          role: null
+          deletedAt: new Date()
+          // Keep everything else: email, name, username, image, profile fields
         }
       })
 
