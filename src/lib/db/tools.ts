@@ -61,7 +61,16 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
       isDeleted: false, // Filter out tools from deleted users
     },
     ...(isFeatured !== undefined && { is_featured: isFeatured }),
-    ...(userId && { userId }),
+    // Handle both userId (ID) and username
+    ...(userId && {
+      user: {
+        OR: [
+          { id: userId },
+          { username: userId }
+        ],
+        isDeleted: false,
+      }
+    }),
     ...(categoryId && { categoryId }),
     ...(platformId && {
       tool_platforms: {

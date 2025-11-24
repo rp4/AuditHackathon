@@ -10,14 +10,27 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
     const { searchParams } = new URL(request.url)
 
-    const userId = searchParams.get('userId') || undefined
-    const isOwnProfile = session?.user?.id && userId && session.user.id === userId
+    const userIdOrUsername = searchParams.get('userId') || undefined
+
+    // Check if this is the user's own profile
+    // Need to handle both direct ID match and username match
+    let isOwnProfile = false
+    if (session?.user?.id && userIdOrUsername) {
+      // Direct ID match
+      if (session.user.id === userIdOrUsername) {
+        isOwnProfile = true
+      }
+      // Username match - need to check both ways
+      else if (session.user.username === userIdOrUsername) {
+        isOwnProfile = true
+      }
+    }
 
     const filters = {
       search: searchParams.get('search') || undefined,
       categoryId: searchParams.get('categoryId') || undefined,
       platformId: searchParams.get('platformId') || undefined,
-      userId: userId,
+      userId: userIdOrUsername,
       isFeatured: searchParams.get('featured') === 'true' ? true : undefined,
       // If viewing own profile, show all tools (public and private)
       // Otherwise, only show public tools
