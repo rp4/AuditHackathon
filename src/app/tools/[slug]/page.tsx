@@ -299,9 +299,6 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
           <Card>
             <CardHeader>
               <CardTitle>Documentation</CardTitle>
-              <CardDescription>
-                Setup instructions and configuration details
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div
@@ -319,9 +316,6 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
               <Star className="h-5 w-5" />
               Ratings & Reviews
             </CardTitle>
-            <CardDescription>
-              Share your experience and discuss this tool
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Rating Input */}
