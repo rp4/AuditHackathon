@@ -37,7 +37,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in px-4">
-            Discover, share, and implement cutting-edge AI tools across OpenAI, Claude, Gemini, and more.
+            Discover, share, and implement cutting-edge AI tools across Microsoft Copilot, OpenAI, Claude, Gemini, and more.
             Accelerate your audit workflows with community-tested solutions.
           </p>
 
@@ -83,8 +83,8 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 sm:py-32 px-4 bg-purple-600 text-white">
-        <div className="container mx-auto text-center">
+      <section className="relative py-20 sm:py-32 px-4 bg-purple-600 text-white">
+        <div className="container mx-auto text-center relative z-10">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6">
             Ready to 10x Your Audit Efficiency?
           </h2>
