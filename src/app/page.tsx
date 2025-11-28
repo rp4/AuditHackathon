@@ -4,6 +4,9 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 import { getFeaturedTools } from '@/lib/db/tools'
 import { ToolCard } from '@/components/tools/ToolCard'
 
+// Revalidate homepage every 60 seconds to show updated featured tools
+export const revalidate = 60
+
 export default async function HomePage() {
   // Fetch featured/trending tools
   let featuredTools: any[] = []
@@ -28,7 +31,7 @@ export default async function HomePage() {
         <div className="container mx-auto text-center relative z-10">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-semibold mb-8 animate-in">
-            Trusted by Auditors Worldwide
+            #1 Open Source Audit Platform
           </div>
 
           {/* Main heading */}
@@ -83,7 +86,7 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-20 sm:py-32 px-4 bg-purple-600 text-white">
+      {/* <section className="relative py-20 sm:py-32 px-4 bg-purple-600 text-white">
         <div className="container mx-auto text-center relative z-10">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6">
             Ready to 10x Your Audit Efficiency?
@@ -99,7 +102,7 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   )
 }

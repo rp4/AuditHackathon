@@ -4,6 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "dev:proxy": "./cloud-sql-proxy --port 5433 toolbox-478717:us-central1:toolbox-db",
+    "dev:all": "concurrently \"npm run dev:proxy\" \"npm run dev\" --names \"proxy,next\" --prefix-colors \"blue,green\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -89,6 +91,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/jest": "^30.0.0",
+    "concurrently": "^9.2.1",
     "dotenv": "^17.2.3",
     "eslint": "^9.38.0",
     "eslint-config-next": "^16.0.1",
