@@ -39,7 +39,7 @@ interface ToolCardProps {
 function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
   return (
     <Link href={`/tools/${tool.slug}`}>
-      <Card className="h-full hover:shadow-lg transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer bg-white">
+      <Card className="h-full hover:shadow-xl transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer">
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
             <CardTitle className="text-lg line-clamp-2">{tool.name}</CardTitle>

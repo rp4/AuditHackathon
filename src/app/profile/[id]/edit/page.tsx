@@ -171,7 +171,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/30 to-transparent">
+    <div className="min-h-screen">
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">

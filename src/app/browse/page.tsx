@@ -85,7 +85,7 @@ export default function BrowsePage() {
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="space-y-4 py-4 border-t">
+            <div className="space-y-4 p-4 mt-4 rounded-xl bg-white/80 backdrop-blur-md border shadow-lg">
               {/* Sort Options */}
               <div>
                 <h3 className="font-semibold text-sm mb-2">Sort By</h3>

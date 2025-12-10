@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <Link href="/">
           <Button variant="ghost" className="mb-8">
@@ -19,10 +19,11 @@ export default function PrivacyPage() {
           </Button>
         </Link>
 
-        <h1 className="text-5xl font-black mb-4">Privacy Policy</h1>
-        <p className="text-gray-600 mb-8">Last updated: November 2025</p>
+        <div className="bg-white/80 backdrop-blur-md rounded-xl border shadow-lg p-8">
+          <h1 className="text-5xl font-black mb-4">Privacy Policy</h1>
+          <p className="text-gray-600 mb-8">Last updated: November 2025</p>
 
-        <div className="prose prose-lg max-w-none space-y-8">
+          <div className="prose prose-lg max-w-none space-y-8">
           <section>
             <h2 className="text-3xl font-bold mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
@@ -167,15 +168,16 @@ export default function PrivacyPage() {
               <p className="text-gray-700 mt-2"><strong>Platform:</strong> 🐝 AuditSwarm</p>
             </div>
           </section>
-        </div>
+          </div>
 
-        <div className="mt-12 pt-8 border-t">
-          <Link href="/">
-            <Button variant="outline" size="lg">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Return to Home
-            </Button>
-          </Link>
+          <div className="mt-12 pt-8 border-t">
+            <Link href="/">
+              <Button variant="outline" size="lg">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Return to Home
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
