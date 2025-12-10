@@ -26,10 +26,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Support multiple platformIds and categoryIds (comma-separated)
+    const platformIdsParam = searchParams.get('platformIds')
+    const categoryIdsParam = searchParams.get('categoryIds')
+
     const filters = {
       search: searchParams.get('search') || undefined,
       categoryId: searchParams.get('categoryId') || undefined,
+      categoryIds: categoryIdsParam ? categoryIdsParam.split(',') : undefined,
       platformId: searchParams.get('platformId') || undefined,
+      platformIds: platformIdsParam ? platformIdsParam.split(',') : undefined,
       userId: userIdOrUsername,
       isFeatured: searchParams.get('featured') === 'true' ? true : undefined,
       // If viewing own profile, show all tools (public and private)

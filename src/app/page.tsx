@@ -18,14 +18,6 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col relative">
-      {/* Fixed Background decoration - Bee/Honeycomb theme */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-amber-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25"></div>
-        <div className="absolute top-40 right-10 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-20 left-1/4 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-25"></div>
-      </div>
-
       {/* Hero Section */}
       <section className="relative py-32 px-4">
         <div className="container mx-auto text-center relative z-10">
@@ -40,20 +32,20 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in px-4">
-            Discover, share, and implement cutting-edge AI tools across Microsoft Copilot, OpenAI, Claude, Gemini, and more.
+            Discover and share tools across Microsoft Copilot, OpenAI, Claude, Gemini, and more.
             Accelerate your audit workflows with community-tested solutions.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-in">
             <Link href="/browse">
-              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-amber-500 hover:bg-amber-600 text-black">
+              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-white border-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500 shadow-md">
                 Explore the Hive
                 <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
             </Link>
             <Link href="/upload">
-              <Button size="lg" variant="outline" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 border-amber-400 bg-white hover:bg-amber-50">
+              <Button size="lg" variant="outline" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-700">
                 Share Your Tool
               </Button>
             </Link>

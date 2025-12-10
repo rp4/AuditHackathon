@@ -28,7 +28,9 @@ export type ToolWithRelations = Prisma.ToolGetPayload<{
 export type ToolFilters = {
   search?: string
   categoryId?: string
+  categoryIds?: string[]
   platformId?: string
+  platformIds?: string[]
   userId?: string
   isFeatured?: boolean
   isPublic?: boolean
@@ -44,7 +46,9 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
   const {
     search,
     categoryId,
+    categoryIds,
     platformId,
+    platformIds,
     userId,
     isFeatured,
     isPublic = true,
@@ -71,12 +75,22 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
         isDeleted: false,
       }
     }),
-    ...(categoryId && { categoryId }),
-    ...(platformId && {
-      tool_platforms: {
-        some: { platformId },
-      },
-    }),
+    // Support single categoryId or multiple categoryIds (OR logic)
+    ...(categoryIds && categoryIds.length > 0
+      ? { categoryId: { in: categoryIds } }
+      : categoryId && { categoryId }),
+    // Support single platformId or multiple platformIds (OR logic)
+    ...(platformIds && platformIds.length > 0
+      ? {
+          tool_platforms: {
+            some: { platformId: { in: platformIds } },
+          },
+        }
+      : platformId && {
+          tool_platforms: {
+            some: { platformId },
+          },
+        }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: 'insensitive' } },

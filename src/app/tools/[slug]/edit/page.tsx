@@ -282,7 +282,7 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
               <Button
                 type="submit"
                 disabled={updateTool.isPending}
-                className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black"
+                className="flex-1 bg-white border-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500 shadow-md"
               >
                 {updateTool.isPending ? (
                   <>

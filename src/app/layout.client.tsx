@@ -40,6 +40,17 @@ export function RootLayoutClient({
       <SessionProvider>
         <QueryProvider>
         <Toaster position="top-right" richColors closeButton />
+        {/* Fixed Honeycomb Background - appears on all pages */}
+        <div
+          className="fixed inset-0 pointer-events-none -z-10"
+          style={{
+            backgroundImage: 'url(/honeycomb.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
+          }}
+        />
         {isBrowsePage ? (
           <div className="h-screen flex flex-col overflow-hidden">
             <div

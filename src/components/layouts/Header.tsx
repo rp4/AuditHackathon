@@ -53,7 +53,7 @@ export default function Header() {
   }
 
   return (
-    <header className={`border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <header className={`border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
         <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
           <div className="bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-amber-500/50 flex items-center justify-center">

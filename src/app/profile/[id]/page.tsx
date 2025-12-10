@@ -25,7 +25,11 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
     currentUser.id === profile.id ||
     (profile.username && currentUser.username === profile.username)
   )
-  const favorites = favoritesData?.favorites || []
+  // Mark all favorites as favorited since they're in the favorites list
+  const favorites = (favoritesData?.favorites || []).map((tool: any) => ({
+    ...tool,
+    isFavorited: true,
+  }))
 
   if (loadingProfile) {
     return (

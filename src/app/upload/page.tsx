@@ -243,7 +243,7 @@ export default function UploadPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black"
+              className="w-full bg-white border-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500 shadow-md"
               size="lg"
             >
               {loading ? (
