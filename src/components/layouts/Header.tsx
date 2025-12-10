@@ -61,7 +61,7 @@ export default function Header() {
           </div>
           <div className="flex flex-col">
             <span className="font-black text-lg sm:text-xl md:text-3xl">AuditSwarm</span>
-            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">The Hive Mind for Auditors</span>
+            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">For Auditors, By Auditors</span>
           </div>
         </Link>
 

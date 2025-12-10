@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Privacy Policy - AuditSwarm",
-  description: "Privacy Policy for AuditSwarm - The Hive Mind for Audit Innovation",
+  description: "Privacy Policy for AuditSwarm - AI Tool Sharing Platform for Auditors",
 }
 
 export default function PrivacyPage() {

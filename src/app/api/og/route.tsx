@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
   // Sanitize all inputs
   const title = sanitizeInput(searchParams.get('title'), 200) || 'AuditSwarm'
-  const description = sanitizeInput(searchParams.get('description'), 300) || 'The Hive Mind for Audit Innovation'
+  const description = sanitizeInput(searchParams.get('description'), 300) || 'For Auditors, By Auditors'
   const author = sanitizeInput(searchParams.get('author'), 100)
   const ratingParam = searchParams.get('rating')
   const rating = ratingParam ? Math.min(Math.max(parseFloat(ratingParam), 0), 5).toFixed(1) : null

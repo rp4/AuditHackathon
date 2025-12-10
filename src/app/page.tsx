@@ -40,8 +40,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in px-4">
-            Join the hive. Discover, share, and implement cutting-edge AI tools across Microsoft Copilot, OpenAI, Claude, Gemini, and more.
-            Accelerate your audit workflows with swarm intelligence.
+            Discover, share, and implement cutting-edge AI tools across Microsoft Copilot, OpenAI, Claude, Gemini, and more.
+            Accelerate your audit workflows with community-tested solutions.
           </p>
 
           {/* CTA Buttons */}

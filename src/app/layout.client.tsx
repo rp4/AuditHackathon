@@ -66,7 +66,7 @@ export function RootLayoutClient({
                   <div className="flex flex-col items-center text-center">
                     <h3 className="font-semibold mb-2">🐝 AuditSwarm</h3>
                     <p className="text-sm text-muted-foreground mb-6">
-                      The hive mind for sharing audit tools
+                      The premier platform for sharing audit tools
                     </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>© 2025 AuditSwarm. All rights reserved.</span>
