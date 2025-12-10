@@ -64,12 +64,12 @@ export function RootLayoutClient({
               <footer className="bg-muted mt-auto">
                 <div className="container mx-auto px-4 py-8">
                   <div className="flex flex-col items-center text-center">
-                    <h3 className="font-semibold mb-2">Audit Toolbox</h3>
+                    <h3 className="font-semibold mb-2">🐝 AuditSwarm</h3>
                     <p className="text-sm text-muted-foreground mb-6">
-                      The premier platform for sharing audit tools
+                      The hive mind for sharing audit tools
                     </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>© 2025 Audit Toolbox. All rights reserved.</span>
+                      <span>© 2025 AuditSwarm. All rights reserved.</span>
                       <span>•</span>
                       <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
                     </div>

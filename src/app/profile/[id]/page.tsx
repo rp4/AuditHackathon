@@ -79,10 +79,10 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                     <img
                       src={profile.image}
                       alt={profile.name || profile.email}
-                      className="h-32 w-32 rounded-full object-cover ring-4 ring-purple-200"
+                      className="h-32 w-32 rounded-full object-cover ring-4 ring-amber-200"
                     />
                   ) : (
-                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-5xl font-bold text-white ring-4 ring-purple-200">
+                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-5xl font-bold text-white ring-4 ring-amber-200">
                       {(profile.name || profile.email).charAt(0).toUpperCase()}
                     </div>
                   )}

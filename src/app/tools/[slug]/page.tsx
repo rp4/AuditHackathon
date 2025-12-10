@@ -192,7 +192,7 @@ export default function ToolDetailPage({ params }: { params: Promise<{ slug: str
               tool.tool_platforms.map((tp: any) => (
                 <Badge
                   key={tp.id}
-                  className="bg-purple-100 text-purple-700 border-purple-200"
+                  className="bg-amber-100 text-amber-700 border-amber-200"
                 >
                   {tp.platform.name}
                 </Badge>

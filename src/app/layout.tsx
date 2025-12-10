@@ -12,36 +12,36 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Audit Toolbox - AI Tool Sharing Platform for Auditors",
-    template: "%s | Audit Toolbox"
+    default: "AuditSwarm - AI Tool Sharing Platform for Auditors",
+    template: "%s | AuditSwarm"
   },
   icons: {
-    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧰</text></svg>',
+    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐝</text></svg>',
   },
-  description: "Discover, share, and collaborate on platform-agnostic AI tools for audit automation. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot.",
-  keywords: ["AI tools", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents"],
-  authors: [{ name: "OpenAuditSwarms" }],
-  creator: "OpenAuditSwarms",
-  publisher: "OpenAuditSwarms",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://openauditswarms.com'),
+  description: "Discover, share, and collaborate on platform-agnostic AI tools for audit automation. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot. The hive mind for audit innovation.",
+  keywords: ["AI tools", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents", "AuditSwarm"],
+  authors: [{ name: "AuditSwarm" }],
+  creator: "AuditSwarm",
+  publisher: "AuditSwarm",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://auditswarm.com'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'OpenAuditSwarms - AI Tool Sharing Platform',
-    description: 'Discover and share platform-agnostic AI tools for audit automation',
-    siteName: 'OpenAuditSwarms',
+    title: 'AuditSwarm - AI Tool Sharing Platform',
+    description: 'The hive mind for audit innovation. Discover and share platform-agnostic AI tools for audit automation.',
+    siteName: 'AuditSwarm',
     images: [{
       url: '/og-image.png',
       width: 1200,
       height: 630,
-      alt: 'OpenAuditSwarms Platform',
+      alt: 'AuditSwarm Platform',
     }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'OpenAuditSwarms - AI Tool Sharing Platform',
-    description: 'Discover and share platform-agnostic AI tools for audit automation',
+    title: 'AuditSwarm - AI Tool Sharing Platform',
+    description: 'The hive mind for audit innovation. Discover and share platform-agnostic AI tools for audit automation.',
     images: ['/og-image.png'],
   },
   robots: {

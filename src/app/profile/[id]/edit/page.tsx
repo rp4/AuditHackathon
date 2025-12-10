@@ -171,7 +171,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50/30 to-transparent">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50/30 to-transparent">
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
@@ -207,7 +207,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                       className="h-20 w-20 rounded-full object-cover border-4 border-white shadow-md"
                     />
                   ) : (
-                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-2xl font-bold text-white border-4 border-white shadow-md">
+                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-2xl font-bold text-white border-4 border-white shadow-md">
                       {(formData.name || formData.email).charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -349,7 +349,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           name="linkedin_visibility"
                           checked={formData.linkedin_visible}
                           onChange={() => setFormData({ ...formData, linkedin_visible: true })}
-                          className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                          className="h-4 w-4 text-amber-600 focus:ring-amber-500"
                         />
                         <span className="text-sm">Public</span>
                       </label>
@@ -359,7 +359,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           name="linkedin_visibility"
                           checked={!formData.linkedin_visible}
                           onChange={() => setFormData({ ...formData, linkedin_visible: false })}
-                          className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                          className="h-4 w-4 text-amber-600 focus:ring-amber-500"
                         />
                         <span className="text-sm">Private</span>
                       </label>

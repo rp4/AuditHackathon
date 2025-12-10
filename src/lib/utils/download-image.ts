@@ -28,7 +28,7 @@ export async function downloadImage(
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'OpenAuditSwarms/1.0',
+        'User-Agent': 'AuditSwarm/1.0',
       },
     })
 

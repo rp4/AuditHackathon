@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
 
   // Sanitize all inputs
-  const title = sanitizeInput(searchParams.get('title'), 200) || 'OpenAuditSwarms'
-  const description = sanitizeInput(searchParams.get('description'), 300) || 'AI Agent Sharing Platform for Auditors'
+  const title = sanitizeInput(searchParams.get('title'), 200) || 'AuditSwarm'
+  const description = sanitizeInput(searchParams.get('description'), 300) || 'The Hive Mind for Audit Innovation'
   const author = sanitizeInput(searchParams.get('author'), 100)
   const ratingParam = searchParams.get('rating')
   const rating = ratingParam ? Math.min(Math.max(parseFloat(ratingParam), 0), 5).toFixed(1) : null
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #1a1a1a 100%)',
           fontFamily: 'system-ui, sans-serif',
         }}
       >
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
               marginBottom: 20,
             }}
           >
-            🤖 OpenAuditSwarms
+            🐝 AuditSwarm
           </div>
         </div>
 

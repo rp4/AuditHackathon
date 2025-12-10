@@ -60,7 +60,7 @@ function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
               {tool.tool_platforms.map((tp) => (
                 <span
                   key={tp.id}
-                  className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium"
+                  className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium"
                 >
                   {tp.platform.name}
                 </span>

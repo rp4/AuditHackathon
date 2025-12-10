@@ -247,7 +247,7 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
                       variant={formData.platformIds.includes(platform.id) ? "default" : "outline"}
                       className={`cursor-pointer transition-all ${
                         formData.platformIds.includes(platform.id)
-                          ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200"
+                          ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200"
                           : "hover:bg-muted"
                       }`}
                       onClick={() => togglePlatform(platform.id)}
@@ -282,7 +282,7 @@ export default function EditToolPage({ params }: { params: Promise<{ slug: strin
               <Button
                 type="submit"
                 disabled={updateTool.isPending}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+                className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black"
               >
                 {updateTool.isPending ? (
                   <>

@@ -22,7 +22,7 @@ export async function generatePDFFromHTML(
   const {
     filename = 'document.pdf',
     title = 'Document',
-    author = 'OpenAuditSwarms',
+    author = 'AuditSwarm',
     orientation = 'portrait',
     margin = 20,
   } = options
@@ -77,7 +77,7 @@ export async function generatePDFFromHTML(
     pdf.setProperties({
       title,
       author,
-      creator: 'OpenAuditSwarms',
+      creator: 'AuditSwarm',
     })
 
     const imgData = canvas.toDataURL('image/png')
@@ -116,7 +116,7 @@ export function generatePDFFromText(
   const {
     filename = 'document.pdf',
     title = 'Document',
-    author = 'OpenAuditSwarms',
+    author = 'AuditSwarm',
     orientation = 'portrait',
     margin = 20,
   } = options
@@ -132,7 +132,7 @@ export function generatePDFFromText(
     pdf.setProperties({
       title,
       author,
-      creator: 'OpenAuditSwarms',
+      creator: 'AuditSwarm',
     })
 
     const pageWidth = orientation === 'portrait' ? 210 : 297

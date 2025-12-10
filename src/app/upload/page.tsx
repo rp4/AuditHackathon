@@ -209,7 +209,7 @@ export default function UploadPage() {
                     variant={selectedPlatforms.includes(platform.id) ? "default" : "outline"}
                     className={`cursor-pointer transition-all ${
                       selectedPlatforms.includes(platform.id)
-                        ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200"
+                        ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200"
                         : "hover:bg-muted"
                     } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                     onClick={() => !loading && togglePlatform(platform.id)}
@@ -243,7 +243,7 @@ export default function UploadPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black"
               size="lg"
             >
               {loading ? (

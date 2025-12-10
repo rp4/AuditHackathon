@@ -117,7 +117,7 @@ export default function BrowsePage() {
                       variant={selectedPlatformIds.includes(platform.id) ? "default" : "outline"}
                       className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
                         selectedPlatformIds.includes(platform.id)
-                          ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200"
+                          ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200"
                           : "hover:bg-muted"
                       }`}
                       onClick={() => togglePlatform(platform.id)}
@@ -180,7 +180,7 @@ export default function BrowsePage() {
                 return platform ? (
                   <Badge
                     key={platformId}
-                    className="cursor-pointer bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 transition-all duration-150 ease-out active:scale-95"
+                    className="cursor-pointer bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200 transition-all duration-150 ease-out active:scale-95"
                     onClick={() => togglePlatform(platformId)}
                   >
                     {platform.name} ×
