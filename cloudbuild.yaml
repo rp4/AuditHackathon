@@ -9,7 +9,7 @@ steps:
       - '--build-arg'
       - 'GCP_PROJECT_ID=toolbox-478717'
       - '--build-arg'
-      - 'NEXTAUTH_URL=https://audittoolbox.com'
+      - 'NEXTAUTH_URL=https://auditswarm.com'
       - '-t'
       - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
       - '-t'
