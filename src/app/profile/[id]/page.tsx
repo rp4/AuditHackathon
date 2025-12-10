@@ -140,10 +140,10 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
 
         {/* Tabs Section */}
         <Tabs defaultValue="created" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8 bg-transparent border-b rounded-none h-auto p-0">
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/80 backdrop-blur-md rounded-xl border shadow-lg h-auto p-2">
             <TabsTrigger
               value="created"
-              className="flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4"
+              className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700"
             >
               <Upload className="h-4 w-4" />
               Created Tools ({tools.length})
@@ -151,7 +151,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             {isOwnProfile && (
               <TabsTrigger
                 value="favorites"
-                className="flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4"
+                className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700"
               >
                 <svg
                   className="h-4 w-4"
@@ -178,7 +178,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : tools.length === 0 ? (
-              <Card className="shadow-sm bg-white">
+              <Card className="shadow-sm">
                 <CardContent className="py-20">
                   <div className="text-center">
                     <p className="text-muted-foreground mb-8 text-lg">

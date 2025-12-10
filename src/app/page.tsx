@@ -56,7 +56,6 @@ export default async function HomePage() {
             <div className="animate-in">
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-amber-500" />
                   <h2 className="text-2xl font-bold">Featured Tools</h2>
                 </div>
                 <Link href="/browse" className="hidden md:block">
