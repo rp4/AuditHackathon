@@ -5,6 +5,14 @@ import crypto from 'crypto'
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  const host = request.headers.get('host') || ''
+
+  // Redirect audittoolbox.com to auditswarm.com (301 permanent redirect)
+  if (host.includes('audittoolbox.com')) {
+    const newUrl = new URL(request.url)
+    newUrl.host = host.replace('audittoolbox.com', 'auditswarm.com')
+    return NextResponse.redirect(newUrl, 301)
+  }
 
   // Generate request ID for tracing
   const requestId = crypto.randomUUID()
