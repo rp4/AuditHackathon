@@ -39,7 +39,7 @@ export default async function HomePage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-in">
             <Link href="/browse">
-              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-white border-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500 shadow-md">
+              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-amber-500 hover:bg-amber-600 text-black border-0 shadow-md">
                 Explore the Hive
                 <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
