@@ -52,6 +52,8 @@ export default function Header() {
     }
   }
 
+  console.log('[Header] Rendering, isAuthenticated:', isAuthenticated)
+
   return (
     <header className={`border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
@@ -80,7 +82,6 @@ export default function Header() {
             </Link>
           )}
 
-          {console.log('[Header] Rendering, isAuthenticated:', isAuthenticated)}
           {isAuthenticated ? (
             <>
               {/* Desktop - show image only */}
