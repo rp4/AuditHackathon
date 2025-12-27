@@ -63,7 +63,6 @@
     "@types/react-dom": "^18.3.5",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.6",
-    "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",

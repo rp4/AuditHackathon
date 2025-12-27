@@ -80,6 +80,7 @@ export default function Header() {
             </Link>
           )}
 
+          {console.log('[Header] Rendering, isAuthenticated:', isAuthenticated)}
           {isAuthenticated ? (
             <>
               {/* Desktop - show image only */}
@@ -119,7 +120,10 @@ export default function Header() {
               </Link>
             </>
           ) : (
-            <Button variant="default" size="lg" className="text-sm sm:text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={() => signIn()}>
+            <Button variant="default" size="lg" className="text-sm sm:text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={() => {
+              console.log('[Header] Sign In button clicked')
+              signIn()
+            }}>
               Sign In
             </Button>
           )}
