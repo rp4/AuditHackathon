@@ -2,7 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { getSwarms, createSwarm } from '@/lib/db/swarms'
+import { prisma } from '@/lib/prisma/client'
 import { z } from 'zod'
+
+/**
+ * Generate a unique slug by appending a number if the base slug already exists
+ */
+async function generateUniqueSlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug
+  let counter = 1
+
+  // Check for slug uniqueness, append number if needed
+  while (await prisma.swarm.findFirst({ where: { slug } })) {
+    slug = `${baseSlug}-${counter}`
+    counter++
+  }
+
+  return slug
+}
 
 // GET /api/swarms - List swarms with filtering
 export async function GET(request: NextRequest) {
@@ -59,7 +76,7 @@ const createSwarmSchema = z.object({
   workflowEdges: z.string().optional(),
   workflowMetadata: z.string().optional(),
   image_url: z.string().url().optional(),
-  categoryId: z.string().optional(),
+  categoryId: z.string().min(1, "Category is required"),
   is_public: z.boolean().optional(),
 })
 
@@ -77,8 +94,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validated = createSwarmSchema.parse(body)
 
+    // Generate a unique slug (appending number if slug already exists)
+    const uniqueSlug = await generateUniqueSlug(validated.slug)
+
     const swarm = await createSwarm({
       ...validated,
+      slug: uniqueSlug,
       userId: session.user.id,
     })
 

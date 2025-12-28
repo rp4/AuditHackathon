@@ -16,7 +16,6 @@ import {
   PanelRightClose,
   PanelRight,
   AlertCircle,
-  Edit,
   Sparkles
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -186,13 +185,6 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
               Back
             </Button>
           </Link>
-          <div className="h-6 w-px bg-stone-200" />
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md shadow-amber-200">
-              <Edit className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-semibold text-stone-800">Edit Swarm</span>
-          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -217,25 +209,6 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             className="text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           >
             {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-          </Button>
-
-          <Button
-            onClick={handleSubmit}
-            disabled={updateSwarm.isPending || !formData.name || !formData.description}
-            size="sm"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg shadow-amber-200"
-          >
-            {updateSwarm.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </>
-            )}
           </Button>
         </div>
       </header>
@@ -360,42 +333,25 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
               </div>
             </div>
 
-            {/* Help Text */}
+            {/* Save Button */}
             <div className="pt-4 border-t border-stone-200">
-              <div className="space-y-3 text-sm text-stone-500">
-                <p className="font-medium text-stone-600">Quick Tips</p>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500 mt-0.5">•</span>
-                    Click "Add Artifact" to create workflow nodes
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500 mt-0.5">•</span>
-                    Drag from handles to connect nodes
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500 mt-0.5">•</span>
-                    Click nodes to edit their details
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500 mt-0.5">•</span>
-                    Use scroll to zoom in/out
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Cancel Button */}
-            <div className="pt-4">
-              <Link href={`/swarms/${resolvedParams.slug}`} className="block">
-                <Button
-                  variant="outline"
-                  className="w-full text-stone-600 border-stone-200 hover:bg-stone-50"
-                  disabled={updateSwarm.isPending}
-                >
-                  Cancel
-                </Button>
-              </Link>
+              <Button
+                onClick={handleSubmit}
+                disabled={updateSwarm.isPending || !formData.name || !formData.description}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg shadow-amber-200"
+              >
+                {updateSwarm.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </aside>

@@ -44,7 +44,7 @@ Each node represents an audit artifact or procedure step:
   "data": {
     "label": "[Short action-oriented title, 3-6 words]",
     "description": "[One sentence explaining what this step produces or accomplishes]",
-    "instructions": "[Detailed step-by-step instructions for completing this artifact. Include: (1) specific actions to take, (2) what to document, (3) key considerations, (4) reference to relevant standard sections. Use numbered lists for clarity. 50-150 words.]"
+    "instructions": "[Instructions formatted as a Claude skill prompt. Structure as: (1) Role/context setting, (2) Specific task to perform, (3) Input requirements, (4) Output format specification. The output should be a markdown file (.md) or JSON file (.json). Include reference to relevant standard sections. 75-200 words.]"
   }
 }
 ```
@@ -121,12 +121,23 @@ Node1(100,200) →                        → Node4(800,200)
 - Be specific: "Evaluate Access Controls" not "Review Controls"
 - Keep to 3-6 words
 
-### Instructions Content
-Include in each node's instructions:
-1. **What to do**: Specific actions (review, document, interview, test)
-2. **What to look for**: Key criteria, red flags, requirements
-3. **What to document**: Deliverables, evidence, findings format
-4. **Standard reference**: Cite specific sections (e.g., "per IIA Standard 2201")
+### Instructions Content (Claude Skill Format)
+
+Instructions should be written as **Claude skill prompts** that an AI agent can execute. Each instruction should produce a **markdown file (.md)** or **JSON file (.json)** as output.
+
+**Structure each instruction as:**
+1. **Role/Context**: Set the expertise context (e.g., "You are an internal audit specialist...")
+2. **Task**: Clear directive of what to accomplish
+3. **Inputs**: What information/documents the agent needs to review
+4. **Output Format**: Specify the deliverable format:
+   - Use markdown (.md) for narrative documents, memos, reports, checklists
+   - Use JSON (.json) for structured data, matrices, control mappings
+5. **Standard Reference**: Cite specific sections (e.g., "per IIA Standard 2201")
+
+**Example instruction:**
+```
+You are an internal audit specialist. Review the provided organizational chart and process documentation to identify all auditable entities. For each entity, document the owner, description, and risk factors. Output a markdown file with a table listing each auditable entity. Reference IIA Standard 2010 for planning requirements.
+```
 
 ### Creating Multiple Workflows
 Split into separate workflows when:
@@ -155,7 +166,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Identify Audit Universe",
                 "description": "Compile comprehensive list of all auditable entities and processes",
-                "instructions": "Create the audit universe by: (1) Reviewing organizational structure and business units, (2) Identifying key processes, systems, and third parties, (3) Consulting with management on strategic initiatives, (4) Reviewing prior audit coverage, (5) Documenting each auditable entity with owner and description. Reference IIA Standard 2010 for planning requirements."
+                "instructions": "You are an internal audit planning specialist. Review the organizational chart, business unit documentation, and prior audit reports provided. Identify all auditable entities including business units, key processes, IT systems, and third-party relationships. Output a markdown file containing a table with columns: Entity Name, Owner, Description, Last Audit Date, and Initial Risk Notes. Consult IIA Standard 2010 for planning requirements."
               }
             },
             {
@@ -165,7 +176,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Assess and Prioritize Risks",
                 "description": "Evaluate risks for each auditable entity using defined criteria",
-                "instructions": "For each audit universe item: (1) Assess inherent risk factors (financial impact, regulatory, operational, strategic), (2) Evaluate control environment maturity, (3) Consider time since last audit, (4) Calculate risk score using weighted criteria, (5) Rank entities by residual risk. Document methodology per IIA Standard 2010.A1."
+                "instructions": "You are a risk assessment specialist. Using the audit universe list and risk criteria matrix provided, evaluate each auditable entity against risk factors: financial impact, regulatory exposure, operational complexity, and strategic importance. Calculate weighted risk scores and rank entities by residual risk. Output a JSON file with an array of objects containing: entityId, inherentRiskScore, controlMaturity, residualRiskScore, and priorityRank. Follow IIA Standard 2010.A1 methodology."
               }
             },
             {
@@ -175,7 +186,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Allocate Audit Resources",
                 "description": "Match available resources to prioritized audit needs",
-                "instructions": "Develop resource plan: (1) Calculate total available audit hours, (2) Estimate hours per engagement by complexity, (3) Assign staff based on skills and availability, (4) Identify co-sourcing needs for specialized areas, (5) Build in contingency for ad-hoc requests (typically 15-20%). Document resource constraints per IIA Standard 2030."
+                "instructions": "You are an audit resource planning specialist. Review the prioritized risk assessment, staff roster with skills/certifications, and annual calendar provided. Match audit engagements to available resources based on expertise requirements and capacity. Output a markdown file with a resource allocation table showing: Engagement, Assigned Staff, Estimated Hours, Skill Requirements, and Timeline. Include a section noting co-sourcing needs and contingency allocation (15-20%). Reference IIA Standard 2030."
               }
             },
             {
@@ -185,7 +196,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Obtain Plan Approval",
                 "description": "Present audit plan to stakeholders for review and approval",
-                "instructions": "Finalize and approve plan: (1) Prepare executive summary with risk-based rationale, (2) Present to senior management for input, (3) Submit to Audit Committee for approval, (4) Document approval and any modifications, (5) Communicate approved plan to stakeholders. Ensure compliance with IIA Standard 2020 on communication."
+                "instructions": "You are an audit communications specialist. Using the completed resource allocation plan and risk assessment summary, prepare stakeholder presentation materials. Output a markdown file containing: an executive summary memo with risk-based rationale, key highlights for Audit Committee presentation, and a communication plan for stakeholders. Include sections for documenting approval signatures and any requested modifications. Follow IIA Standard 2020 communication requirements."
               }
             }
           ],
@@ -235,7 +246,9 @@ Before outputting, verify:
 - [ ] All edges reference valid source and target node IDs
 - [ ] Node positions follow dagre spacing (350px horizontal, 150px vertical)
 - [ ] Each workflow has 4-7 nodes (split if more needed)
-- [ ] Instructions are detailed (50-150 words each)
+- [ ] Instructions follow Claude skill format (role, task, inputs, output format)
+- [ ] Instructions specify output as markdown (.md) or JSON (.json) file
+- [ ] Instructions are detailed (75-200 words each)
 - [ ] Workflow names include phase prefix
 - [ ] All edges have `animated: true` and the indigo style
 - [ ] JSON is valid (no trailing commas, proper quotes)

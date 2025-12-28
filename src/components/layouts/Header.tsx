@@ -70,7 +70,7 @@ export default function Header() {
         <nav className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
           <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={handleAddClick}>
             <Upload className="h-5 w-5 md:h-6 md:w-6" />
-            <span className="hidden sm:inline">Add</span>
+            <span className="hidden sm:inline">Create</span>
           </Button>
 
           {isAdmin && (

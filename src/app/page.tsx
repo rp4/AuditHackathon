@@ -28,12 +28,12 @@ export default async function HomePage() {
 
           {/* Main heading */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-6 tracking-tight leading-[1.1] animate-in">
-            OpenAuditSwarms
+            AuditSwarm
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in px-4">
-            Discover, share, and import workflow templates for your auditing needs.
-            Create visual workflow diagrams and export them for use in AuditSwarm.
+            Discover, share, and save workflow templates for your auditing needs.
+            Create visual workflow diagrams and export them for use in your audits.
           </p>
 
           {/* CTA Buttons */}

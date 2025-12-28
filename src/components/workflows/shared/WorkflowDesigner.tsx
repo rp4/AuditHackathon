@@ -40,6 +40,7 @@ export interface WorkflowDesignerProps {
   onNodeClick?: (event: React.MouseEvent, node: Node) => void
   readOnly?: boolean
   saveButton?: React.ReactNode
+  selectedNodeId?: string | null
 }
 
 function WorkflowDesignerInner({
@@ -49,7 +50,8 @@ function WorkflowDesignerInner({
   onEdgesChange,
   onNodeClick,
   readOnly = false,
-  saveButton
+  saveButton,
+  selectedNodeId
 }: WorkflowDesignerProps) {
   const nodes = controlledNodes
   const edges = controlledEdges
@@ -126,7 +128,7 @@ function WorkflowDesignerInner({
     <div className="flex w-full" style={{ height: '100%', minHeight: '600px' }}>
       <div className="flex-1" style={{ height: '100%' }}>
         <ReactFlow
-          nodes={nodes.map(n => ({ ...n, data: { ...n.data, readOnly } }))}
+          nodes={nodes.map(n => ({ ...n, data: { ...n.data, readOnly, isSelected: n.id === selectedNodeId } }))}
           edges={edges}
           onNodesChange={readOnly ? undefined : handleNodesChange}
           onEdgesChange={readOnly ? undefined : handleEdgesChange}

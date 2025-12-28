@@ -20,6 +20,7 @@ export interface ArtifactNodeData {
   instructions?: string
   linkedAgentUrl?: string
   readOnly?: boolean
+  isSelected?: boolean
   [key: string]: unknown
 }
 
@@ -27,6 +28,7 @@ export const ArtifactNode = memo((props: NodeProps<ArtifactNodeData>) => {
   const { data, id } = props
   const { setNodes, setEdges } = useReactFlow()
   const readOnly = data.readOnly || false
+  const isSelected = data.isSelected || false
   const [showConfigForm, setShowConfigForm] = useState(false)
 
   const onDelete = useCallback(() => {
@@ -68,7 +70,10 @@ export const ArtifactNode = memo((props: NodeProps<ArtifactNodeData>) => {
       <div
         className={cn(
           'relative min-w-[280px] max-w-[320px] rounded-lg border-2 bg-white shadow-lg transition-all hover:shadow-xl',
-          'border-gray-300 cursor-pointer group'
+          'cursor-pointer group',
+          isSelected
+            ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-amber-200/50'
+            : 'border-gray-300'
         )}
       >
         <Handle

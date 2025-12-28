@@ -14,15 +14,15 @@ interface Stats {
     totalUsers: number
     newUsers: number
     activeUsers: number
-    totalTools: number
-    newTools: number
+    totalSwarms: number
+    newSwarms: number
   }
-  topViewedTools: any[]
-  topFavoritedTools: any[]
+  topViewedSwarms: any[]
+  topFavoritedSwarms: any[]
   recentProfiles: any[]
   charts: {
     userGrowth: Array<{ date: string; count: number }>
-    toolGrowth: Array<{ date: string; count: number }>
+    swarmGrowth: Array<{ date: string; count: number }>
   }
 }
 
@@ -112,9 +112,9 @@ export default function AdminDashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.overview.totalTools.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{stats.overview.totalSwarms.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              +{stats.overview.newTools} new
+              +{stats.overview.newSwarms} new
             </p>
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(stats.overview.totalTools / stats.overview.totalUsers).toFixed(2)}
+              {(stats.overview.totalSwarms / stats.overview.totalUsers).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">Per user</p>
           </CardContent>
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.topViewedTools.map((tool, index) => (
+                  {stats.topViewedSwarms.map((tool, index) => (
                     <div key={tool.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-muted-foreground w-6">
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.topFavoritedTools.map((tool, index) => (
+                  {stats.topFavoritedSwarms.map((tool, index) => (
                     <div key={tool.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-muted-foreground w-6">
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </p>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="secondary">{user._count.tools} tools</Badge>
+                        <Badge variant="secondary">{user._count.swarms} swarms</Badge>
                         <Badge variant="secondary">{user._count.favorites} favorites</Badge>
                       </div>
                     </div>

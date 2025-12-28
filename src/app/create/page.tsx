@@ -82,8 +82,8 @@ export default function UploadPage() {
     e.preventDefault()
     setError("")
 
-    if (!formData.name || !formData.description) {
-      setError("Name and description are required")
+    if (!formData.name || !formData.description || !selectedCategoryId) {
+      setError("Name, description, and category are required")
       return
     }
 
@@ -343,7 +343,7 @@ export default function UploadPage() {
 
             {/* Category */}
             <div className="space-y-2">
-              <Label className="text-stone-700 text-sm font-medium">Category</Label>
+              <Label className="text-stone-700 text-sm font-medium">Category <span className="text-amber-600">*</span></Label>
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => (
                   <Badge
@@ -366,7 +366,7 @@ export default function UploadPage() {
             <div className="pt-4 border-t border-stone-200">
               <Button
                 onClick={handleSubmit}
-                disabled={loading || !formData.name || !formData.description}
+                disabled={loading || !formData.name || !formData.description || !selectedCategoryId}
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg shadow-amber-200"
               >
                 {loading ? (

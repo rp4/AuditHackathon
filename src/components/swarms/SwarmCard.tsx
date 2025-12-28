@@ -34,6 +34,14 @@ interface SwarmCardProps {
   onSelect?: (id: string) => void
 }
 
+const categoryColors: Record<string, string> = {
+  'PrePlanning': 'bg-purple-100 text-purple-700',
+  'Planning': 'bg-blue-100 text-blue-700',
+  'Fieldwork': 'bg-amber-100 text-amber-700',
+  'Reporting': 'bg-emerald-100 text-emerald-700',
+  'Other': 'bg-stone-100 text-stone-600',
+}
+
 function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, isSelected = false, onSelect }: SwarmCardProps) {
   // Count nodes to show workflow complexity
   let nodeCount = 0
@@ -75,69 +83,63 @@ function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, i
         </CardDescription>
       </CardHeader>
         <CardContent className="space-y-4">
-          {/* Workflow Stats */}
-          {nodeCount > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <GitBranch className="h-4 w-4" />
-              <span>{nodeCount} workflow {nodeCount === 1 ? 'step' : 'steps'}</span>
-            </div>
-          )}
-
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-semibold">{swarm.rating_avg.toFixed(1)}</span>
-              {swarm.rating_count > 0 && (
-                <span className="text-muted-foreground">
-                  ({swarm.rating_count})
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              <Heart
-                className={`h-4 w-4 ${
-                  swarm.isFavorited
-                    ? 'fill-pink-500 text-pink-500'
-                    : 'text-muted-foreground'
-                }`}
-              />
-              <span className={swarm.isFavorited ? 'text-pink-500' : 'text-muted-foreground'}>
-                {swarm.favorites_count}
-              </span>
-            </div>
-          </div>
-
-          {/* Category */}
-          {swarm.category && (
-            <div className="inline-flex">
-              <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+          {/* Category & Workflow Stats */}
+          <div className="flex items-center justify-between">
+            {swarm.category && (
+              <span className={`text-xs px-3 py-1 rounded-full font-medium ${categoryColors[swarm.category.name] || 'bg-stone-100 text-stone-600'}`}>
                 {swarm.category.name}
               </span>
-            </div>
-          )}
+            )}
+            {!swarm.category && <div />}
+            {nodeCount > 0 && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <GitBranch className="h-4 w-4" />
+                <span>{nodeCount} {nodeCount === 1 ? 'step' : 'steps'}</span>
+              </div>
+            )}
+          </div>
 
-          {/* Author */}
+          {/* Author & Stats */}
           {showAuthor && swarm.user && (
-            <div className="flex items-center gap-2 pt-4 border-t">
-              {swarm.user.image ? (
-                <Image
-                  src={swarm.user.image}
-                  alt={swarm.user.name || swarm.user.email}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                  loading="lazy"
-                  sizes="24px"
-                />
-              ) : (
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
-                  {(swarm.user.name || swarm.user.email).charAt(0).toUpperCase()}
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="flex items-center gap-2">
+                {swarm.user.image ? (
+                  <Image
+                    src={swarm.user.image}
+                    alt={swarm.user.name || swarm.user.email}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                    loading="lazy"
+                    sizes="24px"
+                  />
+                ) : (
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
+                    {(swarm.user.name || swarm.user.email).charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {swarm.user.name || swarm.user.email}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold">{swarm.rating_avg.toFixed(1)}</span>
                 </div>
-              )}
-              <span className="text-sm text-muted-foreground">
-                {swarm.user.name || swarm.user.email}
-              </span>
+                <div className="flex items-center gap-1">
+                  <Heart
+                    className={`h-4 w-4 ${
+                      swarm.isFavorited
+                        ? 'fill-pink-500 text-pink-500'
+                        : 'text-muted-foreground'
+                    }`}
+                  />
+                  <span className={swarm.isFavorited ? 'text-pink-500' : 'text-muted-foreground'}>
+                    {swarm.favorites_count}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

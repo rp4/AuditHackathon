@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   ArrowLeft,
@@ -255,80 +256,113 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
               Browse
             </Button>
           </Link>
-          <div className="h-6 w-px bg-stone-200" />
-          <div className="flex items-center gap-3">
-            <h1 className="font-semibold text-stone-800 truncate max-w-md">{swarm.name}</h1>
-            {swarm.is_featured && (
-              <Badge className="bg-amber-100 text-amber-700 border-amber-200">Featured</Badge>
-            )}
-            {swarm.category && (
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                {swarm.category.name}
-              </Badge>
-            )}
-          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Action buttons */}
-          <Button
-            onClick={handleFavorite}
-            variant="ghost"
-            size="sm"
-            disabled={toggleFavorite.isPending}
-            className={isFavorited ? 'text-pink-600 hover:text-pink-700' : 'text-stone-600'}
-          >
-            <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
-          </Button>
-
-          <Button
-            onClick={handleExportWorkflow}
-            variant="ghost"
-            size="sm"
-            className="text-stone-600"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
-
-          <Button
-            onClick={handleShare}
-            variant="ghost"
-            size="sm"
-            className="text-stone-600"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-
-          {isOwner && (
-            <>
-              <Link href={`/swarms/${swarm.slug}/edit`}>
-                <Button variant="ghost" size="sm" className="text-stone-600">
-                  <Edit className="h-4 w-4" />
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center gap-2">
+            {/* Action buttons */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleFavorite}
+                  variant="ghost"
+                  size="sm"
+                  disabled={toggleFavorite.isPending}
+                  className={isFavorited ? 'text-pink-600 hover:text-pink-700' : 'text-stone-600'}
+                >
+                  <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
                 </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                disabled={deleteSwarm.isPending}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isFavorited ? 'Remove from favorites' : 'Add to favorites'}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <div className="h-6 w-px bg-stone-200" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleExportWorkflow}
+                  variant="ghost"
+                  size="sm"
+                  className="text-stone-600"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Download workflow</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-          >
-            {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-          </Button>
-        </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleShare}
+                  variant="ghost"
+                  size="sm"
+                  className="text-stone-600"
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy link to clipboard</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {isOwner && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={`/swarms/${swarm.slug}/edit`}>
+                      <Button variant="ghost" size="sm" className="text-stone-600">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit swarm</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDelete}
+                      disabled={deleteSwarm.isPending}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete swarm</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
+
+            <div className="h-6 w-px bg-stone-200" />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                >
+                  {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </header>
 
       {/* Main Content Area */}
@@ -357,6 +391,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                 onEdgesChange={() => {}}
                 onNodeClick={handleNodeClick}
                 readOnly={true}
+                selectedNodeId={selectedNode?.id}
               />
             ) : (
               <div className="h-full flex items-center justify-center">
@@ -421,7 +456,32 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
             <div className="flex-1 overflow-y-auto p-5">
               {activeTab === 'details' ? (
                 <div className="space-y-6">
-                  {/* Author */}
+                  {/* Title */}
+                  <div>
+                    <h1 className="text-xl font-semibold text-stone-800">{swarm.name}</h1>
+                    {swarm.is_featured && (
+                      <Badge className="mt-2 bg-amber-100 text-amber-700 border-amber-200">Featured</Badge>
+                    )}
+                  </div>
+
+                  {/* Category */}
+                  {swarm.category && (
+                    <div>
+                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                        {swarm.category.name}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <div>
+                    <h3 className="text-sm font-medium text-stone-600 mb-2">Description</h3>
+                    <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {swarm.description}
+                    </p>
+                  </div>
+
+                  {/* Creator and Updated Date */}
                   <div className="flex items-center gap-3">
                     <Link href={`/profile/${swarm.user.id}`}>
                       <Avatar className="h-10 w-10 ring-2 ring-stone-100">
@@ -442,14 +502,6 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                         Updated {new Date(swarm.updatedAt).toLocaleDateString()}
                       </p>
                     </div>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <h3 className="text-sm font-medium text-stone-600 mb-2">Description</h3>
-                    <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">
-                      {swarm.description}
-                    </p>
                   </div>
 
                   {/* Stats */}
