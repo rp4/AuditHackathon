@@ -468,7 +468,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                   {/* Category */}
                   {swarm.category && (
                     <div>
-                      <Badge variant="outline" className={getCategoryColor(swarm.category.name)}>
+                      <Badge variant="outline" className={getCategoryColor(swarm.category.name, true)}>
                         {swarm.category.name}
                       </Badge>
                     </div>

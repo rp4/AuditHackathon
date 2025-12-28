@@ -276,6 +276,10 @@ export async function getFeaturedSwarms(limit: number = 6) {
     where: {
       is_public: true,
       is_featured: true,
+      isDeleted: false,
+      user: {
+        isDeleted: false,
+      },
     },
     include: {
       user: {

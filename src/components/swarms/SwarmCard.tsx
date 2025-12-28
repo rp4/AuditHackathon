@@ -79,7 +79,7 @@ function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, i
           {/* Category & Workflow Stats */}
           <div className="flex items-center justify-between">
             {swarm.category && (
-              <span className={`text-xs px-3 py-1 rounded-full font-medium ${getCategoryColor(swarm.category.name)}`}>
+              <span className={`text-xs px-3 py-1 rounded-full font-medium ${getCategoryColor(swarm.category.name, true)}`}>
                 {swarm.category.name}
               </span>
             )}

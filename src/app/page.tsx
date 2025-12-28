@@ -32,8 +32,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-in px-4">
-            Discover, share, and save workflow templates for your auditing needs.
-            Create visual workflow diagrams and export them for use in your audits.
+            Move beyond prompt engineering.
+            Discover, share, and save workflow templates for all your auditing needs.
           </p>
 
           {/* CTA Buttons */}

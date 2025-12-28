@@ -15,6 +15,7 @@ export function RootLayoutClient({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const isLandingPage = pathname === '/'
   const isBrowsePage = pathname === '/browse'
   const isProfilePage = pathname?.startsWith('/profile/')
   const [showHeader, setShowHeader] = useState(true)
@@ -67,17 +68,17 @@ export function RootLayoutClient({
           </div>
         ) : (
           <>
-            <Header />
+            {!isLandingPage && <Header />}
             <main className="min-h-screen">
               {children}
             </main>
-            {!isProfilePage && (
+            {!isProfilePage && !isLandingPage && (
               <footer className="bg-muted mt-auto">
                 <div className="container mx-auto px-4 py-8">
                   <div className="flex flex-col items-center text-center">
                     <h3 className="font-semibold mb-2">🐝 AuditSwarm</h3>
                     <p className="text-sm text-muted-foreground mb-6">
-                      The premier platform for sharing audit tools
+                      The premier platform for sharing audit workflows
                     </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>© 2025 AuditSwarm. All rights reserved.</span>
