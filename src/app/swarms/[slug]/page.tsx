@@ -19,8 +19,12 @@ import {
   PanelRightClose,
   PanelRight,
   MessageSquare,
-  Eye
+  Eye,
+  FileText,
+  X,
+  Link as LinkIcon
 } from 'lucide-react'
+import type { Node } from 'reactflow'
 import { useSwarm, useToggleFavorite, useDeleteSwarm, useFavorites, useRateSwarm, useSwarmRatings, useUserRating } from '@/hooks/useSwarms'
 import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
@@ -46,7 +50,8 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
   const [localFavorited, setLocalFavorited] = useState<boolean | null>(null)
   const [localFavoritesCount, setLocalFavoritesCount] = useState<number | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeTab, setActiveTab] = useState<'details' | 'reviews'>('details')
+  const [activeTab, setActiveTab] = useState<'details' | 'reviews' | 'node'>('details')
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null)
 
   // Parse workflow data
   const workflowNodes = useMemo(() => {
@@ -196,6 +201,19 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
     })
   }
 
+  const handleNodeClick = (_event: React.MouseEvent, node: Node) => {
+    setSelectedNode(node)
+    setActiveTab('node')
+    if (!sidebarOpen) {
+      setSidebarOpen(true)
+    }
+  }
+
+  const handleCloseNodeView = () => {
+    setSelectedNode(null)
+    setActiveTab('details')
+  }
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-stone-50">
@@ -337,6 +355,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                 edges={workflowEdges}
                 onNodesChange={() => {}}
                 onEdgesChange={() => {}}
+                onNodeClick={handleNodeClick}
                 readOnly={true}
               />
             ) : (
@@ -383,6 +402,19 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                 <MessageSquare className="h-4 w-4" />
                 Reviews ({swarm.rating_count})
               </button>
+              {selectedNode && (
+                <button
+                  onClick={() => setActiveTab('node')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                    activeTab === 'node'
+                      ? 'text-amber-600 border-b-2 border-amber-500 bg-amber-50/50'
+                      : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  Node
+                </button>
+              )}
             </div>
 
             {/* Tab Content */}
@@ -453,7 +485,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                     Download Workflow JSON
                   </Button>
                 </div>
-              ) : (
+              ) : activeTab === 'reviews' ? (
                 <div className="space-y-6">
                   {/* Rating Input */}
                   {isAuthenticated ? (
@@ -554,7 +586,77 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                     )}
                   </div>
                 </div>
-              )}
+              ) : activeTab === 'node' && selectedNode ? (
+                <div className="space-y-6">
+                  {/* Node Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-stone-800">
+                          {selectedNode.data.label || 'Untitled Node'}
+                        </h3>
+                        <p className="text-xs text-stone-500">Artifact Node</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCloseNodeView}
+                      className="text-stone-400 hover:text-stone-600 -mr-2 -mt-1"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Description */}
+                  {selectedNode.data.description && (
+                    <div>
+                      <h4 className="text-sm font-medium text-stone-600 mb-2">Description</h4>
+                      <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap bg-stone-50 rounded-lg p-3">
+                        {selectedNode.data.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Instructions */}
+                  {selectedNode.data.instructions && (
+                    <div>
+                      <h4 className="text-sm font-medium text-stone-600 mb-2">Instructions</h4>
+                      <div className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap bg-stone-50 rounded-lg p-3 max-h-64 overflow-y-auto">
+                        {selectedNode.data.instructions}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Linked Agent URL */}
+                  {selectedNode.data.linkedAgentUrl && (
+                    <div>
+                      <h4 className="text-sm font-medium text-stone-600 mb-2">Linked Agent</h4>
+                      <a
+                        href={selectedNode.data.linkedAgentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 bg-blue-50 rounded-lg p-3"
+                      >
+                        <LinkIcon className="h-4 w-4" />
+                        <span className="truncate">{selectedNode.data.linkedAgentUrl}</span>
+                      </a>
+                    </div>
+                  )}
+
+                  {/* No configuration message */}
+                  {!selectedNode.data.description && !selectedNode.data.instructions && !selectedNode.data.linkedAgentUrl && (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-stone-500">
+                        This node has no additional configuration.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
           </div>
         </aside>

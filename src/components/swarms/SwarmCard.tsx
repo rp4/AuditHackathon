@@ -2,7 +2,7 @@ import { memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, Heart, GitBranch } from 'lucide-react'
+import { Star, Heart, GitBranch, Check } from 'lucide-react'
 
 interface SwarmCardProps {
   swarm: {
@@ -16,6 +16,7 @@ interface SwarmCardProps {
     favorites_count: number
     isFavorited?: boolean
     workflowNodes?: string
+    workflowEdges?: string
     category?: {
       id: string
       name: string
@@ -28,9 +29,12 @@ interface SwarmCardProps {
     }
   }
   showAuthor?: boolean
+  selectionMode?: boolean
+  isSelected?: boolean
+  onSelect?: (id: string) => void
 }
 
-function SwarmCardComponent({ swarm, showAuthor = true }: SwarmCardProps) {
+function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, isSelected = false, onSelect }: SwarmCardProps) {
   // Count nodes to show workflow complexity
   let nodeCount = 0
   try {
@@ -42,22 +46,34 @@ function SwarmCardComponent({ swarm, showAuthor = true }: SwarmCardProps) {
     // Ignore parse errors
   }
 
-  return (
-    <Link href={`/swarms/${swarm.slug}`}>
-      <Card className="h-full hover:shadow-xl transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer">
-        <CardHeader>
-          <div className="flex justify-between items-start mb-2">
-            <CardTitle className="text-lg line-clamp-2">{swarm.name}</CardTitle>
-            {swarm.is_featured && (
-              <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
-                Featured
-              </div>
-            )}
-          </div>
-          <CardDescription className="line-clamp-2">
-            {swarm.description}
-          </CardDescription>
-        </CardHeader>
+  const handleClick = (e: React.MouseEvent) => {
+    if (selectionMode && onSelect) {
+      e.preventDefault()
+      onSelect(swarm.id)
+    }
+  }
+
+  const cardContent = (
+    <Card className={`h-full hover:shadow-xl transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer relative ${isSelected ? 'ring-2 ring-amber-500 bg-amber-50/50' : ''}`}>
+      {/* Selection checkbox */}
+      {selectionMode && (
+        <div className={`absolute top-3 right-3 z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-amber-500 border-amber-500' : 'bg-white border-stone-300 hover:border-amber-400'}`}>
+          {isSelected && <Check className="h-4 w-4 text-white" />}
+        </div>
+      )}
+      <CardHeader>
+        <div className="flex justify-between items-start mb-2">
+          <CardTitle className="text-lg line-clamp-2 pr-8">{swarm.name}</CardTitle>
+          {swarm.is_featured && !selectionMode && (
+            <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+              Featured
+            </div>
+          )}
+        </div>
+        <CardDescription className="line-clamp-2">
+          {swarm.description}
+        </CardDescription>
+      </CardHeader>
         <CardContent className="space-y-4">
           {/* Workflow Stats */}
           {nodeCount > 0 && (
@@ -126,8 +142,13 @@ function SwarmCardComponent({ swarm, showAuthor = true }: SwarmCardProps) {
           )}
         </CardContent>
       </Card>
-    </Link>
-  )
+    )
+
+  if (selectionMode) {
+    return <div onClick={handleClick}>{cardContent}</div>
+  }
+
+  return <Link href={`/swarms/${swarm.slug}`}>{cardContent}</Link>
 }
 
 export const SwarmCard = memo(SwarmCardComponent)

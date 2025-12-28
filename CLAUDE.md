@@ -4,17 +4,18 @@ This file provides guidance to Claude Code agents (claude.ai/code) when working 
 
 ## Project Overview
 
-OpenAuditSwarms is an AI tool sharing platform for auditors. It allows auditors to share platform-agnostic AI tools (OpenAI, Google Gemini, Claude, LangChain, Copilot) with full documentation for recreation. The platform is deployed on Google Cloud Platform (GCP) using Cloud Run, Cloud SQL (PostgreSQL), and Cloud Storage.
+OpenAuditSwarms is a **workflow template marketplace** for auditors. Users can create, share, and download visual workflow diagrams using a React Flow canvas. Exported workflows are compatible with AuditSwarm-GCP's import system. The platform is deployed on Google Cloud Platform (GCP) using Cloud Run, Cloud SQL (PostgreSQL), and Cloud Storage.
 
-**Terminology Note**: Throughout this codebase and documentation, the terms "agent" and "tool" are used interchangeably to refer to the same concept - AI assistants/configurations shared on the platform.
+**Key Concept**: A "Swarm" is a workflow template consisting of connected artifact nodes that define an audit process flow.
 
 ## Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 14+ with App Router
 - **Styling**: Tailwind CSS
-- **UI Components**: Shadcn/ui or Radix UI
-- **State Management**: Zustand or Redux Toolkit
+- **UI Components**: Shadcn/ui and Radix UI
+- **Workflow Canvas**: React Flow 11.x
+- **State Management**: React Query (TanStack Query)
 - **Forms**: React Hook Form with Zod validation
 
 ### Backend
@@ -59,15 +60,6 @@ npx prisma studio
 
 ### Testing & Quality
 ```bash
-# Run tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run single test file
-npm test -- path/to/test.spec.ts
-
 # Type checking
 npm run type-check
 
@@ -114,95 +106,142 @@ gcloud run deploy openauditswarms \
 
 ### Database Schema Structure
 
-The application follows a user-centric model with these core relationships:
-- **Users** → **Profiles** (1:1) - Extended user information
-- **Users** → **Agents** (1:many) - Users create multiple tools
-- **Users** → **Favorites/Ratings/Downloads** (many:many with Agents) - Interaction tracking
-- **Agents** → **Comments** (1:many) - Threaded discussions
-- **Users** → **Collections** → **Agents** (many:many) - Curated tool lists
+The application follows a simplified user-centric model:
+- **Users** → **Swarms** (1:many) - Users create workflow templates
+- **Users** → **Favorites/Ratings/Downloads** (many:many with Swarms) - Interaction tracking
+- **Swarms** → **Comments** (1:many) - Threaded discussions
+- **Swarms** → **Categories** (many:1) - Single category per swarm
 
-**Note**: The platform uses **favorites** (saves) instead of upvotes for user engagement.
+**Swarm Model Fields:**
+- `workflowNodes` - JSON string of React Flow nodes
+- `workflowEdges` - JSON string of React Flow edges
+- `workflowMetadata` - JSON string of metadata (phase, standard, framework)
+- `workflowVersion` - Version string (default "1.0")
 
 ### Key Application Flows
 
-1. **Tool Upload Flow**
-   - Multi-step form captures platform-agnostic tool data
-   - Stores configurations as JSONB for flexibility
-   - Generates unique slug for URL routing
-   - Files uploaded to Google Cloud Storage
+1. **Swarm Creation Flow** (`/create`)
+   - Canvas-first UI with React Flow WorkflowDesigner
+   - Users add artifact nodes and connect them with edges
+   - Form sidebar for name, description, category
+   - JSON import for uploading existing workflows
+   - Submit saves workflow data as JSON strings
 
-2. **Discovery System**
-   - Full-text search using PostgreSQL capabilities
-   - Faceted filtering on platform, category, ratings
-   - Sorting algorithms factor in recency, popularity, and quality
+2. **Swarm View Flow** (`/swarms/[slug]`)
+   - Read-only React Flow canvas
+   - Click nodes to view configuration in sidebar
+   - Export to JSON for use in AuditSwarm-GCP
+   - Favorite, rate, and comment functionality
 
-3. **Authentication Flow**
-   - NextAuth.js with LinkedIn OAuth for professional networking
+3. **Browse & Discovery** (`/browse`)
+   - Multi-select mode for bulk downloads
+   - Category and search filtering
+   - Combined JSON export for selected workflows
+
+4. **Authentication Flow**
+   - NextAuth.js with LinkedIn OAuth
    - Guest users can browse but not interact
-   - Registered users can save favorites, rate, comment, and create tools
-   - Session-based authentication with JWT tokens
+   - Registered users can favorite, rate, comment, and create swarms
 
 ### Frontend Structure
 
 ```
 src/
 ├── app/                    # Next.js 14 App Router
-│   ├── (auth)/            # Auth-required routes
-│   ├── (public)/          # Public routes
-│   └── api/               # API routes (if needed)
+│   ├── create/            # Workflow creation page
+│   ├── browse/            # Browse/discover swarms
+│   ├── swarms/[slug]/     # Swarm detail & edit pages
+│   ├── admin/import/      # Bulk import page
+│   └── api/               # API routes
+│       ├── swarms/        # Swarm CRUD operations
+│       ├── favorites/     # Favorite operations
+│       ├── ratings/       # Rating operations
+│       └── categories/    # Category operations
 ├── components/
-│   ├── agents/            # Tool-related components
+│   ├── swarms/            # SwarmCard component
+│   ├── workflows/         # React Flow components
+│   │   └── shared/
+│   │       ├── WorkflowDesigner.tsx
+│   │       ├── nodes/ArtifactNode.tsx
+│   │       ├── edges/DeletableEdge.tsx
+│   │       └── forms/ArtifactNodeConfigForm.tsx
 │   ├── ui/                # Shadcn/ui components
 │   └── layouts/           # Layout components
+├── hooks/
+│   └── useSwarms.ts       # React Query hooks for swarms
 ├── lib/
-│   ├── api/               # API utilities and helpers
-│   ├── auth/              # Authentication configuration
-│   ├── db/                # Database utilities and Prisma client
+│   ├── db/
+│   │   ├── swarms.ts      # Swarm database operations
+│   │   ├── favorites.ts   # Favorite operations
+│   │   └── ratings.ts     # Rating operations
 │   └── utils/             # Utility functions
-├── hooks/                 # Custom React hooks
-└── types/                 # TypeScript type definitions
+└── types/
+    └── workflow.ts        # Workflow TypeScript types
 ```
 
-### Database Configuration
+### Workflow Data Structure
 
-The project uses Prisma ORM with PostgreSQL:
-- Public read access for tools marked as `is_public`
-- Authenticated write access for user's own content
-- Cascading deletes for data integrity
-- Optimized queries with selective field loading
+**Node Structure (ArtifactNode):**
+```typescript
+{
+  id: string
+  type: 'artifact'
+  position: { x: number, y: number }
+  data: {
+    label: string
+    description?: string
+    instructions?: string
+    linkedAgentUrl?: string
+  }
+}
+```
+
+**Export Format (AuditSwarm-GCP compatible):**
+```json
+{
+  "version": "1.0",
+  "data": {
+    "workflows": [{
+      "name": "Workflow Name",
+      "description": "Description",
+      "diagramJson": {
+        "nodes": [...],
+        "edges": [...],
+        "metadata": {}
+      }
+    }]
+  }
+}
+```
 
 ### State Management Patterns
 
-- **Server State**: React Query for API data fetching
-- **Client State**: Zustand for UI state (modals, filters)
-- **Form State**: React Hook Form for complex forms
+- **Server State**: React Query (TanStack Query) for API data
+- **Client State**: React useState for local UI state
+- **Workflow State**: React Flow for canvas state
 - **URL State**: Next.js router for shareable states
 
 ## Important Considerations
 
 ### Security
-- All user inputs must be sanitized before database storage
-- File uploads validated and stored in Google Cloud Storage
-- Rate limiting via Upstash Redis on all API routes
+- All user inputs sanitized before database storage
+- File uploads validated
+- Rate limiting via Upstash Redis on API routes
 - CSRF protection and security headers in middleware
-- Session-based authentication with secure cookies
 
 ### Performance
-- Implement pagination (limit 20-50 items per page)
-- Use Prisma's select queries efficiently (select only needed columns)
-- Lazy load images and heavy components
-- Cache tool data that doesn't change frequently
+- Implement pagination (limit 50 items per page)
+- Use Prisma's select queries efficiently
+- Lazy load workflow canvas components
+- Memoize React Flow node/edge components
 
-### Tool Data Structure
-Tools store platform-specific configurations in JSONB format. Each platform has different requirements:
-- **OpenAI**: Store complete assistant configuration JSON
-- **Claude**: Store constitution/system prompts
-- **Gemini**: Store model parameters and instructions
-- **LangChain**: Store chain configuration and dependencies
-- **Copilot**: Store extension settings
+### Workflow Canvas Tips
+- Use `readOnly={true}` for view-only mode
+- Pass `onNodeClick` handler for node selection
+- Workflow data stored as JSON strings in database
+- Parse/stringify when reading/writing workflow data
 
 ### SEO & Accessibility
 - Server-side render public pages for SEO
-- Implement proper meta tags for tool pages
-- Ensure WCAG 2.1 AA compliance
-- Add structured data for search engines
+- Implement proper meta tags for swarm pages
+- Ensure keyboard navigation in workflow canvas

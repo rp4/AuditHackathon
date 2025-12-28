@@ -5,9 +5,10 @@ import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Filter, Search, Star, Loader2 } from 'lucide-react'
+import { Filter, Search, Star, Loader2, CheckSquare, Square, Download, X } from 'lucide-react'
 import { useSwarms, useCategories } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
+import { toast } from 'sonner'
 
 export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -15,6 +16,8 @@ export default function BrowsePage() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'downloads'>('popular')
   const [showFilters, setShowFilters] = useState(false)
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedSwarmIds, setSelectedSwarmIds] = useState<Set<string>>(new Set())
 
   // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useCategories()
@@ -39,6 +42,81 @@ export default function BrowsePage() {
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     )
+  }
+
+  // Selection handlers
+  const toggleSwarmSelection = (swarmId: string) => {
+    setSelectedSwarmIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(swarmId)) {
+        newSet.delete(swarmId)
+      } else {
+        newSet.add(swarmId)
+      }
+      return newSet
+    })
+  }
+
+  const selectAll = () => {
+    setSelectedSwarmIds(new Set(swarms.map((s: any) => s.id)))
+  }
+
+  const clearSelection = () => {
+    setSelectedSwarmIds(new Set())
+  }
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false)
+    setSelectedSwarmIds(new Set())
+  }
+
+  // Download selected workflows as combined JSON
+  const downloadSelectedWorkflows = () => {
+    const selectedSwarms = swarms.filter((s: any) => selectedSwarmIds.has(s.id))
+
+    if (selectedSwarms.length === 0) {
+      toast.error('No workflows selected')
+      return
+    }
+
+    const workflows = selectedSwarms.map((swarm: any) => {
+      let nodes = []
+      let edges = []
+
+      try {
+        if (swarm.workflowNodes) nodes = JSON.parse(swarm.workflowNodes)
+        if (swarm.workflowEdges) edges = JSON.parse(swarm.workflowEdges)
+      } catch {
+        // Ignore parse errors
+      }
+
+      return {
+        name: swarm.name,
+        description: swarm.description,
+        diagramJson: {
+          nodes,
+          edges,
+          metadata: {}
+        }
+      }
+    })
+
+    const exportData = {
+      version: "1.0",
+      data: {
+        workflows
+      }
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `openauditswarms-workflows-${selectedSwarms.length}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    toast.success(`Downloaded ${selectedSwarms.length} workflow${selectedSwarms.length > 1 ? 's' : ''}`)
   }
 
   const isLoading = swarmsLoading || categoriesLoading
@@ -68,6 +146,15 @@ export default function BrowsePage() {
             >
               <Filter className="h-5 w-5" />
               <span className="hidden sm:inline">Filters</span>
+            </Button>
+            <Button
+              variant={selectionMode ? "default" : "outline"}
+              onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
+              size="lg"
+              className={`gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg ${selectionMode ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+            >
+              {selectionMode ? <X className="h-5 w-5" /> : <CheckSquare className="h-5 w-5" />}
+              <span className="hidden sm:inline">{selectionMode ? 'Cancel' : 'Select'}</span>
             </Button>
           </div>
 
@@ -177,11 +264,46 @@ export default function BrowsePage() {
             </div>
           )}
 
+          {/* Selection bar when in selection mode */}
+          {selectionMode && swarms.length > 0 && (
+            <div className="flex items-center justify-between mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-amber-800">
+                  {selectedSwarmIds.size} of {swarms.length} selected
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={selectAll}
+                  className="text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                >
+                  Select All
+                </Button>
+                {selectedSwarmIds.size > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSelection}
+                    className="text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                  >
+                    Clear Selection
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Swarms Grid */}
           {!isLoading && swarms.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {swarms.map((swarm: any) => (
-                <SwarmCard key={swarm.id} swarm={swarm} />
+                <SwarmCard
+                  key={swarm.id}
+                  swarm={swarm}
+                  selectionMode={selectionMode}
+                  isSelected={selectedSwarmIds.has(swarm.id)}
+                  onSelect={toggleSwarmSelection}
+                />
               ))}
             </div>
           )}
@@ -209,6 +331,34 @@ export default function BrowsePage() {
           )}
         </div>
       </div>
+
+      {/* Floating action bar when items are selected */}
+      {selectionMode && selectedSwarmIds.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 shadow-lg z-50">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="font-medium text-stone-800">
+                {selectedSwarmIds.size} workflow{selectedSwarmIds.size > 1 ? 's' : ''} selected
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={clearSelection}
+              >
+                Clear Selection
+              </Button>
+              <Button
+                onClick={downloadSelectedWorkflows}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download {selectedSwarmIds.size} Workflow{selectedSwarmIds.size > 1 ? 's' : ''}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
