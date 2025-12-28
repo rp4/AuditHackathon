@@ -38,7 +38,7 @@ import type { WorkflowExport } from '@/types/workflow'
 export default function SwarmDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, signIn } = useAuth()
   const { data: swarm, isLoading } = useSwarm(resolvedParams.slug)
   const { data: favorites } = useFavorites()
   const { data: ratings } = useSwarmRatings(swarm?.id || '')
@@ -93,6 +93,12 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
   const isFavorited = localFavorited === true
 
   const handleExportWorkflow = () => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to download workflows')
+      signIn(`/swarms/${resolvedParams.slug}`)
+      return
+    }
+
     if (!swarm) return
 
     const exportData: WorkflowExport = {

@@ -10,8 +10,10 @@ import { useSwarms, useCategories } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
 import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { toast } from 'sonner'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function BrowsePage() {
+  const { isAuthenticated, signIn } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
@@ -73,6 +75,12 @@ export default function BrowsePage() {
 
   // Download selected workflows as combined JSON
   const downloadSelectedWorkflows = () => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to download workflows')
+      signIn('/browse')
+      return
+    }
+
     const selectedSwarms = swarms.filter((s: any) => selectedSwarmIds.has(s.id))
 
     if (selectedSwarms.length === 0) {
