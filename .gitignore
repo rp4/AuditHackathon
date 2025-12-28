@@ -39,6 +39,9 @@ next-env.d.ts
 # GCP service account key
 service-account-key.json
 
+# Cloud SQL Proxy binary (download from https://cloud.google.com/sql/docs/mysql/sql-proxy)
+cloud-sql-proxy
+
 # Prisma
 prisma/*.db
 prisma/*.db-journal

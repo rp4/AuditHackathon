@@ -41,7 +41,7 @@ steps:
       - '--update-secrets'
       - 'DATABASE_URL=database-url:latest,NEXTAUTH_SECRET=nextauth-secret:latest,LINKEDIN_CLIENT_ID=linkedin-client-id:latest,LINKEDIN_CLIENT_SECRET=linkedin-client-secret:latest'
       - '--set-env-vars'
-      - 'NODE_ENV=production,GCP_PROJECT_ID=toolbox-478717,GCS_BUCKET_NAME=toolbox-478717-storage,NEXTAUTH_URL=https://audittoolbox.com'
+      - 'NODE_ENV=production,GCP_PROJECT_ID=toolbox-478717,GCS_BUCKET_NAME=toolbox-478717-storage,NEXTAUTH_URL=https://auditswarm.com'
       - '--min-instances'
       - '0'
       - '--max-instances'

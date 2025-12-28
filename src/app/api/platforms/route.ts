@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPlatforms, getPlatformsWithCounts } from '@/lib/db/categories'
+import { getPlatformsWithCounts } from '@/lib/db/categories'
 
 export async function GET() {
   try {

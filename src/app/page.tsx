@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { getFeaturedTools } from '@/lib/db/tools'
 import { ToolCard } from '@/components/tools/ToolCard'
 
@@ -76,24 +76,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      {/* <section className="relative py-20 sm:py-32 px-4 bg-purple-600 text-white">
-        <div className="container mx-auto text-center relative z-10">
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6">
-            Ready to 10x Your Audit Efficiency?
-          </h2>
-          <p className="text-lg sm:text-xl mb-12 max-w-2xl mx-auto opacity-90">
-            Join other audit innovators leveraging AI to deliver better, faster, and more accurate audits.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/browse">
-              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-white text-purple-600 hover:bg-gray-100">
-                Start Now
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section> */}
     </div>
   )
 }
