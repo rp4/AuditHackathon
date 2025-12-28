@@ -46,9 +46,9 @@ export default function Header() {
 
   const handleAddClick = () => {
     if (isAuthenticated) {
-      router.push('/upload')
+      router.push('/create')
     } else {
-      signIn('/upload')
+      signIn('/create')
     }
   }
 

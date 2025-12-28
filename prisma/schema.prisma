@@ -1,6 +1,5 @@
 // OpenAuditSwarms - Prisma Schema
-// Migrated from Supabase to Cloud SQL PostgreSQL
-// Renamed: agents → tools
+// Migrated from tools to swarms (workflow templates)
 
 generator client {
   provider = "prisma-client-js"
@@ -83,19 +82,18 @@ model User {
   // Relations
   accounts      Account[]
   sessions      Session[]
-  tools         Tool[]
+  swarms        Swarm[]
   favorites     Favorite[]
   ratings       Rating[]
   downloads     Download[]
   comments      Comment[]
-  collections   Collection[]
 
   @@index([email])
   @@index([username])
   @@map("users")
 }
 
-// Categories & Platforms
+// Categories (simplified - no platforms)
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -103,38 +101,27 @@ model Category {
   description String?  @db.Text
   createdAt   DateTime @default(now())
 
-  tools Tool[]
+  swarms Swarm[]
 
   @@index([slug])
   @@map("categories")
 }
 
-model Platform {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?  @db.Text
-  icon_url    String?
-  website     String?
-  createdAt   DateTime @default(now())
-
-  tool_platforms ToolPlatform[]
-
-  @@index([slug])
-  @@map("platforms")
-}
-
-// Tools (formerly agents)
-model Tool {
+// Swarms (workflow templates - formerly tools)
+model Swarm {
   id               String   @id @default(cuid())
   name             String
   slug             String   @unique
   description      String   @db.Text
-  documentation    String?  @db.Text
+
+  // Workflow fields (replacing documentation)
+  workflowNodes    String?  @db.Text  // JSON array of React Flow nodes
+  workflowEdges    String?  @db.Text  // JSON array of React Flow edges
+  workflowMetadata String?  @db.Text  // JSON object {phase, standard, framework}
+  workflowVersion  String   @default("1.0")
 
   // Media
   image_url        String?
-  demo_video_url   String?
 
   // Metadata
   userId           String
@@ -145,7 +132,7 @@ model Tool {
   is_featured      Boolean  @default(false)
 
   // Soft delete fields
-  deletedAt        DateTime? // When the tool was deleted
+  deletedAt        DateTime? // When the swarm was deleted
   isDeleted        Boolean  @default(false) // Flag for soft deletion
 
   // Stats (denormalized for performance)
@@ -163,69 +150,51 @@ model Tool {
   // Relations
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   category         Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tool_platforms   ToolPlatform[]
   favorites        Favorite[]
   ratings          Rating[]
   downloads        Download[]
   comments         Comment[]
-  collection_tools CollectionTool[]
-  versions         ToolVersion[]
+  versions         SwarmVersion[]
 
   @@index([slug])
   @@index([userId])
   @@index([categoryId])
   @@index([is_public, publishedAt])
   @@index([rating_avg, rating_count])
-  @@map("tools")
-}
-
-// Tool-Platform Junction (many-to-many)
-model ToolPlatform {
-  id         String   @id @default(cuid())
-  toolId     String
-  platformId String
-  createdAt  DateTime @default(now())
-
-  tool     Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
-  platform Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
-
-  @@unique([toolId, platformId])
-  @@index([toolId])
-  @@index([platformId])
-  @@map("tool_platforms")
+  @@map("swarms")
 }
 
 // User Interactions
 model Favorite {
   id        String   @id @default(cuid())
   userId    String
-  toolId    String
+  swarmId   String
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  swarm Swarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, toolId])
+  @@unique([userId, swarmId])
   @@index([userId])
-  @@index([toolId])
+  @@index([swarmId])
   @@map("favorites")
 }
 
 model Rating {
   id        String   @id @default(cuid())
   userId    String
-  toolId    String
+  swarmId   String
   rating    Int // 1-5 stars
   review    String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  swarm Swarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, toolId])
+  @@unique([userId, swarmId])
   @@index([userId])
-  @@index([toolId])
+  @@index([swarmId])
   @@index([rating])
   @@map("ratings")
 }
@@ -233,14 +202,14 @@ model Rating {
 model Download {
   id        String   @id @default(cuid())
   userId    String
-  toolId    String
+  swarmId   String
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  swarm Swarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([toolId])
+  @@index([swarmId])
   @@index([createdAt])
   @@map("downloads")
 }
@@ -250,69 +219,35 @@ model Comment {
   id        String   @id @default(cuid())
   content   String   @db.Text
   userId    String
-  toolId    String
+  swarmId   String
   parentId  String? // For nested comments
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tool     Tool      @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  swarm    Swarm     @relation(fields: [swarmId], references: [id], onDelete: Cascade)
   parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Comment[] @relation("CommentReplies")
 
   @@index([userId])
-  @@index([toolId])
+  @@index([swarmId])
   @@index([parentId])
   @@index([createdAt])
   @@map("comments")
 }
 
-// Collections
-model Collection {
-  id          String   @id @default(cuid())
-  name        String
-  description String?  @db.Text
-  userId      String
-  is_public   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  collection_tools CollectionTool[]
-
-  @@index([userId])
-  @@index([is_public])
-  @@map("collections")
-}
-
-model CollectionTool {
-  id           String   @id @default(cuid())
-  collectionId String
-  toolId       String
-  position     Int      @default(0) // For ordering within collection
-  createdAt    DateTime @default(now())
-
-  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  tool       Tool       @relation(fields: [toolId], references: [id], onDelete: Cascade)
-
-  @@unique([collectionId, toolId])
-  @@index([collectionId])
-  @@index([toolId])
-  @@map("collection_tools")
-}
-
-// Tool Versions (optional - for tracking changes)
-model ToolVersion {
+// Swarm Versions (for tracking changes)
+model SwarmVersion {
   id            String   @id @default(cuid())
-  toolId        String
+  swarmId       String
   version       String
   changelog     String?  @db.Text
-  configuration Json
+  configuration Json     // Full workflow snapshot
   createdAt     DateTime @default(now())
 
-  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  swarm Swarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
 
-  @@index([toolId])
+  @@index([swarmId])
   @@index([createdAt])
-  @@map("tool_versions")
+  @@map("swarm_versions")
 }

@@ -36,10 +36,10 @@ export async function GET(request: NextRequest) {
       totalUsers,
       newUsers,
       activeUsers,
-      totalTools,
-      newTools,
-      topViewedTools,
-      topFavoritedTools,
+      totalSwarms,
+      newSwarms,
+      topViewedSwarms,
+      topFavoritedSwarms,
       recentProfiles
     ] = await Promise.all([
       // Total users
@@ -55,12 +55,12 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Active users (users who created tools or interacted in timeframe)
+      // Active users (users who created swarms or interacted in timeframe)
       prisma.user.count({
         where: {
           isDeleted: false,
           OR: [
-            { tools: { some: { createdAt: dateFilter } } },
+            { swarms: { some: { createdAt: dateFilter } } },
             { favorites: { some: { createdAt: dateFilter } } },
             { ratings: { some: { createdAt: dateFilter } } },
             { downloads: { some: { createdAt: dateFilter } } },
@@ -69,21 +69,21 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Total tools
-      prisma.tool.count({
+      // Total swarms
+      prisma.swarm.count({
         where: { isDeleted: false }
       }),
 
-      // New tools (in timeframe)
-      prisma.tool.count({
+      // New swarms (in timeframe)
+      prisma.swarm.count({
         where: {
           isDeleted: false,
           createdAt: dateFilter
         }
       }),
 
-      // Top viewed tools (all time)
-      prisma.tool.findMany({
+      // Top viewed swarms (all time)
+      prisma.swarm.findMany({
         where: { isDeleted: false, is_public: true },
         orderBy: { views_count: 'desc' },
         take: 10,
@@ -104,8 +104,8 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Top favorited tools (all time)
-      prisma.tool.findMany({
+      // Top favorited swarms (all time)
+      prisma.swarm.findMany({
         where: { isDeleted: false, is_public: true },
         orderBy: { favorites_count: 'desc' },
         take: 10,
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
           createdAt: true,
           _count: {
             select: {
-              tools: true,
+              swarms: true,
               favorites: true
             }
           }
@@ -149,22 +149,22 @@ export async function GET(request: NextRequest) {
 
     // Get growth data for charts
     const userGrowth = await getGrowthData('user', timeframe)
-    const toolGrowth = await getGrowthData('tool', timeframe)
+    const swarmGrowth = await getGrowthData('swarm', timeframe)
 
     return NextResponse.json({
       overview: {
         totalUsers,
         newUsers,
         activeUsers,
-        totalTools,
-        newTools
+        totalSwarms,
+        newSwarms
       },
-      topViewedTools,
-      topFavoritedTools,
+      topViewedSwarms,
+      topFavoritedSwarms,
       recentProfiles,
       charts: {
         userGrowth,
-        toolGrowth
+        swarmGrowth
       }
     })
   } catch (error) {
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Helper function to get growth data for charts
-async function getGrowthData(model: 'user' | 'tool', timeframe: string) {
+async function getGrowthData(model: 'user' | 'swarm', timeframe: string) {
   const now = new Date()
   const data = []
 
@@ -201,7 +201,7 @@ async function getGrowthData(model: 'user' | 'tool', timeframe: string) {
 
     const count = model === 'user'
       ? await prisma.user.count({ where: whereClause })
-      : await prisma.tool.count({ where: whereClause })
+      : await prisma.swarm.count({ where: whereClause })
 
     data.push({
       date: start.toISOString().split('T')[0],

@@ -7,27 +7,27 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2, Upload, LogOut, Edit } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useUserTools, useUserProfile, useFavorites } from '@/hooks/useTools'
-import { ToolCard } from '@/components/tools/ToolCard'
+import { useUserSwarms, useUserProfile, useFavorites } from '@/hooks/useSwarms'
+import { SwarmCard } from '@/components/swarms/SwarmCard'
 import { signOut } from 'next-auth/react'
 
 export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const { user: currentUser } = useAuth()
   const { data: profile, isLoading: loadingProfile } = useUserProfile(resolvedParams.id)
-  const { data: tools = [], isLoading: loadingTools } = useUserTools(resolvedParams.id)
+  const { data: swarms = [], isLoading: loadingSwarms } = useUserSwarms(resolvedParams.id)
   const { data: favoritesData, isLoading: loadingFavorites } = useFavorites()
 
   // Check if the current user owns this profile
-  // Handle both ID and username comparisons
   const isOwnProfile = currentUser && profile && (
     currentUser.id === resolvedParams.id ||
     currentUser.id === profile.id ||
     (profile.username && currentUser.username === profile.username)
   )
+
   // Mark all favorites as favorited since they're in the favorites list
-  const favorites = (favoritesData?.favorites || []).map((tool: any) => ({
-    ...tool,
+  const favorites = (favoritesData?.favorites || []).map((swarm: any) => ({
+    ...swarm,
     isFavorited: true,
   }))
 
@@ -146,7 +146,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
               className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700"
             >
               <Upload className="h-4 w-4" />
-              Created Tools ({tools.length})
+              Created Swarms ({swarms.length})
             </TabsTrigger>
             {isOwnProfile && (
               <TabsTrigger
@@ -166,29 +166,29 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                Favorited Tools ({favorites.length})
+                Favorited Swarms ({favorites.length})
               </TabsTrigger>
             )}
           </TabsList>
 
-          {/* Created Tools Tab */}
+          {/* Created Swarms Tab */}
           <TabsContent value="created">
-            {loadingTools ? (
+            {loadingSwarms ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : tools.length === 0 ? (
+            ) : swarms.length === 0 ? (
               <Card className="shadow-sm">
                 <CardContent className="py-20">
                   <div className="text-center">
                     <p className="text-muted-foreground mb-8 text-lg">
-                      No tools created yet
+                      No workflow templates created yet
                     </p>
                     {isOwnProfile && (
-                      <Link href="/upload">
+                      <Link href="/create">
                         <Button variant="outline" size="lg">
                           <Upload className="mr-2 h-5 w-5" />
-                          Upload Your First Tool
+                          Create Your First Workflow
                         </Button>
                       </Link>
                     )}
@@ -197,14 +197,14 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 gap-6">
-                {tools.map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} showAuthor={false} />
+                {swarms.map((swarm: any) => (
+                  <SwarmCard key={swarm.id} swarm={swarm} showAuthor={false} />
                 ))}
               </div>
             )}
           </TabsContent>
 
-          {/* Favorited Tools Tab */}
+          {/* Favorited Swarms Tab */}
           {isOwnProfile && (
             <TabsContent value="favorites">
               {loadingFavorites ? (
@@ -216,15 +216,15 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                   <CardContent className="py-16">
                     <div className="text-center">
                       <p className="text-muted-foreground text-lg">
-                        No favorited tools yet
+                        No favorited workflow templates yet
                       </p>
                     </div>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid md:grid-cols-2 gap-6">
-                  {favorites.map((tool) => (
-                    <ToolCard key={tool.id} tool={tool} />
+                  {favorites.map((swarm: any) => (
+                    <SwarmCard key={swarm.id} swarm={swarm} />
                   ))}
                 </div>
               )}

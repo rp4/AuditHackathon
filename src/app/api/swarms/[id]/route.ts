@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
-import { getToolBySlug, updateTool, deleteTool, incrementToolViews } from '@/lib/db/tools'
+import { getSwarmBySlug, updateSwarm, deleteSwarm, incrementSwarmViews } from '@/lib/db/swarms'
 import { isFavorited } from '@/lib/db/favorites'
 import { isAdmin } from '@/lib/auth/admin'
 import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
-// GET /api/tools/[id] - Get a single tool
+// GET /api/swarms/[id] - Get a single swarm
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,42 +15,43 @@ export async function GET(
   try {
     const { id } = await params
     const session = await getServerSession(authOptions)
-    const tool = await getToolBySlug(id)
+    const swarm = await getSwarmBySlug(id)
 
-    if (!tool) {
+    if (!swarm) {
       return NextResponse.json(
-        { error: 'Tool not found' },
+        { error: 'Swarm not found' },
         { status: 404 }
       )
     }
 
     // Increment view count asynchronously
-    incrementToolViews(tool.id).catch((error) => logger.serverError(error, { toolId: tool.id }))
+    incrementSwarmViews(swarm.id).catch((error) => logger.serverError(error, { swarmId: swarm.id }))
 
-    // Check if the current user has favorited this tool
+    // Check if the current user has favorited this swarm
     let userFavorited = false
     if (session?.user?.id) {
-      userFavorited = await isFavorited(session.user.id, tool.id)
+      userFavorited = await isFavorited(session.user.id, swarm.id)
     }
 
-    return NextResponse.json({ ...tool, isFavorited: userFavorited })
+    return NextResponse.json({ ...swarm, isFavorited: userFavorited })
   } catch (error) {
-    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'GET /api/tools/[id]' })
+    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'GET /api/swarms/[id]' })
     return NextResponse.json(
-      { error: 'Failed to fetch tool' },
+      { error: 'Failed to fetch swarm' },
       { status: 500 }
     )
   }
 }
 
-// PATCH /api/tools/[id] - Update a tool
-const updateToolSchema = z.object({
+// PATCH /api/swarms/[id] - Update a swarm
+const updateSwarmSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   description: z.string().min(1).optional(),
-  documentation: z.string().optional(),
+  workflowNodes: z.string().optional(),
+  workflowEdges: z.string().optional(),
+  workflowMetadata: z.string().optional(),
   image_url: z.string().url().optional(),
   categoryId: z.string().optional(),
-  platformIds: z.array(z.string()).optional(),
   is_public: z.boolean().optional(),
   is_featured: z.boolean().optional(),
 })
@@ -59,7 +60,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  let existingTool
+  let existingSwarm
   try {
     const session = await getServerSession(authOptions)
 
@@ -70,18 +71,17 @@ export async function PATCH(
       )
     }
 
-    // Get the tool to check ownership
     const { id } = await params
-    existingTool = await getToolBySlug(id)
+    existingSwarm = await getSwarmBySlug(id)
 
-    if (!existingTool) {
+    if (!existingSwarm) {
       return NextResponse.json(
-        { error: 'Tool not found' },
+        { error: 'Swarm not found' },
         { status: 404 }
       )
     }
 
-    if (existingTool.userId !== session.user.id) {
+    if (existingSwarm.userId !== session.user.id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -95,17 +95,17 @@ export async function PATCH(
       const userIsAdmin = await isAdmin()
       if (!userIsAdmin) {
         return NextResponse.json(
-          { error: 'Only admins can feature tools' },
+          { error: 'Only admins can feature swarms' },
           { status: 403 }
         )
       }
     }
 
-    const validated = updateToolSchema.parse(body)
+    const validated = updateSwarmSchema.parse(body)
 
-    const updatedTool = await updateTool(existingTool.id, validated)
+    const updatedSwarm = await updateSwarm(existingSwarm.id, validated)
 
-    return NextResponse.json(updatedTool)
+    return NextResponse.json(updatedSwarm)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -115,22 +115,22 @@ export async function PATCH(
     }
 
     logger.serverError(error instanceof Error ? error : String(error), {
-      endpoint: 'PATCH /api/tools/[id]',
-      toolId: existingTool?.id
+      endpoint: 'PATCH /api/swarms/[id]',
+      swarmId: existingSwarm?.id
     })
     return NextResponse.json(
-      { error: 'Failed to update tool' },
+      { error: 'Failed to update swarm' },
       { status: 500 }
     )
   }
 }
 
-// DELETE /api/tools/[id] - Delete a tool
+// DELETE /api/swarms/[id] - Delete a swarm
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  let existingTool
+  let existingSwarm
   try {
     const session = await getServerSession(authOptions)
 
@@ -141,34 +141,33 @@ export async function DELETE(
       )
     }
 
-    // Get the tool to check ownership
     const { id } = await params
-    existingTool = await getToolBySlug(id)
+    existingSwarm = await getSwarmBySlug(id)
 
-    if (!existingTool) {
+    if (!existingSwarm) {
       return NextResponse.json(
-        { error: 'Tool not found' },
+        { error: 'Swarm not found' },
         { status: 404 }
       )
     }
 
-    if (existingTool.userId !== session.user.id) {
+    if (existingSwarm.userId !== session.user.id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
       )
     }
 
-    await deleteTool(existingTool.id)
+    await deleteSwarm(existingSwarm.id)
 
     return NextResponse.json({ success: true })
   } catch (error) {
     logger.serverError(error instanceof Error ? error : String(error), {
-      endpoint: 'DELETE /api/tools/[id]',
-      toolId: existingTool?.id
+      endpoint: 'DELETE /api/swarms/[id]',
+      swarmId: existingSwarm?.id
     })
     return NextResponse.json(
-      { error: 'Failed to delete tool' },
+      { error: 'Failed to delete swarm' },
       { status: 500 }
     )
   }

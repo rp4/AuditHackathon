@@ -22,7 +22,7 @@ async function listUsers() {
         createdAt: true,
         _count: {
           select: {
-            tools: true
+            swarms: true
           }
         }
       },
@@ -43,7 +43,7 @@ Name: ${user.name || 'Not set'}
 Username: ${user.username || 'Not set'}
 Email: ${user.email}
 Admin: ${user.is_admin ? '✅ Yes' : '❌ No'}
-Tools Created: ${user._count.tools}
+Swarms Created: ${user._count.swarms}
 Joined: ${user.createdAt.toLocaleDateString()}
 ${'-'.repeat(40)}`)
     })

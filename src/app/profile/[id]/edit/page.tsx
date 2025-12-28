@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { ArrowLeft, Loader2, Upload, Trash2, Linkedin } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useUserProfile } from '@/hooks/useTools'
+import { useUserProfile } from '@/hooks/useSwarms'
 import {
   AlertDialog,
   AlertDialogAction,

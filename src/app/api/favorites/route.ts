@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma/client'
 import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
-// GET /api/favorites - Get user's favorited tools
+// GET /api/favorites - Get user's favorited swarms
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -34,9 +34,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/favorites - Add a tool to favorites
+// POST /api/favorites - Add a swarm to favorites
 const favoriteSchema = z.object({
-  toolId: z.string(),
+  swarmId: z.string(),
 })
 
 export async function POST(request: NextRequest) {
@@ -51,23 +51,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { toolId } = favoriteSchema.parse(body)
+    const { swarmId } = favoriteSchema.parse(body)
 
-    // Validate that the tool exists and is not deleted
-    const tool = await prisma.tool.findUnique({
-      where: { id: toolId },
+    // Validate that the swarm exists and is not deleted
+    const swarm = await prisma.swarm.findUnique({
+      where: { id: swarmId },
       select: { id: true, isDeleted: true }
     })
 
-    if (!tool || tool.isDeleted) {
+    if (!swarm || swarm.isDeleted) {
       return NextResponse.json(
-        { error: 'Tool not found' },
+        { error: 'Swarm not found' },
         { status: 404 }
       )
     }
 
     // Check if already favorited
-    const alreadyFavorited = await isFavorited(session.user.id, toolId)
+    const alreadyFavorited = await isFavorited(session.user.id, swarmId)
     if (alreadyFavorited) {
       return NextResponse.json(
         { error: 'Already favorited' },
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const favorite = await addFavorite(session.user.id, toolId)
+    const favorite = await addFavorite(session.user.id, swarmId)
 
     return NextResponse.json(favorite, { status: 201 })
   } catch (error) {
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE /api/favorites - Remove a tool from favorites
+// DELETE /api/favorites - Remove a swarm from favorites
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -107,16 +107,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const toolId = searchParams.get('toolId')
+    const swarmId = searchParams.get('swarmId')
 
-    if (!toolId) {
+    if (!swarmId) {
       return NextResponse.json(
-        { error: 'toolId is required' },
+        { error: 'swarmId is required' },
         { status: 400 }
       )
     }
 
-    await removeFavorite(session.user.id, toolId)
+    await removeFavorite(session.user.id, swarmId)
 
     return NextResponse.json({ success: true })
   } catch (error) {

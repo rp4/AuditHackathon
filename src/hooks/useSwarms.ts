@@ -4,15 +4,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './useAuth'
 
 /**
- * Custom hooks for tools data fetching
+ * Custom hooks for swarms data fetching
  */
 
-export type Tool = {
+export type Swarm = {
   id: string
   name: string
   slug: string
   description: string
-  documentation?: string
+  workflowNodes?: string
+  workflowEdges?: string
+  workflowMetadata?: string
+  workflowVersion?: string
   image_url?: string
   userId: string
   categoryId?: string
@@ -38,15 +41,6 @@ export type Tool = {
     name: string
     slug: string
   }
-  tool_platforms: Array<{
-    id: string
-    platformId: string
-    platform: {
-      id: string
-      name: string
-      slug: string
-    }
-  }>
 }
 
 export type UserProfile = {
@@ -62,10 +56,9 @@ export type UserProfile = {
   createdAt: string
 }
 
-export type ToolFilters = {
+export type SwarmFilters = {
   search?: string
   categoryId?: string
-  platformId?: string
   userId?: string
   featured?: boolean
   limit?: number
@@ -74,11 +67,11 @@ export type ToolFilters = {
 }
 
 /**
- * Fetch tools with filters
+ * Fetch swarms with filters
  */
-export function useTools(filters: ToolFilters = {}) {
+export function useSwarms(filters: SwarmFilters = {}) {
   return useQuery({
-    queryKey: ['tools', filters],
+    queryKey: ['swarms', filters],
     queryFn: async () => {
       const params = new URLSearchParams()
 
@@ -88,45 +81,43 @@ export function useTools(filters: ToolFilters = {}) {
         }
       })
 
-      const res = await fetch(`/api/tools?${params}`)
-      if (!res.ok) throw new Error('Failed to fetch tools')
+      const res = await fetch(`/api/swarms?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch swarms')
       return res.json()
     },
   })
 }
 
 /**
- * Fetch a single tool by slug
+ * Fetch a single swarm by slug
  */
-export function useTool(slug: string) {
+export function useSwarm(slug: string) {
   return useQuery({
-    queryKey: ['tool', slug],
+    queryKey: ['swarm', slug],
     queryFn: async () => {
-      const res = await fetch(`/api/tools/${slug}`)
+      const res = await fetch(`/api/swarms/${slug}`)
       if (!res.ok) {
         if (res.status === 404) return null
-        throw new Error('Failed to fetch tool')
+        throw new Error('Failed to fetch swarm')
       }
       return res.json()
     },
     enabled: !!slug,
-    // Prevent refetching when window regains focus or reconnects
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    // Keep the data fresh for longer
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   })
 }
 
 /**
- * Create a new tool
+ * Create a new swarm
  */
-export function useCreateTool() {
+export function useCreateSwarm() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch('/api/tools', {
+      const res = await fetch('/api/swarms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -134,26 +125,26 @@ export function useCreateTool() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || 'Failed to create tool')
+        throw new Error(error.error || 'Failed to create swarm')
       }
 
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tools'] })
+      queryClient.invalidateQueries({ queryKey: ['swarms'] })
     },
   })
 }
 
 /**
- * Update a tool
+ * Update a swarm
  */
-export function useUpdateTool(slug: string) {
+export function useUpdateSwarm(slug: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch(`/api/tools/${slug}`, {
+      const res = await fetch(`/api/swarms/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -161,39 +152,39 @@ export function useUpdateTool(slug: string) {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || 'Failed to update tool')
+        throw new Error(error.error || 'Failed to update swarm')
       }
 
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tool', slug] })
-      queryClient.invalidateQueries({ queryKey: ['tools'] })
+      queryClient.invalidateQueries({ queryKey: ['swarm', slug] })
+      queryClient.invalidateQueries({ queryKey: ['swarms'] })
     },
   })
 }
 
 /**
- * Delete a tool
+ * Delete a swarm
  */
-export function useDeleteTool(slug: string) {
+export function useDeleteSwarm(slug: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/tools/${slug}`, {
+      const res = await fetch(`/api/swarms/${slug}`, {
         method: 'DELETE',
       })
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || 'Failed to delete tool')
+        throw new Error(error.error || 'Failed to delete swarm')
       }
 
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tools'] })
+      queryClient.invalidateQueries({ queryKey: ['swarms'] })
     },
   })
 }
@@ -213,20 +204,6 @@ export function useCategories() {
 }
 
 /**
- * Fetch platforms
- */
-export function usePlatforms() {
-  return useQuery({
-    queryKey: ['platforms'],
-    queryFn: async () => {
-      const res = await fetch('/api/platforms')
-      if (!res.ok) throw new Error('Failed to fetch platforms')
-      return res.json()
-    },
-  })
-}
-
-/**
  * Toggle favorite
  */
 export function useToggleFavorite() {
@@ -234,26 +211,23 @@ export function useToggleFavorite() {
   const { user } = useAuth()
 
   return useMutation({
-    mutationFn: async ({ toolId, isFavorited }: { toolId: string; isFavorited: boolean }) => {
+    mutationFn: async ({ swarmId, isFavorited }: { swarmId: string; isFavorited: boolean }) => {
       if (isFavorited) {
-        // Remove favorite
-        const res = await fetch(`/api/favorites?toolId=${toolId}`, {
+        const res = await fetch(`/api/favorites?swarmId=${swarmId}`, {
           method: 'DELETE',
         })
         if (!res.ok) throw new Error('Failed to remove favorite')
-        return { action: 'removed', toolId }
+        return { action: 'removed', swarmId }
       } else {
-        // Add favorite
         const res = await fetch('/api/favorites', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ toolId }),
+          body: JSON.stringify({ swarmId }),
         })
         if (!res.ok) throw new Error('Failed to add favorite')
-        return { action: 'added', toolId }
+        return { action: 'added', swarmId }
       }
     },
-    // Don't invalidate any queries - let the local state handle everything
     onSuccess: () => {
       // Don't invalidate anything to prevent refetching
     },
@@ -280,15 +254,15 @@ export function useFavorites() {
 /**
  * Submit or update a rating
  */
-export function useRateTool() {
+export function useRateSwarm() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ toolId, rating, review }: { toolId: string; rating: number; review?: string }) => {
+    mutationFn: async ({ swarmId, rating, review }: { swarmId: string; rating: number; review?: string }) => {
       const res = await fetch('/api/ratings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toolId, rating, review }),
+        body: JSON.stringify({ swarmId, rating, review }),
       })
 
       if (!res.ok) {
@@ -299,43 +273,43 @@ export function useRateTool() {
       return res.json()
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['tools'] })
-      queryClient.invalidateQueries({ queryKey: ['tool', variables.toolId] })
-      queryClient.invalidateQueries({ queryKey: ['ratings', variables.toolId] })
+      queryClient.invalidateQueries({ queryKey: ['swarms'] })
+      queryClient.invalidateQueries({ queryKey: ['swarm', variables.swarmId] })
+      queryClient.invalidateQueries({ queryKey: ['ratings', variables.swarmId] })
     },
   })
 }
 
 /**
- * Fetch ratings for a tool
+ * Fetch ratings for a swarm
  */
-export function useToolRatings(toolId: string) {
+export function useSwarmRatings(swarmId: string) {
   return useQuery({
-    queryKey: ['ratings', toolId],
+    queryKey: ['ratings', swarmId],
     queryFn: async () => {
-      const res = await fetch(`/api/ratings?toolId=${toolId}`)
+      const res = await fetch(`/api/ratings?swarmId=${swarmId}`)
       if (!res.ok) throw new Error('Failed to fetch ratings')
       return res.json()
     },
-    enabled: !!toolId,
+    enabled: !!swarmId,
   })
 }
 
 /**
- * Get current user's rating for a tool
+ * Get current user's rating for a swarm
  */
-export function useUserRating(toolId: string) {
+export function useUserRating(swarmId: string) {
   const { user } = useAuth()
 
   return useQuery({
-    queryKey: ['user-rating', toolId, user?.id],
+    queryKey: ['user-rating', swarmId, user?.id],
     queryFn: async () => {
-      const res = await fetch(`/api/ratings?toolId=${toolId}&checkUser=true`)
+      const res = await fetch(`/api/ratings?swarmId=${swarmId}&checkUser=true`)
       if (!res.ok) throw new Error('Failed to fetch user rating')
       const data = await res.json()
       return data.rating
     },
-    enabled: !!toolId && !!user,
+    enabled: !!swarmId && !!user,
   })
 }
 
@@ -358,16 +332,16 @@ export function useUserProfile(userId: string) {
 }
 
 /**
- * Fetch user's tools
+ * Fetch user's swarms
  */
-export function useUserTools(userId: string) {
+export function useUserSwarms(userId: string) {
   return useQuery({
-    queryKey: ['user-tools', userId],
+    queryKey: ['user-swarms', userId],
     queryFn: async () => {
-      const res = await fetch(`/api/tools?userId=${userId}`)
-      if (!res.ok) throw new Error('Failed to fetch user tools')
+      const res = await fetch(`/api/swarms?userId=${userId}`)
+      if (!res.ok) throw new Error('Failed to fetch user swarms')
       const data = await res.json()
-      return data.tools || []
+      return data.swarms || []
     },
     enabled: !!userId,
   })

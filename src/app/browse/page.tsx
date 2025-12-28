@@ -6,43 +6,31 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Filter, Search, Star, Loader2 } from 'lucide-react'
-import { useTools, usePlatforms, useCategories } from '@/hooks/useTools'
-import { ToolCard } from '@/components/tools/ToolCard'
+import { useSwarms, useCategories } from '@/hooks/useSwarms'
+import { SwarmCard } from '@/components/swarms/SwarmCard'
 
 export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300)
-  const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([])
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'downloads'>('popular')
   const [showFilters, setShowFilters] = useState(false)
 
-  // Fetch platforms and categories
-  const { data: platforms = [], isLoading: platformsLoading } = usePlatforms()
+  // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useCategories()
 
-  // Build query params for tools
+  // Build query params for swarms
   const queryParams = useMemo(() => ({
     search: debouncedSearchQuery || undefined,
-    platformIds: selectedPlatformIds.length > 0 ? selectedPlatformIds.join(',') : undefined,
     categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds.join(',') : undefined,
     sortBy,
     limit: 50,
-  }), [debouncedSearchQuery, selectedPlatformIds, selectedCategoryIds, sortBy])
+  }), [debouncedSearchQuery, selectedCategoryIds, sortBy])
 
-  // Fetch tools with filters
-  const { data, isLoading: toolsLoading } = useTools(queryParams)
-  const tools = data?.tools || []
+  // Fetch swarms with filters
+  const { data, isLoading: swarmsLoading } = useSwarms(queryParams)
+  const swarms = data?.swarms || []
   const total = data?.total || 0
-
-  // Toggle platform filter
-  const togglePlatform = (platformId: string) => {
-    setSelectedPlatformIds(prev =>
-      prev.includes(platformId)
-        ? prev.filter(id => id !== platformId)
-        : [...prev, platformId]
-    )
-  }
 
   // Toggle category filter (multiselect)
   const toggleCategory = (categoryId: string) => {
@@ -53,7 +41,7 @@ export default function BrowsePage() {
     )
   }
 
-  const isLoading = toolsLoading || platformsLoading || categoriesLoading
+  const isLoading = swarmsLoading || categoriesLoading
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -66,7 +54,7 @@ export default function BrowsePage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search tools..."
+                placeholder="Search workflow templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12 h-12 md:h-14 text-base md:text-lg"
@@ -111,35 +99,11 @@ export default function BrowsePage() {
                 </div>
               </div>
 
-              {/* Platform Filter */}
-              <div>
-                <h3 className="font-semibold text-sm mb-2">Platforms</h3>
-                <div className="flex flex-wrap gap-2">
-                  {platforms.map((platform: { id: string; name: string; toolCount?: number }) => (
-                    <Badge
-                      key={platform.id}
-                      variant={selectedPlatformIds.includes(platform.id) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
-                        selectedPlatformIds.includes(platform.id)
-                          ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200"
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => togglePlatform(platform.id)}
-                    >
-                      {platform.name}
-                      {platform.toolCount !== undefined && (
-                        <span className="ml-1 opacity-60">({platform.toolCount})</span>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
               {/* Category Filter */}
               <div>
                 <h3 className="font-semibold text-sm mb-2">Categories</h3>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((category: { id: string; name: string; toolCount?: number }) => (
+                  {categories.map((category: { id: string; name: string; swarmCount?: number }) => (
                     <Badge
                       key={category.id}
                       variant={selectedCategoryIds.includes(category.id) ? "default" : "outline"}
@@ -151,21 +115,17 @@ export default function BrowsePage() {
                       onClick={() => toggleCategory(category.id)}
                     >
                       {category.name}
-                      {category.toolCount !== undefined && (
-                        <span className="ml-1 opacity-60">({category.toolCount})</span>
-                      )}
                     </Badge>
                   ))}
                 </div>
               </div>
 
               {/* Clear Filters */}
-              {(selectedPlatformIds.length > 0 || selectedCategoryIds.length > 0 || searchQuery) && (
+              {(selectedCategoryIds.length > 0 || searchQuery) && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setSelectedPlatformIds([])
                     setSelectedCategoryIds([])
                     setSearchQuery('')
                   }}
@@ -177,20 +137,8 @@ export default function BrowsePage() {
           )}
 
           {/* Active Filters Display */}
-          {(selectedPlatformIds.length > 0 || selectedCategoryIds.length > 0) && !showFilters && (
+          {selectedCategoryIds.length > 0 && !showFilters && (
             <div className="flex flex-wrap gap-2 mt-2">
-              {selectedPlatformIds.map((platformId) => {
-                const platform = platforms.find((p: any) => p.id === platformId)
-                return platform ? (
-                  <Badge
-                    key={platformId}
-                    className="cursor-pointer bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200 transition-all duration-150 ease-out active:scale-95"
-                    onClick={() => togglePlatform(platformId)}
-                  >
-                    {platform.name} ×
-                  </Badge>
-                ) : null
-              })}
               {selectedCategoryIds.map((categoryId) => {
                 const category = categories.find((c: any) => c.id === categoryId)
                 return category ? (
@@ -208,16 +156,16 @@ export default function BrowsePage() {
         </div>
       </div>
 
-      {/* Tools Grid */}
+      {/* Swarms Grid */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-8">
           {/* Results Count */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold">
               {isLoading ? (
-                'Loading tools...'
+                'Loading swarms...'
               ) : (
-                `${total} ${total === 1 ? 'tool' : 'tools'} found`
+                `${total} workflow ${total === 1 ? 'template' : 'templates'} found`
               )}
             </h2>
           </div>
@@ -229,22 +177,22 @@ export default function BrowsePage() {
             </div>
           )}
 
-          {/* Tools Grid */}
-          {!isLoading && tools.length > 0 && (
+          {/* Swarms Grid */}
+          {!isLoading && swarms.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tools.map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
+              {swarms.map((swarm: any) => (
+                <SwarmCard key={swarm.id} swarm={swarm} />
               ))}
             </div>
           )}
 
           {/* Empty State */}
-          {!isLoading && tools.length === 0 && (
+          {!isLoading && swarms.length === 0 && (
             <div className="text-center py-20">
               <div className="mb-4">
                 <Search className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No tools found</h3>
+              <h3 className="text-xl font-semibold mb-2">No workflow templates found</h3>
               <p className="text-muted-foreground mb-6">
                 Try adjusting your filters or search query
               </p>
@@ -252,7 +200,6 @@ export default function BrowsePage() {
                 variant="outline"
                 onClick={() => {
                   setSearchQuery('')
-                  setSelectedPlatformIds([])
                   setSelectedCategoryIds([])
                 }}
               >

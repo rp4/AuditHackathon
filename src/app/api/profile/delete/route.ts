@@ -17,7 +17,7 @@ export async function DELETE() {
 
     const userId = session.user.id
 
-    // Start a transaction to soft delete user and their tools, and hard delete their interactions
+    // Start a transaction to soft delete user and their swarms, and hard delete their interactions
     await prisma.$transaction(async (tx) => {
       // Hard delete all user's ratings
       await tx.rating.deleteMany({
@@ -47,36 +47,13 @@ export async function DELETE() {
         }
       })
 
-      // Hard delete all collection tools first (junction table)
-      const userCollections = await tx.collection.findMany({
-        where: { userId: userId },
-        select: { id: true }
-      })
-
-      if (userCollections.length > 0) {
-        await tx.collectionTool.deleteMany({
-          where: {
-            collectionId: {
-              in: userCollections.map(c => c.id)
-            }
-          }
-        })
-      }
-
-      // Hard delete all user's collections
-      await tx.collection.deleteMany({
-        where: {
-          userId: userId
-        }
-      })
-
       // Note: We keep OAuth Account records so user can sign back in
 
-      // Soft delete all user's tools
-      await tx.tool.updateMany({
+      // Soft delete all user's swarms
+      await tx.swarm.updateMany({
         where: {
           userId: userId,
-          isDeleted: false // Only update tools that aren't already deleted
+          isDeleted: false // Only update swarms that aren't already deleted
         },
         data: {
           isDeleted: true,
@@ -107,7 +84,7 @@ export async function DELETE() {
     return NextResponse.json(
       {
         success: true,
-        message: 'Your profile and all associated tools have been deleted successfully'
+        message: 'Your profile and all associated swarms have been deleted successfully'
       },
       { status: 200 }
     )

@@ -2,11 +2,11 @@ import { prisma } from '@/lib/prisma/client'
 import type { Prisma } from '@prisma/client'
 
 /**
- * Database utilities for Tool operations
- * Renamed from 'agents' to 'tools'
+ * Database utilities for Swarm operations
+ * Renamed from 'tools' to 'swarms'
  */
 
-export type ToolWithRelations = Prisma.ToolGetPayload<{
+export type SwarmWithRelations = Prisma.SwarmGetPayload<{
   include: {
     user: {
       select: {
@@ -17,20 +17,13 @@ export type ToolWithRelations = Prisma.ToolGetPayload<{
       }
     }
     category: true
-    tool_platforms: {
-      include: {
-        platform: true
-      }
-    }
   }
 }>
 
-export type ToolFilters = {
+export type SwarmFilters = {
   search?: string
   categoryId?: string
   categoryIds?: string[]
-  platformId?: string
-  platformIds?: string[]
   userId?: string
   isFeatured?: boolean
   isPublic?: boolean
@@ -40,15 +33,13 @@ export type ToolFilters = {
 }
 
 /**
- * Get tools with filtering, sorting, and pagination
+ * Get swarms with filtering, sorting, and pagination
  */
-export async function getTools(filters: ToolFilters & { currentUserId?: string } = {}) {
+export async function getSwarms(filters: SwarmFilters & { currentUserId?: string } = {}) {
   const {
     search,
     categoryId,
     categoryIds,
-    platformId,
-    platformIds,
     userId,
     isFeatured,
     isPublic = true,
@@ -58,14 +49,13 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
     currentUserId,
   } = filters
 
-  const where: Prisma.ToolWhereInput = {
+  const where: Prisma.SwarmWhereInput = {
     ...(isPublic !== undefined && { is_public: isPublic }),
-    isDeleted: false, // Filter out soft-deleted tools
+    isDeleted: false,
     user: {
-      isDeleted: false, // Filter out tools from deleted users
+      isDeleted: false,
     },
     ...(isFeatured !== undefined && { is_featured: isFeatured }),
-    // Handle both userId (ID) and username
     ...(userId && {
       user: {
         OR: [
@@ -75,35 +65,22 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
         isDeleted: false,
       }
     }),
-    // Support single categoryId or multiple categoryIds (OR logic)
     ...(categoryIds && categoryIds.length > 0
       ? { categoryId: { in: categoryIds } }
       : categoryId && { categoryId }),
-    // Support single platformId or multiple platformIds (OR logic)
-    ...(platformIds && platformIds.length > 0
-      ? {
-          tool_platforms: {
-            some: { platformId: { in: platformIds } },
-          },
-        }
-      : platformId && {
-          tool_platforms: {
-            some: { platformId },
-          },
-        }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { documentation: { contains: search, mode: 'insensitive' } },
+        { workflowNodes: { contains: search, mode: 'insensitive' } },
       ],
     }),
   }
 
   const orderBy = getOrderBy(sortBy)
 
-  const [tools, total] = await Promise.all([
-    prisma.tool.findMany({
+  const [swarms, total] = await Promise.all([
+    prisma.swarm.findMany({
       where,
       include: {
         user: {
@@ -115,11 +92,6 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
           },
         },
         category: true,
-        tool_platforms: {
-          include: {
-            platform: true,
-          },
-        },
         ...(currentUserId && {
           favorites: {
             where: { userId: currentUserId },
@@ -131,28 +103,27 @@ export async function getTools(filters: ToolFilters & { currentUserId?: string }
       take: limit,
       skip: offset,
     }),
-    prisma.tool.count({ where }),
+    prisma.swarm.count({ where }),
   ])
 
-  // Transform the tools to include isFavorited flag
-  const toolsWithFavorites = tools.map((tool: any) => ({
-    ...tool,
-    isFavorited: currentUserId ? tool.favorites?.length > 0 : false,
-    favorites: undefined, // Remove the raw favorites data
+  const swarmsWithFavorites = swarms.map((swarm: any) => ({
+    ...swarm,
+    isFavorited: currentUserId ? swarm.favorites?.length > 0 : false,
+    favorites: undefined,
   }))
 
   return {
-    tools: toolsWithFavorites,
+    swarms,
     total,
-    hasMore: offset + tools.length < total,
+    hasMore: offset + swarms.length < total,
   }
 }
 
 /**
- * Get a single tool by slug
+ * Get a single swarm by slug
  */
-export async function getToolBySlug(slug: string) {
-  return prisma.tool.findFirst({
+export async function getSwarmBySlug(slug: string) {
+  return prisma.swarm.findFirst({
     where: {
       slug,
       isDeleted: false,
@@ -172,13 +143,8 @@ export async function getToolBySlug(slug: string) {
         },
       },
       category: true,
-      tool_platforms: {
-        include: {
-          platform: true,
-        },
-      },
       comments: {
-        where: { parentId: null }, // Only root comments
+        where: { parentId: null },
         include: {
           user: {
             select: {
@@ -206,30 +172,24 @@ export async function getToolBySlug(slug: string) {
 }
 
 /**
- * Create a new tool
+ * Create a new swarm
  */
-export async function createTool(data: {
+export async function createSwarm(data: {
   name: string
   slug: string
   description: string
-  documentation?: string
+  workflowNodes?: string
+  workflowEdges?: string
+  workflowMetadata?: string
   image_url?: string
   userId: string
   categoryId?: string
-  platformIds: string[]
   is_public?: boolean
 }) {
-  const { platformIds, ...toolData } = data
-
-  return prisma.tool.create({
+  return prisma.swarm.create({
     data: {
-      ...toolData,
+      ...data,
       publishedAt: data.is_public ? new Date() : null,
-      tool_platforms: {
-        create: platformIds.map((platformId) => ({
-          platformId,
-        })),
-      },
     },
     include: {
       user: {
@@ -241,55 +201,38 @@ export async function createTool(data: {
         },
       },
       category: true,
-      tool_platforms: {
-        include: {
-          platform: true,
-        },
-      },
     },
   })
 }
 
 /**
- * Update a tool
+ * Update a swarm
  */
-export async function updateTool(
+export async function updateSwarm(
   id: string,
   data: Partial<{
     name: string
     description: string
-    documentation: string
+    workflowNodes: string
+    workflowEdges: string
+    workflowMetadata: string
     image_url: string
     categoryId: string
-    platformIds: string[]
     is_public: boolean
     is_featured: boolean
   }>
 ) {
-  const { platformIds, ...updateData } = data
-
-  // If changing to public and not yet published, set publishedAt
-  const finalUpdateData: any = { ...updateData }
+  const finalUpdateData: any = { ...data }
   if (data.is_public) {
-    const tool = await prisma.tool.findUnique({ where: { id } })
-    if (tool && !tool.publishedAt) {
+    const swarm = await prisma.swarm.findUnique({ where: { id } })
+    if (swarm && !swarm.publishedAt) {
       finalUpdateData.publishedAt = new Date()
     }
   }
 
-  return prisma.tool.update({
+  return prisma.swarm.update({
     where: { id },
-    data: {
-      ...finalUpdateData,
-      ...(platformIds && {
-        tool_platforms: {
-          deleteMany: {},
-          create: platformIds.map((platformId) => ({
-            platformId,
-          })),
-        },
-      }),
-    },
+    data: finalUpdateData,
     include: {
       user: {
         select: {
@@ -300,29 +243,24 @@ export async function updateTool(
         },
       },
       category: true,
-      tool_platforms: {
-        include: {
-          platform: true,
-        },
-      },
     },
   })
 }
 
 /**
- * Delete a tool
+ * Delete a swarm
  */
-export async function deleteTool(id: string) {
-  return prisma.tool.delete({
+export async function deleteSwarm(id: string) {
+  return prisma.swarm.delete({
     where: { id },
   })
 }
 
 /**
- * Increment tool views
+ * Increment swarm views
  */
-export async function incrementToolViews(id: string) {
-  return prisma.tool.update({
+export async function incrementSwarmViews(id: string) {
+  return prisma.swarm.update({
     where: { id },
     data: {
       views_count: { increment: 1 },
@@ -331,10 +269,10 @@ export async function incrementToolViews(id: string) {
 }
 
 /**
- * Get featured tools
+ * Get featured swarms
  */
-export async function getFeaturedTools(limit: number = 6) {
-  return prisma.tool.findMany({
+export async function getFeaturedSwarms(limit: number = 6) {
+  return prisma.swarm.findMany({
     where: {
       is_public: true,
       is_featured: true,
@@ -348,11 +286,6 @@ export async function getFeaturedTools(limit: number = 6) {
         },
       },
       category: true,
-      tool_platforms: {
-        include: {
-          platform: true,
-        },
-      },
     },
     orderBy: {
       publishedAt: 'desc',
@@ -364,7 +297,7 @@ export async function getFeaturedTools(limit: number = 6) {
 /**
  * Helper to get Prisma orderBy based on sort option
  */
-function getOrderBy(sortBy: ToolFilters['sortBy']): any {
+function getOrderBy(sortBy: SwarmFilters['sortBy']): any {
   switch (sortBy) {
     case 'popular':
       return { favorites_count: 'desc' }

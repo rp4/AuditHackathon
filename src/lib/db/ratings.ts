@@ -5,26 +5,26 @@ import { prisma } from '@/lib/prisma/client'
  */
 
 /**
- * Get user's rating for a tool
+ * Get user's rating for a swarm
  */
-export async function getUserRating(userId: string, toolId: string) {
+export async function getUserRating(userId: string, swarmId: string) {
   return prisma.rating.findUnique({
     where: {
-      userId_toolId: {
+      userId_swarmId: {
         userId,
-        toolId,
+        swarmId,
       },
     },
   })
 }
 
 /**
- * Get all ratings for a tool
+ * Get all ratings for a swarm
  */
-export async function getToolRatings(toolId: string, limit = 20, offset = 0) {
+export async function getSwarmRatings(swarmId: string, limit = 20, offset = 0) {
   const [ratings, total] = await Promise.all([
     prisma.rating.findMany({
-      where: { toolId },
+      where: { swarmId },
       include: {
         user: {
           select: {
@@ -38,7 +38,7 @@ export async function getToolRatings(toolId: string, limit = 20, offset = 0) {
       take: limit,
       skip: offset,
     }),
-    prisma.rating.count({ where: { toolId } }),
+    prisma.rating.count({ where: { swarmId } }),
   ])
 
   return {
@@ -53,33 +53,23 @@ export async function getToolRatings(toolId: string, limit = 20, offset = 0) {
  */
 export async function upsertRating(
   userId: string,
-  toolId: string,
+  swarmId: string,
   rating: number,
   review?: string
 ) {
-  // Get current rating if exists
-  const existingRating = await prisma.rating.findUnique({
-    where: {
-      userId_toolId: {
-        userId,
-        toolId,
-      },
-    },
-  })
-
   // Upsert rating and recalculate averages
   const [newRating] = await prisma.$transaction(async (tx) => {
     // Upsert the rating
     const upserted = await tx.rating.upsert({
       where: {
-        userId_toolId: {
+        userId_swarmId: {
           userId,
-          toolId,
+          swarmId,
         },
       },
       create: {
         userId,
-        toolId,
+        swarmId,
         rating,
         review,
       },
@@ -91,14 +81,14 @@ export async function upsertRating(
 
     // Recalculate average rating
     const stats = await tx.rating.aggregate({
-      where: { toolId },
+      where: { swarmId },
       _avg: { rating: true },
       _count: true,
     })
 
-    // Update tool with new stats
-    await tx.tool.update({
-      where: { id: toolId },
+    // Update swarm with new stats
+    await tx.swarm.update({
+      where: { id: swarmId },
       data: {
         rating_avg: stats._avg.rating || 0,
         rating_count: stats._count,
@@ -114,28 +104,28 @@ export async function upsertRating(
 /**
  * Delete a rating
  */
-export async function deleteRating(userId: string, toolId: string) {
+export async function deleteRating(userId: string, swarmId: string) {
   await prisma.$transaction(async (tx) => {
     // Delete the rating
     await tx.rating.delete({
       where: {
-        userId_toolId: {
+        userId_swarmId: {
           userId,
-          toolId,
+          swarmId,
         },
       },
     })
 
     // Recalculate average rating
     const stats = await tx.rating.aggregate({
-      where: { toolId },
+      where: { swarmId },
       _avg: { rating: true },
       _count: true,
     })
 
-    // Update tool with new stats
-    await tx.tool.update({
-      where: { id: toolId },
+    // Update swarm with new stats
+    await tx.swarm.update({
+      where: { id: swarmId },
       data: {
         rating_avg: stats._avg.rating || 0,
         rating_count: stats._count,
@@ -145,18 +135,18 @@ export async function deleteRating(userId: string, toolId: string) {
 }
 
 /**
- * Get rating statistics for a tool
+ * Get rating statistics for a swarm
  */
-export async function getRatingStats(toolId: string) {
+export async function getRatingStats(swarmId: string) {
   const [stats, distribution] = await Promise.all([
     prisma.rating.aggregate({
-      where: { toolId },
+      where: { swarmId },
       _avg: { rating: true },
       _count: true,
     }),
     prisma.rating.groupBy({
       by: ['rating'],
-      where: { toolId },
+      where: { swarmId },
       _count: true,
     }),
   ])

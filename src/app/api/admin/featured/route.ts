@@ -3,14 +3,14 @@ import { requireAdminApi } from '@/lib/auth/admin'
 import { prisma } from '@/lib/prisma/client'
 import { z } from 'zod'
 
-// GET /api/admin/featured - Get all featured tools and available tools
+// GET /api/admin/featured - Get all featured swarms and available swarms
 export async function GET(request: NextRequest) {
   const authError = await requireAdminApi()
   if (authError) return authError
 
   try {
-    // Get currently featured tools
-    const featuredTools = await prisma.tool.findMany({
+    // Get currently featured swarms
+    const featuredSwarms = await prisma.swarm.findMany({
       where: {
         is_featured: true,
         isDeleted: false,
@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
       orderBy: { updatedAt: 'desc' }
     })
 
-    // Get all public tools for selection
-    const availableTools = await prisma.tool.findMany({
+    // Get all public swarms for selection
+    const availableSwarms = await prisma.swarm.findMany({
       where: {
         isDeleted: false,
         is_public: true
@@ -61,25 +61,25 @@ export async function GET(request: NextRequest) {
         { favorites_count: 'desc' },
         { views_count: 'desc' }
       ],
-      take: 100 // Limit to top 100 tools
+      take: 100 // Limit to top 100 swarms
     })
 
     return NextResponse.json({
-      featured: featuredTools,
-      available: availableTools
+      featured: featuredSwarms,
+      available: availableSwarms
     })
   } catch (error) {
-    console.error('Error fetching featured tools:', error)
+    console.error('Error fetching featured swarms:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch featured tools' },
+      { error: 'Failed to fetch featured swarms' },
       { status: 500 }
     )
   }
 }
 
-// POST /api/admin/featured - Update featured tools
+// POST /api/admin/featured - Update featured swarms
 const updateFeaturedSchema = z.object({
-  toolIds: z.array(z.string()).max(3, 'Maximum 3 featured tools allowed')
+  swarmIds: z.array(z.string()).max(3, 'Maximum 3 featured swarms allowed')
 })
 
 export async function POST(request: NextRequest) {
@@ -88,21 +88,21 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { toolIds } = updateFeaturedSchema.parse(body)
+    const { swarmIds } = updateFeaturedSchema.parse(body)
 
     // Start a transaction to update featured status
     await prisma.$transaction(async (tx) => {
-      // First, unfeature all tools
-      await tx.tool.updateMany({
+      // First, unfeature all swarms
+      await tx.swarm.updateMany({
         where: { is_featured: true },
         data: { is_featured: false }
       })
 
-      // Then feature the selected tools
-      if (toolIds.length > 0) {
-        await tx.tool.updateMany({
+      // Then feature the selected swarms
+      if (swarmIds.length > 0) {
+        await tx.swarm.updateMany({
           where: {
-            id: { in: toolIds },
+            id: { in: swarmIds },
             isDeleted: false,
             is_public: true
           },
@@ -111,8 +111,8 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Get the updated featured tools
-    const featuredTools = await prisma.tool.findMany({
+    // Get the updated featured swarms
+    const featuredSwarms = await prisma.swarm.findMany({
       where: {
         is_featured: true,
         isDeleted: false,
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      featured: featuredTools
+      featured: featuredSwarms
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -145,9 +145,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Error updating featured tools:', error)
+    console.error('Error updating featured swarms:', error)
     return NextResponse.json(
-      { error: 'Failed to update featured tools' },
+      { error: 'Failed to update featured swarms' },
       { status: 500 }
     )
   }

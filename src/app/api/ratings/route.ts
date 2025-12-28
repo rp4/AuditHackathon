@@ -1,41 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
-import { upsertRating, deleteRating, getToolRatings, getUserRating } from '@/lib/db/ratings'
+import { upsertRating, deleteRating, getSwarmRatings, getUserRating } from '@/lib/db/ratings'
 import { prisma } from '@/lib/prisma/client'
 import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
-// GET /api/ratings - Get ratings for a tool or user's rating
+// GET /api/ratings - Get ratings for a swarm or user's rating
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const toolId = searchParams.get('toolId')
+    const swarmId = searchParams.get('swarmId')
     const checkUser = searchParams.get('checkUser') === 'true'
 
-    if (!toolId) {
+    if (!swarmId) {
       return NextResponse.json(
-        { error: 'toolId is required' },
+        { error: 'swarmId is required' },
         { status: 400 }
       )
     }
 
-    // If checkUser, return the current user's rating for this tool
+    // If checkUser, return the current user's rating for this swarm
     if (checkUser) {
       const session = await getServerSession(authOptions)
       if (!session?.user?.id) {
         return NextResponse.json({ rating: null })
       }
 
-      const rating = await getUserRating(session.user.id, toolId)
+      const rating = await getUserRating(session.user.id, swarmId)
       return NextResponse.json({ rating })
     }
 
-    // Otherwise, return all ratings for the tool
+    // Otherwise, return all ratings for the swarm
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const result = await getToolRatings(toolId, limit, offset)
+    const result = await getSwarmRatings(swarmId, limit, offset)
 
     return NextResponse.json(result)
   } catch (error) {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/ratings - Create or update a rating
 const ratingSchema = z.object({
-  toolId: z.string(),
+  swarmId: z.string(),
   rating: z.number().min(1).max(5),
   review: z.string().optional(),
 })
@@ -66,22 +66,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { toolId, rating, review } = ratingSchema.parse(body)
+    const { swarmId, rating, review } = ratingSchema.parse(body)
 
-    // Validate that the tool exists and is not deleted
-    const tool = await prisma.tool.findUnique({
-      where: { id: toolId },
+    // Validate that the swarm exists and is not deleted
+    const swarm = await prisma.swarm.findUnique({
+      where: { id: swarmId },
       select: { id: true, isDeleted: true }
     })
 
-    if (!tool || tool.isDeleted) {
+    if (!swarm || swarm.isDeleted) {
       return NextResponse.json(
-        { error: 'Tool not found' },
+        { error: 'Swarm not found' },
         { status: 404 }
       )
     }
 
-    const result = await upsertRating(session.user.id, toolId, rating, review)
+    const result = await upsertRating(session.user.id, swarmId, rating, review)
 
     return NextResponse.json(result, { status: 201 })
   } catch (error) {
@@ -113,16 +113,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const toolId = searchParams.get('toolId')
+    const swarmId = searchParams.get('swarmId')
 
-    if (!toolId) {
+    if (!swarmId) {
       return NextResponse.json(
-        { error: 'toolId is required' },
+        { error: 'swarmId is required' },
         { status: 400 }
       )
     }
 
-    await deleteRating(session.user.id, toolId)
+    await deleteRating(session.user.id, swarmId)
 
     return NextResponse.json({ success: true })
   } catch (error) {

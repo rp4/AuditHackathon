@@ -2,10 +2,10 @@ import { memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, Heart } from 'lucide-react'
+import { Star, Heart, GitBranch } from 'lucide-react'
 
-interface ToolCardProps {
-  tool: {
+interface SwarmCardProps {
+  swarm: {
     id: string
     name: string
     slug: string
@@ -15,17 +15,11 @@ interface ToolCardProps {
     rating_count: number
     favorites_count: number
     isFavorited?: boolean
+    workflowNodes?: string
     category?: {
       id: string
       name: string
     }
-    tool_platforms?: Array<{
-      id: string
-      platform: {
-        id: string
-        name: string
-      }
-    }>
     user: {
       id: string
       name?: string
@@ -36,35 +30,40 @@ interface ToolCardProps {
   showAuthor?: boolean
 }
 
-function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
+function SwarmCardComponent({ swarm, showAuthor = true }: SwarmCardProps) {
+  // Count nodes to show workflow complexity
+  let nodeCount = 0
+  try {
+    if (swarm.workflowNodes) {
+      const nodes = JSON.parse(swarm.workflowNodes)
+      nodeCount = nodes.length
+    }
+  } catch {
+    // Ignore parse errors
+  }
+
   return (
-    <Link href={`/tools/${tool.slug}`}>
+    <Link href={`/swarms/${swarm.slug}`}>
       <Card className="h-full hover:shadow-xl transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer">
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
-            <CardTitle className="text-lg line-clamp-2">{tool.name}</CardTitle>
-            {tool.is_featured && (
+            <CardTitle className="text-lg line-clamp-2">{swarm.name}</CardTitle>
+            {swarm.is_featured && (
               <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
                 Featured
               </div>
             )}
           </div>
           <CardDescription className="line-clamp-2">
-            {tool.description}
+            {swarm.description}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Platforms */}
-          {tool.tool_platforms && tool.tool_platforms.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {tool.tool_platforms.map((tp) => (
-                <span
-                  key={tp.id}
-                  className="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium"
-                >
-                  {tp.platform.name}
-                </span>
-              ))}
+          {/* Workflow Stats */}
+          {nodeCount > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <GitBranch className="h-4 w-4" />
+              <span>{nodeCount} workflow {nodeCount === 1 ? 'step' : 'steps'}</span>
             </div>
           )}
 
@@ -72,41 +71,43 @@ function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-semibold">{tool.rating_avg.toFixed(1)}</span>
-              {tool.rating_count > 0 && (
+              <span className="font-semibold">{swarm.rating_avg.toFixed(1)}</span>
+              {swarm.rating_count > 0 && (
                 <span className="text-muted-foreground">
-                  ({tool.rating_count})
+                  ({swarm.rating_count})
                 </span>
               )}
             </div>
             <div className="flex items-center gap-1">
               <Heart
                 className={`h-4 w-4 ${
-                  tool.isFavorited
+                  swarm.isFavorited
                     ? 'fill-pink-500 text-pink-500'
                     : 'text-muted-foreground'
                 }`}
               />
-              <span className={tool.isFavorited ? 'text-pink-500' : 'text-muted-foreground'}>
-                {tool.favorites_count}
+              <span className={swarm.isFavorited ? 'text-pink-500' : 'text-muted-foreground'}>
+                {swarm.favorites_count}
               </span>
             </div>
           </div>
 
           {/* Category */}
-          {tool.category && (
-            <div className="text-xs text-muted-foreground">
-              {tool.category.name}
+          {swarm.category && (
+            <div className="inline-flex">
+              <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                {swarm.category.name}
+              </span>
             </div>
           )}
 
           {/* Author */}
-          {showAuthor && tool.user && (
+          {showAuthor && swarm.user && (
             <div className="flex items-center gap-2 pt-4 border-t">
-              {tool.user.image ? (
+              {swarm.user.image ? (
                 <Image
-                  src={tool.user.image}
-                  alt={tool.user.name || tool.user.email}
+                  src={swarm.user.image}
+                  alt={swarm.user.name || swarm.user.email}
                   width={24}
                   height={24}
                   className="rounded-full"
@@ -115,11 +116,11 @@ function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
                 />
               ) : (
                 <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
-                  {(tool.user.name || tool.user.email).charAt(0).toUpperCase()}
+                  {(swarm.user.name || swarm.user.email).charAt(0).toUpperCase()}
                 </div>
               )}
               <span className="text-sm text-muted-foreground">
-                {tool.user.name || tool.user.email}
+                {swarm.user.name || swarm.user.email}
               </span>
             </div>
           )}
@@ -129,5 +130,4 @@ function ToolCardComponent({ tool, showAuthor = true }: ToolCardProps) {
   )
 }
 
-// Memoized export to prevent unnecessary re-renders
-export const ToolCard = memo(ToolCardComponent)
+export const SwarmCard = memo(SwarmCardComponent)

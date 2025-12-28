@@ -5,14 +5,14 @@ import { prisma } from '@/lib/prisma/client'
  */
 
 /**
- * Check if a user has favorited a tool
+ * Check if a user has favorited a swarm
  */
-export async function isFavorited(userId: string, toolId: string): Promise<boolean> {
+export async function isFavorited(userId: string, swarmId: string): Promise<boolean> {
   const favorite = await prisma.favorite.findUnique({
     where: {
-      userId_toolId: {
+      userId_swarmId: {
         userId,
-        toolId,
+        swarmId,
       },
     },
   })
@@ -20,19 +20,19 @@ export async function isFavorited(userId: string, toolId: string): Promise<boole
 }
 
 /**
- * Get all favorited tools for a user
+ * Get all favorited swarms for a user
  */
 export async function getUserFavorites(userId: string, limit = 50, offset = 0) {
   const [favorites, total] = await Promise.all([
     prisma.favorite.findMany({
       where: {
         userId,
-        tool: {
-          isDeleted: false // Only return favorites for active tools
+        swarm: {
+          isDeleted: false // Only return favorites for active swarms
         }
       },
       include: {
-        tool: {
+        swarm: {
           include: {
             user: {
               select: {
@@ -42,11 +42,6 @@ export async function getUserFavorites(userId: string, limit = 50, offset = 0) {
               },
             },
             category: true,
-            tool_platforms: {
-              include: {
-                platform: true,
-              },
-            },
           },
         },
       },
@@ -57,7 +52,7 @@ export async function getUserFavorites(userId: string, limit = 50, offset = 0) {
     prisma.favorite.count({
       where: {
         userId,
-        tool: {
+        swarm: {
           isDeleted: false
         }
       }
@@ -65,26 +60,26 @@ export async function getUserFavorites(userId: string, limit = 50, offset = 0) {
   ])
 
   return {
-    favorites: favorites.map((f) => f.tool),
+    favorites: favorites.map((f) => f.swarm),
     total,
     hasMore: offset + favorites.length < total,
   }
 }
 
 /**
- * Add a tool to favorites
+ * Add a swarm to favorites
  */
-export async function addFavorite(userId: string, toolId: string) {
+export async function addFavorite(userId: string, swarmId: string) {
   // Create favorite and increment counter in a transaction
   const [favorite] = await prisma.$transaction([
     prisma.favorite.create({
       data: {
         userId,
-        toolId,
+        swarmId,
       },
     }),
-    prisma.tool.update({
-      where: { id: toolId },
+    prisma.swarm.update({
+      where: { id: swarmId },
       data: {
         favorites_count: { increment: 1 },
       },
@@ -95,21 +90,21 @@ export async function addFavorite(userId: string, toolId: string) {
 }
 
 /**
- * Remove a tool from favorites
+ * Remove a swarm from favorites
  */
-export async function removeFavorite(userId: string, toolId: string) {
+export async function removeFavorite(userId: string, swarmId: string) {
   // Delete favorite and decrement counter in a transaction
   await prisma.$transaction([
     prisma.favorite.delete({
       where: {
-        userId_toolId: {
+        userId_swarmId: {
           userId,
-          toolId,
+          swarmId,
         },
       },
     }),
-    prisma.tool.update({
-      where: { id: toolId },
+    prisma.swarm.update({
+      where: { id: swarmId },
       data: {
         favorites_count: { decrement: 1 },
       },
@@ -118,10 +113,10 @@ export async function removeFavorite(userId: string, toolId: string) {
 }
 
 /**
- * Get favorite count for a tool
+ * Get favorite count for a swarm
  */
-export async function getFavoriteCount(toolId: string): Promise<number> {
+export async function getFavoriteCount(swarmId: string): Promise<number> {
   return prisma.favorite.count({
-    where: { toolId },
+    where: { swarmId },
   })
 }
