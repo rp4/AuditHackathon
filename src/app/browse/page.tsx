@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Filter, Search, Star, Loader2, CheckSquare, Square, Download, X } from 'lucide-react'
 import { useSwarms, useCategories } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
+import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { toast } from 'sonner'
 
 export default function BrowsePage() {
@@ -194,11 +195,7 @@ export default function BrowsePage() {
                     <Badge
                       key={category.id}
                       variant={selectedCategoryIds.includes(category.id) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${
-                        selectedCategoryIds.includes(category.id)
-                          ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
-                          : "hover:bg-muted"
-                      }`}
+                      className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${getCategoryColor(category.name, selectedCategoryIds.includes(category.id))}`}
                       onClick={() => toggleCategory(category.id)}
                     >
                       {category.name}
@@ -231,7 +228,7 @@ export default function BrowsePage() {
                 return category ? (
                   <Badge
                     key={categoryId}
-                    className="cursor-pointer bg-green-100 text-green-700 border-green-200 hover:bg-green-200 transition-all duration-150 ease-out active:scale-95"
+                    className={`cursor-pointer transition-all duration-150 ease-out active:scale-95 ${getCategoryColor(category.name, true)}`}
                     onClick={() => toggleCategory(categoryId)}
                   >
                     {category.name} ×

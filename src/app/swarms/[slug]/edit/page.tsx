@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSwarm, useUpdateSwarm, useCategories } from '@/hooks/useSwarms'
+import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { WorkflowDesigner } from '@/components/workflows/shared/WorkflowDesigner'
 import type { Node, Edge } from 'reactflow'
 
@@ -171,7 +172,6 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   }
 
   const nodeCount = workflowNodes.length
-  const edgeCount = workflowEdges.length
   const hasErrors = Object.keys(errors).length > 0
 
   return (
@@ -188,20 +188,6 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Status indicators */}
-          <div className="flex items-center gap-4 text-sm text-stone-500">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              {nodeCount} nodes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-blue-500" />
-              {edgeCount} connections
-            </span>
-          </div>
-
-          <div className="h-6 w-px bg-stone-200" />
-
           <Button
             variant="ghost"
             size="sm"
@@ -319,11 +305,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
                     <Badge
                       key={category.id}
                       variant="outline"
-                      className={`cursor-pointer transition-all ${
-                        formData.categoryId === category.id
-                          ? "bg-amber-100 text-amber-700 border-amber-300"
-                          : "bg-stone-50 text-stone-600 border-stone-200 hover:border-stone-300 hover:text-stone-700"
-                      } ${updateSwarm.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`cursor-pointer transition-all ${getCategoryColor(category.name, formData.categoryId === category.id)} ${updateSwarm.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                       onClick={() => !updateSwarm.isPending && toggleCategory(category.id)}
                     >
                       {category.name}

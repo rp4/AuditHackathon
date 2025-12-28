@@ -28,6 +28,7 @@ import {
 import type { Node } from 'reactflow'
 import { useSwarm, useToggleFavorite, useDeleteSwarm, useFavorites, useRateSwarm, useSwarmRatings, useUserRating } from '@/hooks/useSwarms'
 import { useAuth } from '@/hooks/useAuth'
+import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Textarea } from '@/components/ui/textarea'
@@ -467,7 +468,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                   {/* Category */}
                   {swarm.category && (
                     <div>
-                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                      <Badge variant="outline" className={getCategoryColor(swarm.category.name)}>
                         {swarm.category.name}
                       </Badge>
                     </div>
@@ -515,7 +516,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                     </div>
                     <div className="text-center p-3 rounded-lg bg-stone-50">
                       <div className="flex items-center justify-center gap-1 mb-1">
-                        <Heart className="h-4 w-4 text-pink-500" />
+                        <Heart className="h-4 w-4 fill-pink-500 text-pink-500" />
                         <span className="font-semibold text-stone-800">{localFavoritesCount ?? swarm.favorites_count}</span>
                       </div>
                       <p className="text-xs text-stone-500">favorites</p>
@@ -524,7 +525,7 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
                       <div className="flex items-center justify-center gap-1 mb-1">
                         <span className="font-semibold text-stone-800">{nodeCount}</span>
                       </div>
-                      <p className="text-xs text-stone-500">workflow nodes</p>
+                      <p className="text-xs text-stone-500">steps</p>
                     </div>
                   </div>
 

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Star, Heart, GitBranch, Check } from 'lucide-react'
+import { getCategoryColor } from '@/lib/utils/categoryColors'
 
 interface SwarmCardProps {
   swarm: {
@@ -32,14 +33,6 @@ interface SwarmCardProps {
   selectionMode?: boolean
   isSelected?: boolean
   onSelect?: (id: string) => void
-}
-
-const categoryColors: Record<string, string> = {
-  'PrePlanning': 'bg-purple-100 text-purple-700',
-  'Planning': 'bg-blue-100 text-blue-700',
-  'Fieldwork': 'bg-amber-100 text-amber-700',
-  'Reporting': 'bg-emerald-100 text-emerald-700',
-  'Other': 'bg-stone-100 text-stone-600',
 }
 
 function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, isSelected = false, onSelect }: SwarmCardProps) {
@@ -86,7 +79,7 @@ function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, i
           {/* Category & Workflow Stats */}
           <div className="flex items-center justify-between">
             {swarm.category && (
-              <span className={`text-xs px-3 py-1 rounded-full font-medium ${categoryColors[swarm.category.name] || 'bg-stone-100 text-stone-600'}`}>
+              <span className={`text-xs px-3 py-1 rounded-full font-medium ${getCategoryColor(swarm.category.name)}`}>
                 {swarm.category.name}
               </span>
             )}

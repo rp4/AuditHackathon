@@ -82,7 +82,7 @@ export default function FeaturedToolsManager() {
       const response = await fetch('/api/admin/featured', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toolIds: Array.from(selectedIds) })
+        body: JSON.stringify({ swarmIds: Array.from(selectedIds) })
       })
 
       if (!response.ok) throw new Error('Failed to update featured tools')

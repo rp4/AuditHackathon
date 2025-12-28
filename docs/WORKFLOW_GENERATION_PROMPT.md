@@ -51,7 +51,7 @@ Each node represents an audit artifact or procedure step:
 
 ### Edge Structure
 
-Connect nodes to show workflow sequence:
+Edges represent **data flow and context dependencies** between nodes—not just visual sequence. Each edge means "the output of the source node is required as input for the target node."
 
 ```json
 {
@@ -67,6 +67,52 @@ Connect nodes to show workflow sequence:
   }
 }
 ```
+
+## Context Engineering via Edges
+
+**Critical Concept**: Edges are the mechanism for context engineering. When designing workflows, you must ensure:
+
+1. **Upstream outputs feed downstream inputs**: Each node's instructions must reference the specific outputs from its upstream (source) nodes. The edge represents that this context will be provided.
+
+2. **No orphan dependencies**: If a node's instructions reference a document or artifact, there must be an upstream node that produces it, connected by an edge.
+
+3. **Explicit context references**: In downstream node instructions, explicitly state what upstream output is being used (e.g., "Using the audit universe table from the previous step..." or "Review the risk assessment JSON produced upstream...").
+
+4. **Context accumulation**: Nodes later in the workflow may need outputs from multiple upstream nodes. Use merge patterns (multiple edges pointing to one node) when a step requires synthesizing multiple prior outputs.
+
+### Context Flow Examples
+
+**Good - Clear context dependency:**
+```
+Node A instructions: "...Output a markdown file containing an audit universe table..."
+Edge: A → B
+Node B instructions: "Using the audit universe table from the previous step, evaluate each entity against risk factors..."
+```
+
+**Bad - Missing context reference:**
+```
+Node A instructions: "...Output a markdown file containing an audit universe table..."
+Edge: A → B
+Node B instructions: "Evaluate entities against risk factors..."
+← Does not reference what it receives from Node A
+```
+
+**Good - Multiple upstream contexts (merge pattern):**
+```
+Node A → Node C (provides risk scores)
+Node B → Node C (provides staff roster)
+Node C instructions: "Using the prioritized risk scores from the risk assessment step AND the staff roster with certifications, allocate resources..."
+```
+
+### Designing Context-Aware Workflows
+
+When creating edges, ask:
+- What **specific output** does the source node produce?
+- Does the target node's instructions **explicitly reference** this output?
+- Is the output **necessary** for the target to complete its task?
+- Would removing this edge break the target node's ability to execute?
+
+If an edge is purely decorative (showing logical sequence but no data dependency), reconsider whether the workflow structure accurately represents the actual data flow.
 
 ## Positioning Rules (Dagre-style Layout)
 
@@ -121,23 +167,37 @@ Node1(100,200) →                        → Node4(800,200)
 - Be specific: "Evaluate Access Controls" not "Review Controls"
 - Keep to 3-6 words
 
-### Instructions Content (Claude Skill Format)
+### Instructions Content (Prompt Engineering)
+
+Instructions are where **prompt engineering** happens—crafting the specific guidance for AI agent execution. Meanwhile, **context engineering** is handled by the workflow edges, which determine what upstream outputs are provided to each node.
+
+**The distinction:**
+- **Prompt Engineering** (instructions field): What the agent should do, how to do it, and what to output
+- **Context Engineering** (edges): What prior outputs/artifacts the agent will receive as input
 
 Instructions should be written as **Claude skill prompts** that an AI agent can execute. Each instruction should produce a **markdown file (.md)** or **JSON file (.json)** as output.
 
 **Structure each instruction as:**
 1. **Role/Context**: Set the expertise context (e.g., "You are an internal audit specialist...")
 2. **Task**: Clear directive of what to accomplish
-3. **Inputs**: What information/documents the agent needs to review
-4. **Output Format**: Specify the deliverable format:
+3. **Upstream Context Reference**: Explicitly state what outputs from upstream nodes will be used (these correspond to incoming edges). Use phrases like "Using the [artifact] from the previous step..." or "Review the [output] produced upstream..."
+4. **Additional Inputs**: Any external documents/information the agent needs beyond upstream outputs
+5. **Output Format**: Specify the deliverable format:
    - Use markdown (.md) for narrative documents, memos, reports, checklists
    - Use JSON (.json) for structured data, matrices, control mappings
-5. **Standard Reference**: Cite specific sections (e.g., "per IIA Standard 2201")
+6. **Standard Reference**: Cite specific sections (e.g., "per IIA Standard 2201")
 
-**Example instruction:**
+**Example instruction (first node - no upstream context):**
 ```
-You are an internal audit specialist. Review the provided organizational chart and process documentation to identify all auditable entities. For each entity, document the owner, description, and risk factors. Output a markdown file with a table listing each auditable entity. Reference IIA Standard 2010 for planning requirements.
+You are an internal audit planning specialist. Review the provided organizational chart and process documentation to identify all auditable entities. For each entity, document the owner, description, and risk factors. Output a markdown file with a table listing each auditable entity, including columns: Entity Name, Owner, Description, Last Audit Date, and Initial Risk Notes. Reference IIA Standard 2010 for planning requirements.
 ```
+
+**Example instruction (downstream node - references upstream context):**
+```
+You are a risk assessment specialist. Using the audit universe table produced in the previous step, evaluate each auditable entity against the following risk factors: financial impact, regulatory exposure, operational complexity, and strategic importance. Apply the risk criteria matrix provided to calculate weighted risk scores. Rank all entities by residual risk level. Output a JSON file containing an array of objects with: entityId, entityName, inherentRiskScore, controlMaturity, residualRiskScore, and priorityRank. Follow IIA Standard 2010.A1 methodology.
+```
+
+Note how the second example explicitly references "the audit universe table produced in the previous step"—this corresponds to the incoming edge from the first node.
 
 ### Creating Multiple Workflows
 Split into separate workflows when:
@@ -176,7 +236,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Assess and Prioritize Risks",
                 "description": "Evaluate risks for each auditable entity using defined criteria",
-                "instructions": "You are a risk assessment specialist. Using the audit universe list and risk criteria matrix provided, evaluate each auditable entity against risk factors: financial impact, regulatory exposure, operational complexity, and strategic importance. Calculate weighted risk scores and rank entities by residual risk. Output a JSON file with an array of objects containing: entityId, inherentRiskScore, controlMaturity, residualRiskScore, and priorityRank. Follow IIA Standard 2010.A1 methodology."
+                "instructions": "You are a risk assessment specialist. Using the audit universe markdown table produced in the previous step, evaluate each auditable entity against the following risk factors: financial impact, regulatory exposure, operational complexity, and strategic importance. Apply the organization's risk criteria matrix to calculate weighted risk scores for each entity. Rank all entities by their residual risk level to determine audit prioritization. Output a JSON file with an array of objects containing: entityId, entityName, inherentRiskScore, controlMaturity, residualRiskScore, and priorityRank. Follow IIA Standard 2010.A1 methodology."
               }
             },
             {
@@ -186,7 +246,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Allocate Audit Resources",
                 "description": "Match available resources to prioritized audit needs",
-                "instructions": "You are an audit resource planning specialist. Review the prioritized risk assessment, staff roster with skills/certifications, and annual calendar provided. Match audit engagements to available resources based on expertise requirements and capacity. Output a markdown file with a resource allocation table showing: Engagement, Assigned Staff, Estimated Hours, Skill Requirements, and Timeline. Include a section noting co-sourcing needs and contingency allocation (15-20%). Reference IIA Standard 2030."
+                "instructions": "You are an audit resource planning specialist. Using the prioritized risk assessment JSON from the previous step, match high-priority audit engagements to available audit staff. Review the staff roster with skills/certifications and annual calendar to ensure proper expertise alignment and capacity planning. Consider timing constraints and skill requirements when making assignments. Output a markdown file with a resource allocation table showing: Engagement, Assigned Staff, Estimated Hours, Skill Requirements, and Timeline. Include a section noting co-sourcing needs for specialized areas and contingency allocation (15-20% of total hours). Reference IIA Standard 2030."
               }
             },
             {
@@ -196,7 +256,7 @@ Here's a complete example for a simple 4-node workflow:
               "data": {
                 "label": "Obtain Plan Approval",
                 "description": "Present audit plan to stakeholders for review and approval",
-                "instructions": "You are an audit communications specialist. Using the completed resource allocation plan and risk assessment summary, prepare stakeholder presentation materials. Output a markdown file containing: an executive summary memo with risk-based rationale, key highlights for Audit Committee presentation, and a communication plan for stakeholders. Include sections for documenting approval signatures and any requested modifications. Follow IIA Standard 2020 communication requirements."
+                "instructions": "You are an audit communications specialist. Using both the resource allocation markdown table and the risk assessment summary from the previous steps, prepare comprehensive stakeholder presentation materials for audit plan approval. Synthesize the risk-based prioritization rationale with the resource commitments to tell a cohesive story. Output a markdown file containing: an executive summary memo explaining the risk-based approach, key highlights formatted for Audit Committee presentation, and a stakeholder communication plan. Include sections for documenting approval signatures and tracking any requested modifications to the plan. Follow IIA Standard 2020 communication requirements."
               }
             }
           ],
@@ -241,17 +301,29 @@ Here's a complete example for a simple 4-node workflow:
 ## Final Checklist
 
 Before outputting, verify:
+
+### Structure
 - [ ] All node IDs are unique and kebab-case
 - [ ] All edge IDs follow pattern `e-[source]-[target]`
 - [ ] All edges reference valid source and target node IDs
 - [ ] Node positions follow dagre spacing (350px horizontal, 150px vertical)
 - [ ] Each workflow has 4-7 nodes (split if more needed)
+- [ ] All edges have `animated: true` and the indigo style
+- [ ] JSON is valid (no trailing commas, proper quotes)
+
+### Prompt Engineering (Instructions)
 - [ ] Instructions follow Claude skill format (role, task, inputs, output format)
 - [ ] Instructions specify output as markdown (.md) or JSON (.json) file
 - [ ] Instructions are detailed (75-200 words each)
 - [ ] Workflow names include phase prefix
-- [ ] All edges have `animated: true` and the indigo style
-- [ ] JSON is valid (no trailing commas, proper quotes)
+
+### Context Engineering (Edges)
+- [ ] Each edge represents a real data dependency (not just visual sequence)
+- [ ] Downstream nodes explicitly reference outputs from their upstream nodes
+- [ ] First/root nodes clearly state what external inputs they require
+- [ ] No "orphan references" (instructions referencing artifacts without corresponding incoming edges)
+- [ ] Merge patterns used when a node synthesizes outputs from multiple upstream nodes
+- [ ] Instructions use clear phrases like "Using the [X] from the previous step..." for upstream context
 
 ---
 
