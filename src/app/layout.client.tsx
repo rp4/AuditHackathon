@@ -18,6 +18,9 @@ export function RootLayoutClient({
   const isLandingPage = pathname === '/'
   const isBrowsePage = pathname === '/browse'
   const isProfilePage = pathname?.startsWith('/profile/')
+  const isCreatePage = pathname === '/create'
+  const isSwarmPage = pathname?.startsWith('/swarms/') // includes detail and edit pages
+  const isCanvasPage = isBrowsePage || isCreatePage || isSwarmPage
   const [showHeader, setShowHeader] = useState(true)
 
   // Listen for header visibility changes from browse page
@@ -52,16 +55,22 @@ export function RootLayoutClient({
             backgroundAttachment: 'fixed',
           }}
         />
-        {isBrowsePage ? (
+        {isCanvasPage ? (
           <div className="h-screen flex flex-col overflow-hidden">
-            <div
-              className="shrink-0 transition-transform duration-300 ease-in-out"
-              style={{
-                transform: showHeader ? 'translateY(0)' : 'translateY(-100%)'
-              }}
-            >
-              <Header />
-            </div>
+            {isBrowsePage ? (
+              <div
+                className="shrink-0 transition-transform duration-300 ease-in-out"
+                style={{
+                  transform: showHeader ? 'translateY(0)' : 'translateY(-100%)'
+                }}
+              >
+                <Header />
+              </div>
+            ) : (
+              <div className="shrink-0">
+                <Header />
+              </div>
+            )}
             <div className="flex-1 flex flex-col overflow-hidden">
               {children}
             </div>

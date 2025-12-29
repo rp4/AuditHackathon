@@ -99,8 +99,9 @@ export default function BrowsePage() {
         // Ignore parse errors
       }
 
+      const categoryPrefix = swarm.category?.name ? `${swarm.category.name}: ` : ''
       return {
-        name: swarm.name,
+        name: `${categoryPrefix}${swarm.name}`,
         description: swarm.description,
         diagramJson: {
           nodes,

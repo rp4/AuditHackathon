@@ -101,11 +101,12 @@ export default function SwarmDetailPage({ params }: { params: Promise<{ slug: st
 
     if (!swarm) return
 
+    const categoryPrefix = swarm.category?.name ? `${swarm.category.name}: ` : ''
     const exportData: WorkflowExport = {
       version: "1.0",
       data: {
         workflows: [{
-          name: swarm.name,
+          name: `${categoryPrefix}${swarm.name}`,
           description: swarm.description,
           diagramJson: {
             nodes: workflowNodes,

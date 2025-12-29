@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Users, Package, TrendingUp, Eye, Heart, Star, Clock } from 'lucide-react'
-import FeaturedToolsManager from './FeaturedToolsManager'
+import FeaturedSwarmsManager from './FeaturedSwarmsManager'
 
 interface Stats {
   overview: {
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tools</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Swarms</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Tools/User</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg Swarms/User</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -147,23 +147,23 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="tools" className="space-y-4">
+      <Tabs defaultValue="swarms" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="tools">Top Tools</TabsTrigger>
+          <TabsTrigger value="swarms">Top Swarms</TabsTrigger>
           <TabsTrigger value="users">Recent Users</TabsTrigger>
-          <TabsTrigger value="featured">Featured Tools</TabsTrigger>
+          <TabsTrigger value="featured">Featured Swarms</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tools" className="space-y-4">
+        <TabsContent value="swarms" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Top Viewed Tools */}
+            {/* Top Viewed Swarms */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="h-5 w-5" />
-                  Most Viewed Tools
+                  Most Viewed Swarms
                 </CardTitle>
-                <CardDescription>Tools with the most views</CardDescription>
+                <CardDescription>Swarms with the most views</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -202,14 +202,14 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* Top Favorited Tools */}
+            {/* Top Favorited Swarms */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Heart className="h-5 w-5" />
-                  Most Favorited Tools
+                  Most Favorited Swarms
                 </CardTitle>
-                <CardDescription>Tools with the most favorites</CardDescription>
+                <CardDescription>Swarms with the most favorites</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -286,7 +286,7 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="featured" className="space-y-4">
-          <FeaturedToolsManager />
+          <FeaturedSwarmsManager />
         </TabsContent>
       </Tabs>
     </div>

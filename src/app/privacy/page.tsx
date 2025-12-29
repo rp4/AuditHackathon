@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Privacy Policy - AuditSwarm",
-  description: "Privacy Policy for AuditSwarm - AI Tool Sharing Platform for Auditors",
+  description: "Privacy Policy for AuditSwarm - Workflow Sharing Platform for Auditors",
 }
 
 export default function PrivacyPage() {
@@ -55,9 +55,9 @@ export default function PrivacyPage() {
               <li>Pages visited</li>
             </ul>
 
-            <h3 className="text-2xl font-semibold mb-3 mt-6">Tool Content</h3>
+            <h3 className="text-2xl font-semibold mb-3 mt-6">Workflow Content</h3>
             <p className="text-gray-700 leading-relaxed">
-              When you upload AI tools to our platform, we collect and store the tool configurations, documentation, and related metadata that you choose to share.
+              When you upload workflows to our platform, we collect and store the workflow configurations, documentation, and related metadata that you choose to share.
             </p>
           </section>
 
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>To provide, maintain, and improve our services</li>
               <li>To create and manage your account</li>
-              <li>To enable tool sharing and collaboration features</li>
+              <li>To enable workflow sharing and collaboration features</li>
               <li>To send you important updates and notifications</li>
               <li>To respond to your inquiries and support requests</li>
               <li>To analyze platform usage and improve user experience</li>
@@ -83,7 +83,7 @@ export default function PrivacyPage() {
 
             <h3 className="text-2xl font-semibold mb-3 mt-6">Public Information</h3>
             <p className="text-gray-700 leading-relaxed">
-              Tools you mark as public, along with your username and profile information, will be visible to other users of the platform. You control what information is made public through your privacy settings.
+              Workflows you mark as public, along with your username and profile information, will be visible to other users of the platform. You control what information is made public through your privacy settings.
             </p>
 
             <h3 className="text-2xl font-semibold mb-3 mt-6">Service Providers</h3>
@@ -129,7 +129,7 @@ export default function PrivacyPage() {
               <li><strong>Access:</strong> Request a copy of your personal data</li>
               <li><strong>Correction:</strong> Update or correct inaccurate information</li>
               <li><strong>Deletion:</strong> Request deletion of your account and data</li>
-              <li><strong>Portability:</strong> Export your tool data in a structured format</li>
+              <li><strong>Portability:</strong> Export your workflow data in a structured format</li>
               <li><strong>Opt-out:</strong> Unsubscribe from marketing communications</li>
               <li><strong>Privacy settings:</strong> Control what information is public</li>
             </ul>

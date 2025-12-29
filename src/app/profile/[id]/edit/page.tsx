@@ -419,7 +419,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           <ul className="space-y-2 text-sm text-gray-900">
                             <li className="flex items-start gap-2">
                               <span className="text-red-600 font-bold mt-0.5">•</span>
-                              <span className="font-medium">All tools you've created</span>
+                              <span className="font-medium">All swarms you've created</span>
                             </li>
                             <li className="flex items-start gap-2">
                               <span className="text-red-600 font-bold mt-0.5">•</span>
@@ -434,7 +434,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
                         <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3">
                           <p className="text-sm font-medium text-blue-900">
-                            💡 Your profile information will be preserved. When you sign in again, you'll start fresh with no tools or activity.
+                            Your profile information will be preserved. When you sign in again, you'll start fresh with no swarms or activity.
                           </p>
                         </div>
                       </AlertDialogDescription>

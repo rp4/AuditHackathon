@@ -113,7 +113,7 @@ export async function getSwarms(filters: SwarmFilters & { currentUserId?: string
   }))
 
   return {
-    swarms,
+    swarms: swarmsWithFavorites,
     total,
     hasMore: offset + swarms.length < total,
   }

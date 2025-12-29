@@ -11,14 +11,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "AuditSwarm - AI Tool Sharing Platform for Auditors",
+    default: "AuditSwarm - Workflow Sharing Platform for Auditors",
     template: "%s | AuditSwarm"
   },
   icons: {
     icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐝</text></svg>',
   },
-  description: "AuditSwarm is a professional platform for certified public accountants, internal auditors, and audit professionals to discover, share, and collaborate on AI tools for audit automation. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot.",
-  keywords: ["AI tools", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents", "AuditSwarm", "CPA", "internal audit", "external audit", "accounting", "professional services", "audit software", "audit technology"],
+  description: "AuditSwarm is a professional platform for certified public accountants, internal auditors, and audit professionals to discover, share, and collaborate on audit workflows. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot.",
+  keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents", "AuditSwarm", "CPA", "internal audit", "external audit", "accounting", "professional services", "audit software", "audit technology"],
   authors: [{ name: "AuditSwarm" }],
   creator: "AuditSwarm",
   publisher: "AuditSwarm",
@@ -29,20 +29,20 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'AuditSwarm - Professional AI Tool Sharing Platform for Auditors',
-    description: 'A professional platform for audit professionals to discover and share AI tools for audit automation. Trusted by CPAs, internal auditors, and audit firms.',
+    title: 'AuditSwarm - Professional Workflow Sharing Platform for Auditors',
+    description: 'A professional platform for audit professionals to discover and share audit workflows. Trusted by CPAs, internal auditors, and audit firms.',
     siteName: 'AuditSwarm',
     images: [{
       url: '/og-image.png',
       width: 1200,
       height: 630,
-      alt: 'AuditSwarm - Professional Audit Tools Platform',
+      alt: 'AuditSwarm - Professional Audit Workflow Platform',
     }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AuditSwarm - Professional AI Tool Sharing Platform',
-    description: 'A professional platform for audit professionals to discover and share AI tools for audit automation.',
+    title: 'AuditSwarm - Professional Workflow Sharing Platform',
+    description: 'A professional platform for audit professionals to discover and share audit workflows.',
     images: ['/og-image.png'],
   },
   robots: {
