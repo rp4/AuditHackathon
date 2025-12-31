@@ -12,6 +12,12 @@ When designing a workflow, think about:
 1. What does each step produce?
 2. What does each step need to consume?
 3. How do outputs flow from one step to the next?
+4. Are there any upstream data required for this step (there may not be any pertinent upstream context)
+
+
+Core Principle: Quality + Quantity
+1. Include as many nodes/steps as needed (do not limit the number)
+2. Make sure the quality (context and prompts) of the each of the steps is expertly designed
 
 ---
 
@@ -19,8 +25,7 @@ When designing a workflow, think about:
 
 ### Step 1: Understand the Source Document
 Read the audit document and identify:
-- The audit standard or framework (IIA GIAS, SOC 2, ISO 27001, etc.)
-- The phase (Planning, Fieldwork, Reporting, Monitoring)
+- The phase (Planning, Fieldwork, Reporting, Monitoring) - if not clear ask the user to specify
 - Distinct procedures or deliverables
 - Natural dependencies between steps
 
@@ -64,26 +69,6 @@ Reference [Standard Section] for requirements.
 \`\`\`
 
 ### Downstream Nodes (With Upstream Context)
-These nodes must explicitly reference what they receive from upstream:
-
-\`\`\`
-You are a [role].
-
-**Input Context:**
-Using the [specific artifact type and format] from the previous step, which contains [describe the fields/structure]...
-
-**Task:**
-[Specific task that transforms or builds upon the input]
-
-**Output:**
-A [markdown/JSON] file containing [detailed format specification].
-
-Follow [Standard Section] methodology.
-\`\`\`
-
-### Merge Nodes (Multiple Upstream Dependencies)
-When a node synthesizes multiple inputs:
-
 \`\`\`
 You are a [role].
 
@@ -115,11 +100,6 @@ A [markdown/JSON] file containing [detailed format specification].
         "diagramJson": {
           "nodes": [...],
           "edges": [...],
-          "metadata": {
-            "phase": "Planning|Fieldwork|Reporting|Monitoring",
-            "standard": "Standard name (e.g., IIA GIAS, SOC 2)",
-            "framework": "Framework category (e.g., Internal Audit, Compliance)"
-          }
         }
       }
     ]
@@ -153,52 +133,6 @@ A [markdown/JSON] file containing [detailed format specification].
 \`\`\`
 
 **Do NOT include** \`type\`, \`animated\`, or \`style\` - these are auto-applied.
-
----
-
-## Complete Example
-
-\`\`\`json
-{
-  "version": "1.0",
-  "data": {
-    "workflows": [
-      {
-        "name": "Planning: Internal Audit Risk Assessment",
-        "description": "Risk-based planning workflow for developing the annual audit plan based on IIA Global Internal Audit Standards.",
-        "diagramJson": {
-          "nodes": [
-            {
-              "id": "universe-identification",
-              "data": {
-                "label": "Identify Audit Universe",
-                "description": "Compile comprehensive list of all auditable entities and processes",
-                "instructions": "You are an internal audit planning specialist.\\n\\n**External Inputs Required:**\\n- Organizational chart and business unit documentation\\n- Prior audit reports and findings\\n\\n**Task:**\\nReview all provided documentation to identify auditable entities across the organization.\\n\\n**Output:**\\nA markdown file containing a table with columns: Entity Name, Owner, Description, Last Audit Date, Initial Risk Notes.\\n\\nReference IIA Standard 2010."
-              }
-            },
-            {
-              "id": "risk-assessment",
-              "data": {
-                "label": "Assess and Prioritize Risks",
-                "description": "Evaluate risks for each auditable entity using defined criteria",
-                "instructions": "You are a risk assessment specialist.\\n\\n**Input Context:**\\nUsing the audit universe markdown table from the previous step, which contains auditable entities with their owners and initial risk notes.\\n\\n**Task:**\\nEvaluate each entity against risk factors: financial impact, regulatory exposure, operational complexity, strategic importance.\\n\\n**Output:**\\nA JSON file with an array containing: entityId, entityName, inherentRiskScore, residualRiskScore, priorityRank.\\n\\nFollow IIA Standard 2010.A1."
-              }
-            }
-          ],
-          "edges": [
-            { "id": "e-universe-risk", "source": "universe-identification", "target": "risk-assessment" }
-          ],
-          "metadata": {
-            "phase": "Planning",
-            "standard": "IIA Global Internal Audit Standards",
-            "framework": "Internal Audit"
-          }
-        }
-      }
-    ]
-  }
-}
-\`\`\`
 
 ---
 
@@ -248,5 +182,6 @@ Before outputting, verify:
 
 ## Output Instructions
 
-Respond with the JSON inside a fenced code block labeled json.
-Output ONLY raw JSON. Do not wrap it in quotes, do not escape any characters, do not add backticks, and do not include explanations.`
+Output ONLY raw JSON. Do not wrap it in quotes, do not escape any characters, do not add backticks, and do not include explanations.
+THE OUTPUT SHOULD ONLY BE A JSON CODEBLOCK.
+`

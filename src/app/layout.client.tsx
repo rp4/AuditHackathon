@@ -81,7 +81,7 @@ export function RootLayoutClient({
             <main className="min-h-screen">
               {children}
             </main>
-            {!isProfilePage && !isLandingPage && (
+            {!isProfilePage && (
               <footer className="bg-muted mt-auto">
                 <div className="container mx-auto px-4 py-8">
                   <div className="flex flex-col items-center text-center">
