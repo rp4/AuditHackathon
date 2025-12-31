@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { ArrowLeft, Upload, Loader2, FileJson, CheckCircle, XCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import type { WorkflowExport } from '@/types/workflow'
+import { nodesNeedLayout } from '@/lib/utils/workflowLayout'
 
 interface ImportResult {
   name: string
@@ -207,6 +208,7 @@ export default function AdminImportPage() {
               <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
                 {previewData.data.workflows.map((workflow, index) => {
                   const result = importResults.find(r => r.name === workflow.name)
+                  const willAutoLayout = nodesNeedLayout(workflow.diagramJson?.nodes || [])
                   return (
                     <div key={index} className="p-4 flex items-center justify-between">
                       <div>
@@ -218,6 +220,9 @@ export default function AdminImportPage() {
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {workflow.diagramJson?.nodes?.length || 0} nodes, {workflow.diagramJson?.edges?.length || 0} edges
+                          {willAutoLayout && (
+                            <span className="ml-2 text-amber-600">(auto-layout will apply)</span>
+                          )}
                         </p>
                       </div>
                       {result && (

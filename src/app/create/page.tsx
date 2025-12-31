@@ -10,6 +10,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { WorkflowDesigner } from "@/components/workflows/shared/WorkflowDesigner"
 import {
   Upload,
@@ -19,11 +26,16 @@ import {
   PanelRightClose,
   PanelRight,
   Sparkles,
-  FileUp
+  FileUp,
+  Wand2,
+  Copy,
+  Check
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Node, Edge } from 'reactflow'
 import { useRef } from "react"
+import { processImportedWorkflow } from "@/lib/utils/workflowImport"
+import { WORKFLOW_GENERATION_PROMPT } from "@/lib/constants/prompts"
 
 export default function UploadPage() {
   const router = useRouter()
@@ -33,6 +45,7 @@ export default function UploadPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [promptCopied, setPromptCopied] = useState(false)
 
   const [formData, setFormData] = useState({
     name: "",
@@ -142,17 +155,14 @@ export default function UploadPage() {
       try {
         const json = JSON.parse(event.target?.result as string)
 
+        let rawNodes: any[] = []
+        let rawEdges: any[] = []
+
         // Handle the export format from the detail page
         if (json.version && json.data?.workflows?.[0]?.diagramJson) {
           const workflow = json.data.workflows[0]
-          const { nodes, edges } = workflow.diagramJson
-
-          if (Array.isArray(nodes)) {
-            setWorkflowNodes(nodes)
-          }
-          if (Array.isArray(edges)) {
-            setWorkflowEdges(edges)
-          }
+          rawNodes = workflow.diagramJson.nodes || []
+          rawEdges = workflow.diagramJson.edges || []
 
           // Optionally populate name and description from the workflow
           if (workflow.name && !formData.name) {
@@ -161,21 +171,27 @@ export default function UploadPage() {
           if (workflow.description && !formData.description) {
             setFormData(prev => ({ ...prev, description: workflow.description }))
           }
-
-          toast.success('Workflow imported successfully')
         }
         // Handle direct nodes/edges format
-        else if (json.nodes && json.edges) {
-          if (Array.isArray(json.nodes)) {
-            setWorkflowNodes(json.nodes)
-          }
-          if (Array.isArray(json.edges)) {
-            setWorkflowEdges(json.edges)
-          }
-          toast.success('Workflow imported successfully')
+        else if (json.nodes || json.edges) {
+          rawNodes = json.nodes || []
+          rawEdges = json.edges || []
         }
         else {
           toast.error('Invalid workflow format')
+          return
+        }
+
+        // Process: auto-layout if needed, normalize styles
+        const { nodes, edges, layoutApplied } = processImportedWorkflow(rawNodes, rawEdges)
+
+        setWorkflowNodes(nodes)
+        setWorkflowEdges(edges)
+
+        if (layoutApplied) {
+          toast.success('Workflow imported and auto-laid out')
+        } else {
+          toast.success('Workflow imported successfully')
         }
       } catch (err) {
         console.error('Error parsing JSON:', err)
@@ -208,6 +224,54 @@ export default function UploadPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-amber-600 border-amber-200 hover:bg-amber-50"
+              >
+                <Wand2 className="mr-2 h-4 w-4" />
+                AI Prompt
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle className="flex items-center justify-between">
+                  <span>Workflow Generation Prompt</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(WORKFLOW_GENERATION_PROMPT)
+                      setPromptCopied(true)
+                      setTimeout(() => setPromptCopied(false), 2000)
+                      toast.success('Prompt copied to clipboard')
+                    }}
+                    className="mr-6"
+                  >
+                    {promptCopied ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copy Prompt
+                      </>
+                    )}
+                  </Button>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto mt-4">
+                <pre className="text-xs bg-stone-50 p-4 rounded-lg whitespace-pre-wrap font-mono">
+                  {WORKFLOW_GENERATION_PROMPT}
+                </pre>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Button
             variant="outline"
             size="sm"

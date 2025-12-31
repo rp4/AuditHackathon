@@ -3,29 +3,38 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma/client'
 import { z } from 'zod'
+import { processImportedWorkflow } from '@/lib/utils/workflowImport'
 
-// Schema for validating import data
+// Schema for validating import data - position is now optional (auto-layout if missing)
 const workflowNodeSchema = z.object({
   id: z.string(),
   type: z.string().optional(),
   position: z.object({
     x: z.number(),
     y: z.number(),
-  }),
-  data: z.record(z.string(), z.unknown()),
+  }).optional(),  // OPTIONAL - will auto-layout if missing
+  data: z.object({
+    label: z.string(),
+    description: z.string().optional(),
+    instructions: z.string().optional(),
+    linkedAgentUrl: z.string().optional(),
+    skills: z.array(z.string()).optional(),
+    outputs: z.array(z.string()).optional(),
+  }).passthrough(),  // Allow extra fields that will be stripped
 })
 
 const workflowEdgeSchema = z.object({
   id: z.string(),
   source: z.string(),
   target: z.string(),
+  // All style fields optional - will be normalized
   type: z.string().optional(),
   animated: z.boolean().optional(),
   style: z.record(z.string(), z.unknown()).optional(),
-})
+}).passthrough()  // Allow extra fields that will be stripped
 
 const workflowImportSchema = z.object({
-  version: z.string(),
+  version: z.string().optional().default('1.0'),
   data: z.object({
     workflows: z.array(z.object({
       name: z.string(),
@@ -83,14 +92,20 @@ export async function POST(request: NextRequest) {
           counter++
         }
 
-        // Create the swarm
+        // Process nodes and edges (auto-layout if needed + normalize styles)
+        const { nodes, edges } = processImportedWorkflow(
+          workflow.diagramJson.nodes || [],
+          workflow.diagramJson.edges || []
+        )
+
+        // Create the swarm with processed data
         const swarm = await prisma.swarm.create({
           data: {
             name: workflow.name,
             slug,
             description: workflow.description || '',
-            workflowNodes: JSON.stringify(workflow.diagramJson.nodes || []),
-            workflowEdges: JSON.stringify(workflow.diagramJson.edges || []),
+            workflowNodes: JSON.stringify(nodes),
+            workflowEdges: JSON.stringify(edges),
             workflowMetadata: JSON.stringify(workflow.diagramJson.metadata || {}),
             workflowVersion: validated.version,
             userId: session.user.id,
