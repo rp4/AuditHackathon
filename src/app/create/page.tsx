@@ -29,7 +29,8 @@ import {
   FileUp,
   Wand2,
   Copy,
-  Check
+  Check,
+  ClipboardPaste
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Node, Edge } from 'reactflow'
@@ -46,6 +47,8 @@ export default function UploadPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [promptCopied, setPromptCopied] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [pastedJson, setPastedJson] = useState("")
 
   const [formData, setFormData] = useState({
     name: "",
@@ -204,6 +207,61 @@ export default function UploadPage() {
     e.target.value = ''
   }
 
+  const handlePasteJSON = () => {
+    if (!pastedJson.trim()) {
+      toast.error('Please paste JSON code')
+      return
+    }
+
+    try {
+      const json = JSON.parse(pastedJson)
+
+      let rawNodes: any[] = []
+      let rawEdges: any[] = []
+
+      // Handle the export format from the detail page
+      if (json.version && json.data?.workflows?.[0]?.diagramJson) {
+        const workflow = json.data.workflows[0]
+        rawNodes = workflow.diagramJson.nodes || []
+        rawEdges = workflow.diagramJson.edges || []
+
+        // Optionally populate name and description from the workflow
+        if (workflow.name && !formData.name) {
+          setFormData(prev => ({ ...prev, name: workflow.name }))
+        }
+        if (workflow.description && !formData.description) {
+          setFormData(prev => ({ ...prev, description: workflow.description }))
+        }
+      }
+      // Handle direct nodes/edges format
+      else if (json.nodes || json.edges) {
+        rawNodes = json.nodes || []
+        rawEdges = json.edges || []
+      }
+      else {
+        toast.error('Invalid workflow format')
+        return
+      }
+
+      // Process: auto-layout if needed, normalize styles
+      const { nodes, edges, layoutApplied } = processImportedWorkflow(rawNodes, rawEdges)
+
+      setWorkflowNodes(nodes)
+      setWorkflowEdges(edges)
+      setImportDialogOpen(false)
+      setPastedJson("")
+
+      if (layoutApplied) {
+        toast.success('Workflow imported and auto-laid out')
+      } else {
+        toast.success('Workflow imported successfully')
+      }
+    } catch (err) {
+      console.error('Error parsing JSON:', err)
+      toast.error('Failed to parse JSON. Please check the format.')
+    }
+  }
+
   if (!isAuthenticated) {
     return null
   }
@@ -272,24 +330,76 @@ export default function UploadPage() {
             </DialogContent>
           </Dialog>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={loading}
-            className="text-stone-600 border-stone-200 hover:bg-stone-50"
-          >
-            <FileUp className="mr-2 h-4 w-4" />
-            Import JSON
-          </Button>
+          <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                className="text-stone-600 border-stone-200 hover:bg-stone-50"
+              >
+                <FileUp className="mr-2 h-4 w-4" />
+                Import JSON
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Import Workflow JSON</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                {/* Option 1: Upload File */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Upload JSON File</Label>
+                  <div
+                    className="border-2 border-dashed border-stone-200 rounded-lg p-6 text-center hover:border-stone-400 transition-colors cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <FileUp className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                    <p className="text-sm text-stone-600">Click to select a JSON file</p>
+                    <p className="text-xs text-stone-400 mt-1">or drag and drop</p>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={(e) => {
+                      handleImportJSON(e)
+                      setImportDialogOpen(false)
+                    }}
+                    className="hidden"
+                  />
+                </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,application/json"
-            onChange={handleImportJSON}
-            className="hidden"
-          />
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-stone-200" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-stone-500">or</span>
+                  </div>
+                </div>
+
+                {/* Option 2: Paste JSON */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Paste JSON Code</Label>
+                  <Textarea
+                    placeholder='{"version": "1.0", "data": {"workflows": [...]}}'
+                    value={pastedJson}
+                    onChange={(e) => setPastedJson(e.target.value)}
+                    className="font-mono text-xs h-48 bg-stone-50"
+                  />
+                  <Button
+                    onClick={handlePasteJSON}
+                    disabled={!pastedJson.trim()}
+                    className="w-full bg-stone-900 hover:bg-stone-800"
+                  >
+                    <ClipboardPaste className="mr-2 h-4 w-4" />
+                    Import Pasted JSON
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <Button
             variant="ghost"
