@@ -30,11 +30,18 @@ Read the audit document and identify:
 - Natural dependencies between steps
 
 ### Step 2: Define Nodes (Audit Artifacts)
-For each distinct step, define:
+For each distinct step in the given phase, define:
 - **id**: kebab-case identifier (e.g., \`risk-assessment\`)
 - **label**: 3-6 word action title using verbs (Assess, Document, Evaluate, Review, Test, Verify)
 - **description**: One sentence explaining what the step produces
 - **instructions**: Detailed prompt (see instruction templates below)
+
+Note, the steps the step types in each phase:
+• Pre-planning (Internal Audit Plan Development): Include only steps related to the organization-wide risk assessment, defining the audit universe, and establishing the annual or multiyear internal audit plan. This phase focuses on prioritizing risks at the organizational level to determine which engagements to perform.
+• Planning (Engagement Planning): Include only steps related to understanding the specific activity under review, performing an engagement-level risk assessment, and establishing the engagement's objectives and scope. This phase must culminate in a documented engagement work program that identifies tasks and internal auditors assigned.
+• Fieldwork (Conducting Engagement Work): Include only steps involved in implementing the work program, such as gathering information, performing analyses, and evaluating evidence. This phase is restricted to identifying potential findings, determining their causes and effects, and developing initial conclusions.
+• Reporting (Communicating Results): Include only steps for developing and disseminating the final engagement communication, which must include objectives, scope, findings, and conclusions. This phase also includes obtaining management action plans and conducting follow-up to confirm implementation.
+• Quality Assurance (QA): Include only steps regarding the Quality Assurance and Improvement Program (QAIP), such as ongoing monitoring through supervisory reviews, periodic internal self-assessments, and external assessments. These steps verify conformance with the Standards and the achievement of performance objectives across all other phases.
 
 ### Step 3: Map Data Dependencies (Edges)
 This is the most important step. For each node, ask:
