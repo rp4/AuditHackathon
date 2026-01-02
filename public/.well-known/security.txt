@@ -1,0 +1,8 @@
+# Security Policy for AuditToolbox
+# https://securitytxt.org/ (RFC 9116)
+
+Contact: mailto:Rich@audittoolbox.com
+Expires: 2026-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://audittoolbox.com/.well-known/security.txt
+Policy: https://audittoolbox.com/security-policy

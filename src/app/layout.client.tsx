@@ -85,14 +85,21 @@ export function RootLayoutClient({
               <footer className="bg-muted mt-auto">
                 <div className="container mx-auto px-4 py-8">
                   <div className="flex flex-col items-center text-center">
-                    <h3 className="font-semibold mb-2">🐝 AuditSwarm</h3>
+                    <h3 className="font-semibold mb-2">AuditToolbox</h3>
                     <p className="text-sm text-muted-foreground mb-6">
                       The premier platform for sharing audit workflows
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>© 2025 AuditSwarm. All rights reserved.</span>
-                      <span>•</span>
-                      <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+                    <p className="text-sm text-muted-foreground">
+                      © 2025 AuditToolbox. All rights reserved.
+                    </p>
+                    <div className="flex flex-wrap justify-center items-center gap-x-3 mt-4 text-xs text-muted-foreground/50">
+                      <Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy</Link>
+                      <span>·</span>
+                      <Link href="/terms" className="hover:text-muted-foreground transition-colors">Terms</Link>
+                      <span>·</span>
+                      <Link href="/about" className="hover:text-muted-foreground transition-colors">About</Link>
+                      <span>·</span>
+                      <Link href="/contact" className="hover:text-muted-foreground transition-colors">Contact</Link>
                     </div>
                   </div>
                 </div>

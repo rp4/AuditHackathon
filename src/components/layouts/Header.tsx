@@ -62,7 +62,7 @@ export default function Header() {
             <span className="text-2xl sm:text-3xl md:text-5xl">🐝</span>
           </div>
           <div className="flex flex-col">
-            <span className="font-black text-lg sm:text-xl md:text-3xl">AuditSwarm</span>
+            <span className="font-black text-lg sm:text-xl md:text-3xl">AuditToolbox</span>
             <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">For Auditors, By Auditors</span>
           </div>
         </Link>
