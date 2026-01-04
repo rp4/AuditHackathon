@@ -156,7 +156,12 @@ export default function UploadPage() {
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string)
+        let json = JSON.parse(event.target?.result as string)
+
+        // Handle double-stringified JSON (when AI outputs JSON as a string)
+        if (typeof json === 'string') {
+          json = JSON.parse(json)
+        }
 
         let rawNodes: any[] = []
         let rawEdges: any[] = []
@@ -214,7 +219,12 @@ export default function UploadPage() {
     }
 
     try {
-      const json = JSON.parse(pastedJson)
+      let json = JSON.parse(pastedJson)
+
+      // Handle double-stringified JSON (when AI outputs JSON as a string)
+      if (typeof json === 'string') {
+        json = JSON.parse(json)
+      }
 
       let rawNodes: any[] = []
       let rawEdges: any[] = []
