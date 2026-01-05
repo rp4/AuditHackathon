@@ -401,7 +401,7 @@ export default function UploadPage() {
                   <Button
                     onClick={handlePasteJSON}
                     disabled={!pastedJson.trim()}
-                    className="w-full bg-stone-900 hover:bg-stone-800"
+                    className="w-full bg-amber-500 hover:bg-amber-600 text-black"
                   >
                     <ClipboardPaste className="mr-2 h-4 w-4" />
                     Import Pasted JSON
