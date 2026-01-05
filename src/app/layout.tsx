@@ -11,37 +11,37 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "AuditToolbox - Workflow Sharing Platform for Auditors",
-    template: "%s | AuditToolbox"
+    default: "AuditSwarm - Workflow Sharing Platform for Auditors",
+    template: "%s | AuditSwarm"
   },
   icons: {
     icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐝</text></svg>',
   },
-  description: "AuditToolbox is a professional platform for certified public accountants, internal auditors, and audit professionals to discover, share, and collaborate on audit workflows. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot.",
-  keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents", "AuditToolbox", "CPA", "internal audit", "external audit", "accounting", "professional services", "audit software", "audit technology"],
+  description: "AuditSwarm is a professional platform for certified public accountants, internal auditors, and audit professionals to discover, share, and collaborate on audit workflows. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot.",
+  keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents", "AuditSwarm", "CPA", "internal audit", "external audit", "accounting", "professional services", "audit software", "audit technology"],
   authors: [{ name: "Rich Penfil" }],
-  creator: "AuditToolbox",
-  publisher: "AuditToolbox",
+  creator: "AuditSwarm",
+  publisher: "AuditSwarm",
   category: "Business & Professional Services",
   classification: "Business/Technology",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://audittoolbox.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'AuditToolbox - Professional Workflow Sharing Platform for Auditors',
+    title: 'AuditSwarm - Professional Workflow Sharing Platform for Auditors',
     description: 'A professional platform for audit professionals to discover and share audit workflows. Trusted by CPAs, internal auditors, and audit firms.',
-    siteName: 'AuditToolbox',
+    siteName: 'AuditSwarm',
     images: [{
       url: '/api/og',
       width: 1200,
       height: 630,
-      alt: 'AuditToolbox - Professional Audit Workflow Platform',
+      alt: 'AuditSwarm - Professional Audit Workflow Platform',
     }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AuditToolbox - Professional Workflow Sharing Platform',
+    title: 'AuditSwarm - Professional Workflow Sharing Platform',
     description: 'A professional platform for audit professionals to discover and share audit workflows.',
     images: ['/api/og'],
   },
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     'audience': 'Audit Professionals, CPAs, Internal Auditors, Accountants',
     'page-topic': 'Business Software, Audit Technology, Professional Services',
     'page-type': 'Professional Services Portal',
-    'company': 'AuditToolbox',
+    'company': 'AuditSwarm',
     'industry': 'Professional Services, Accounting, Audit',
   },
   verification: {
@@ -76,12 +76,12 @@ export const metadata: Metadata = {
 
 // Organization JSON-LD structured data
 function OrganizationJsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://audittoolbox.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
 
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'AuditToolbox',
+    name: 'AuditSwarm',
     url: baseUrl,
     logo: `${baseUrl}/icon.png`,
     description: 'A professional platform for audit professionals to discover and share audit workflows.',
@@ -107,12 +107,12 @@ function OrganizationJsonLd() {
 
 // WebSite JSON-LD for search features
 function WebSiteJsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://audittoolbox.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
 
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'AuditToolbox',
+    name: 'AuditSwarm',
     url: baseUrl,
     description: 'Professional workflow sharing platform for auditors',
     potentialAction: {

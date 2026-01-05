@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
 
   // Sanitize all inputs
-  const title = sanitizeInput(searchParams.get('title'), 200) || 'AuditToolbox'
+  const title = sanitizeInput(searchParams.get('title'), 200) || 'AuditSwarm'
   const description = sanitizeInput(searchParams.get('description'), 300) || 'For Auditors, By Auditors'
   const author = sanitizeInput(searchParams.get('author'), 100)
   const ratingParam = searchParams.get('rating')
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
               marginBottom: 20,
             }}
           >
-            AuditToolbox
+            AuditSwarm
           </div>
         </div>
 

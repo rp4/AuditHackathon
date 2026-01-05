@@ -19,9 +19,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://audittoolbox.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
   const title = `${swarm.name} - Audit Workflow`
-  const description = swarm.description?.slice(0, 160) || `${swarm.name} audit workflow template on AuditToolbox`
+  const description = swarm.description?.slice(0, 160) || `${swarm.name} audit workflow template on AuditSwarm`
   const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(swarm.name)}&description=${encodeURIComponent(description)}&author=${encodeURIComponent(swarm.user.name || 'Anonymous')}&rating=${swarm.rating_avg.toFixed(1)}`
 
   return {
@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // JSON-LD structured data for the swarm
 function SwarmJsonLd({ swarm }: { swarm: NonNullable<Awaited<ReturnType<typeof getSwarmBySlug>>> }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://audittoolbox.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
 
   const structuredData = {
     '@context': 'https://schema.org',

@@ -4,8 +4,8 @@ import { ArrowLeft } from "lucide-react"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Contact | AuditToolbox",
-  description: "Contact information for AuditToolbox.",
+  title: "Contact | AuditSwarm",
+  description: "Contact information for AuditSwarm.",
 }
 
 export default function ContactPage() {
@@ -35,7 +35,7 @@ export default function ContactPage() {
               <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
                 <p className="text-gray-700"><strong>Name:</strong> Rich Penfil</p>
                 <p className="text-gray-700 mt-2"><strong>Email:</strong> <a href="mailto:Rich@audittoolbox.com" className="text-indigo-600 hover:underline">Rich@audittoolbox.com</a></p>
-                <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditToolbox</p>
+                <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>
               </div>
             </section>
 

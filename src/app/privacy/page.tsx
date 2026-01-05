@@ -4,8 +4,8 @@ import { ArrowLeft } from "lucide-react"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | AuditToolbox",
-  description: "Privacy Policy for AuditToolbox - how we collect, use, and protect your data.",
+  title: "Privacy Policy | AuditSwarm",
+  description: "Privacy Policy for AuditSwarm - how we collect, use, and protect your data.",
 }
 
 export default function PrivacyPage() {
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-3xl font-bold mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              Welcome to AuditToolbox ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+              Welcome to AuditSwarm ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
             </p>
           </section>
 
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
             </p>
             <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
               <p className="text-gray-700"><strong>Email:</strong> Rich@audittoolbox.com</p>
-              <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditToolbox</p>
+              <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>
             </div>
           </section>
           </div>
