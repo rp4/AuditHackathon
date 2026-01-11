@@ -58,8 +58,14 @@ export default function Header() {
     <header className={`border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
         <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
-          <div className="bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-amber-500/50 flex items-center justify-center">
-            <span className="text-2xl sm:text-3xl md:text-5xl">🐝</span>
+          <div className="relative rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-amber-500/50 overflow-hidden">
+            <Image
+              src="/queen.png"
+              alt="AuditSwarm Logo"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-black text-lg sm:text-xl md:text-3xl">AuditSwarm</span>

@@ -15,10 +15,11 @@ export const metadata: Metadata = {
     template: "%s | AuditSwarm"
   },
   icons: {
-    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐝</text></svg>',
+    icon: '/queen.png',
+    apple: '/queen.png',
   },
-  description: "AuditSwarm is a professional platform for certified public accountants, internal auditors, and audit professionals to discover, share, and collaborate on audit workflows. Supporting OpenAI, Claude, Gemini, LangChain, and Copilot.",
-  keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "financial audit", "AI agents", "AuditSwarm", "CPA", "internal audit", "external audit", "accounting", "professional services", "audit software", "audit technology"],
+  description: "AuditSwarm is a platform for internal auditors to discover, share, and collaborate on AI-powered audit workflows. Each workflow is a context map of well-designed prompts and context engineering patterns.",
+  keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "AI agents", "AuditSwarm", "internal audit", "context engineering", "prompt engineering", "audit software", "audit technology"],
   authors: [{ name: "Rich Penfil" }],
   creator: "AuditSwarm",
   publisher: "AuditSwarm",
@@ -29,8 +30,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'AuditSwarm - Professional Workflow Sharing Platform for Auditors',
-    description: 'A professional platform for audit professionals to discover and share audit workflows. Trusted by CPAs, internal auditors, and audit firms.',
+    title: 'AuditSwarm - Workflow Sharing Platform for Internal Auditors',
+    description: 'A platform for internal auditors to discover and share AI-powered audit workflows built with well-designed prompts and context engineering.',
     siteName: 'AuditSwarm',
     images: [{
       url: '/api/og',
@@ -41,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AuditSwarm - Professional Workflow Sharing Platform',
-    description: 'A professional platform for audit professionals to discover and share audit workflows.',
+    title: 'AuditSwarm - Workflow Sharing Platform for Internal Auditors',
+    description: 'A platform for internal auditors to discover and share AI-powered audit workflows built with context engineering.',
     images: ['/api/og'],
   },
   robots: {
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
     'distribution': 'Global',
     'revisit-after': '7 days',
     'target': 'all',
-    'audience': 'Audit Professionals, CPAs, Internal Auditors, Accountants',
+    'audience': 'Internal Auditors, Audit Professionals',
     'page-topic': 'Business Software, Audit Technology, Professional Services',
     'page-type': 'Professional Services Portal',
     'company': 'AuditSwarm',
@@ -83,8 +84,8 @@ function OrganizationJsonLd() {
     '@type': 'Organization',
     name: 'AuditSwarm',
     url: baseUrl,
-    logo: `${baseUrl}/icon.png`,
-    description: 'A professional platform for audit professionals to discover and share audit workflows.',
+    logo: `${baseUrl}/queen.png`,
+    description: 'A platform for internal auditors to discover and share AI-powered audit workflows built with context engineering.',
     founder: {
       '@type': 'Person',
       name: 'Rich Penfil',
