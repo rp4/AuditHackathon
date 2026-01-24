@@ -6,7 +6,7 @@ This file provides guidance to Claude Code agents (claude.ai/code) when working 
 
 OpenAuditSwarms is a **workflow template marketplace** for auditors. Users can create, share, and download visual workflow diagrams using a React Flow canvas. Exported workflows are compatible with AuditSwarm-GCP's import system. The platform is deployed on Google Cloud Platform (GCP) using Cloud Run, Cloud SQL (PostgreSQL), and Cloud Storage.
 
-**Key Concept**: A "Swarm" is a workflow template consisting of connected artifact nodes that define an audit process flow.
+**Key Concept**: A "Swarm" is a workflow template consisting of connected step nodes that define an audit process flow.
 
 ## Tech Stack
 
@@ -122,7 +122,7 @@ The application follows a simplified user-centric model:
 
 1. **Swarm Creation Flow** (`/create`)
    - Canvas-first UI with React Flow WorkflowDesigner
-   - Users add artifact nodes and connect them with edges
+   - Users add step nodes and connect them with edges
    - Form sidebar for name, description, category
    - JSON import for uploading existing workflows
    - Submit saves workflow data as JSON strings
@@ -162,9 +162,9 @@ src/
 │   ├── workflows/         # React Flow components
 │   │   └── shared/
 │   │       ├── WorkflowDesigner.tsx
-│   │       ├── nodes/ArtifactNode.tsx
+│   │       ├── nodes/StepNode.tsx
 │   │       ├── edges/DeletableEdge.tsx
-│   │       └── forms/ArtifactNodeConfigForm.tsx
+│   │       └── forms/StepNodeConfigForm.tsx
 │   ├── ui/                # Shadcn/ui components
 │   └── layouts/           # Layout components
 ├── hooks/
@@ -181,11 +181,11 @@ src/
 
 ### Workflow Data Structure
 
-**Node Structure (ArtifactNode):**
+**Node Structure (StepNode):**
 ```typescript
 {
   id: string
-  type: 'artifact'
+  type: 'step'
   position: { x: number, y: number }
   data: {
     label: string

@@ -435,7 +435,7 @@ export default function CollectivePage() {
               </div>
               <h3 className="text-xl font-semibold text-stone-600">Start Building</h3>
               <p className="text-stone-500 text-sm leading-relaxed">
-                Click the &quot;Add Artifact&quot; button above to create your first workflow step,
+                Click the &quot;Add Step&quot; button above to create your first workflow step,
                 or use the &quot;Prompt&quot; button to generate a workflow with AI.
               </p>
             </div>

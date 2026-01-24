@@ -29,7 +29,7 @@ Read the audit document and identify:
 - Distinct procedures or deliverables
 - Natural dependencies between steps
 
-### Step 2: Define Nodes (Audit Artifacts)
+### Step 2: Define Nodes (Audit Steps)
 For each distinct step in the given phase, define:
 - **id**: kebab-case identifier (e.g., \`risk-assessment\`)
 - **label**: 3-6 word action title using verbs (Assess, Document, Evaluate, Review, Test, Verify)
@@ -80,11 +80,11 @@ Reference [Standard Section] for requirements.
 You are a [role].
 
 **Input Context:**
-1. The [artifact 1] from [Step A] containing [fields/structure]
-2. The [artifact 2] from [Step B] containing [fields/structure]
+1. The [result 1] from [Step A] containing [fields/structure]
+2. The [result 2] from [Step B] containing [fields/structure]
 
 **Task:**
-Synthesize these inputs to [specific task]. Cross-reference [artifact 1] with [artifact 2] to [purpose].
+Synthesize these inputs to [specific task]. Cross-reference [result 1] with [result 2] to [purpose].
 
 **Output:**
 A [markdown/JSON] file containing [detailed format specification].
@@ -162,7 +162,7 @@ Before outputting, verify:
 ### Context Engineering (Edges)
 - Each edge represents a real data dependency
 - Every edge corresponds to an explicit reference in the target node's instructions
-- No orphan references (instructions don't reference artifacts without corresponding edges)
+- No orphan references (instructions don't reference results without corresponding edges)
 
 ---
 

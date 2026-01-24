@@ -20,12 +20,13 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ArtifactNode } from './nodes/ArtifactNode'
+import { StepNode } from './nodes/StepNode'
 import { DeletableEdge } from './edges/DeletableEdge'
 import { WorkflowErrorBoundary } from './WorkflowErrorBoundary'
 
 const defaultNodeTypes: NodeTypes = {
-  artifact: ArtifactNode
+  step: StepNode,
+  artifact: StepNode  // Legacy support for existing data
 }
 
 const defaultEdgeTypes = {
@@ -73,8 +74,8 @@ function WorkflowDesignerInner({
     [edges, onEdgesChange]
   )
 
-  // Add a new artifact node
-  const handleAddArtifact = useCallback(() => {
+  // Add a new step node
+  const handleAddStep = useCallback(() => {
     const gridSize = 20
     const nodeWidth = 300
     const nodeSpacing = 100
@@ -93,11 +94,11 @@ function WorkflowDesignerInner({
     }
 
     const newNode: Node = {
-      id: `artifact_${Date.now()}`,
-      type: 'artifact',
+      id: `step_${Date.now()}`,
+      type: 'step',
       position,
       data: {
-        label: 'New Artifact',
+        label: 'New Step',
         description: '',
         instructions: '',
         linkedAgentUrl: '',
@@ -167,12 +168,12 @@ function WorkflowDesignerInner({
             position="bottom-right"
           />
 
-          {/* Top-left: Add Artifact button (only in edit mode) */}
+          {/* Top-left: Add Step button (only in edit mode) */}
           {!readOnly && (
             <Panel position="top-left" className="m-2">
-              <Button onClick={handleAddArtifact} size="sm">
+              <Button onClick={handleAddStep} size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Artifact
+                Add Step
               </Button>
             </Panel>
           )}

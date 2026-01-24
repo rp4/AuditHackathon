@@ -660,7 +660,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
                         <h3 className="font-semibold text-stone-800">
                           {selectedNode.data.label || 'Untitled Node'}
                         </h3>
-                        <p className="text-xs text-stone-500">Artifact Node</p>
+                        <p className="text-xs text-stone-500">Step Node</p>
                       </div>
                     </div>
                     <Button

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
-interface ArtifactNodeConfigFormProps {
+interface StepNodeConfigFormProps {
   initialData: {
     label: string
     description?: string
@@ -22,11 +22,11 @@ interface ArtifactNodeConfigFormProps {
   onCancel: () => void
 }
 
-export function ArtifactNodeConfigForm({
+export function StepNodeConfigForm({
   initialData,
   onSave,
   onCancel,
-}: ArtifactNodeConfigFormProps) {
+}: StepNodeConfigFormProps) {
   const [formData, setFormData] = useState({
     label: initialData.label || '',
     description: initialData.description || '',
@@ -49,7 +49,7 @@ export function ArtifactNodeConfigForm({
           id="label"
           value={formData.label}
           onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-          placeholder="Artifact name"
+          placeholder="Step name"
           required
         />
       </div>
@@ -60,7 +60,7 @@ export function ArtifactNodeConfigForm({
           id="description"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Brief description of this artifact in the workflow"
+          placeholder="Brief description of this step in the workflow"
           rows={3}
         />
       </div>
@@ -71,7 +71,7 @@ export function ArtifactNodeConfigForm({
           id="instructions"
           value={formData.instructions}
           onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-          placeholder="Instructions or notes for this artifact step"
+          placeholder="Instructions or notes for this step"
           rows={4}
         />
       </div>
@@ -86,7 +86,7 @@ export function ArtifactNodeConfigForm({
           placeholder="https://claude.ai/project/... or https://chatgpt.com/..."
         />
         <p className="text-xs text-muted-foreground">
-          Link to an AI agent that can help with this artifact
+          Link to an AI agent that can help with this step
         </p>
       </div>
 

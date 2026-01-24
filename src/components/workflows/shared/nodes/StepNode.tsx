@@ -11,10 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ArtifactNodeConfigForm } from '../forms/ArtifactNodeConfigForm'
+import { StepNodeConfigForm } from '../forms/StepNodeConfigForm'
 import { Button } from '@/components/ui/button'
 
-export interface ArtifactNodeData {
+export interface StepNodeData {
   label: string
   description?: string
   instructions?: string
@@ -24,7 +24,7 @@ export interface ArtifactNodeData {
   [key: string]: unknown
 }
 
-export const ArtifactNode = memo((props: NodeProps<ArtifactNodeData>) => {
+export const StepNode = memo((props: NodeProps<StepNodeData>) => {
   const { data, id } = props
   const { setNodes, setEdges } = useReactFlow()
   const readOnly = data.readOnly || false
@@ -106,7 +106,7 @@ export const ArtifactNode = memo((props: NodeProps<ArtifactNodeData>) => {
 
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
-                {data.label || 'New Artifact'}
+                {data.label || 'New Step'}
               </h3>
             </div>
           </div>
@@ -146,12 +146,12 @@ export const ArtifactNode = memo((props: NodeProps<ArtifactNodeData>) => {
       <Dialog open={showConfigForm} onOpenChange={setShowConfigForm}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Configure Artifact Node</DialogTitle>
+            <DialogTitle>Configure Step Node</DialogTitle>
             <DialogDescription>
-              Edit the name, description, and instructions for this artifact
+              Edit the name, description, and instructions for this step
             </DialogDescription>
           </DialogHeader>
-          <ArtifactNodeConfigForm
+          <StepNodeConfigForm
             initialData={{
               label: data.label,
               description: data.description,
@@ -167,4 +167,4 @@ export const ArtifactNode = memo((props: NodeProps<ArtifactNodeData>) => {
   )
 })
 
-ArtifactNode.displayName = 'ArtifactNode'
+StepNode.displayName = 'StepNode'

@@ -45,8 +45,8 @@ async function migrate() {
       try {
         // Create a basic workflow node from the description
         const nodes = [{
-          id: `artifact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          type: 'artifact',
+          id: `step_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: 'step',
           position: { x: 100, y: 100 },
           data: {
             label: swarm.name,

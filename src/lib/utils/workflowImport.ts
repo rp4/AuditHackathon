@@ -22,7 +22,7 @@ export interface ProcessedWorkflow {
 /**
  * Process imported workflow data:
  * 1. Auto-layout nodes if positions are missing
- * 2. Normalize all node types to 'artifact'
+ * 2. Normalize all node types to 'step'
  * 3. Normalize all edge styles to consistent defaults
  */
 export function processImportedWorkflow(

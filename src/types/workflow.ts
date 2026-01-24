@@ -2,7 +2,7 @@
 
 export interface WorkflowNode {
   id: string
-  type: 'artifact'
+  type: 'step'
   position: { x: number; y: number }
   data: WorkflowNodeData
 }
@@ -57,7 +57,7 @@ export type WorkflowImport = WorkflowExport
 // Flexible input types for imports (position optional, styles ignored)
 export interface WorkflowNodeInput {
   id: string
-  type?: string              // defaults to 'artifact'
+  type?: string              // defaults to 'step'
   position?: { x: number; y: number }  // OPTIONAL - auto-layout if missing
   data: {
     label: string

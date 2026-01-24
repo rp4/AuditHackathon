@@ -79,7 +79,7 @@ async function main() {
   const sampleNodes = [
     {
       id: 'node_1',
-      type: 'artifact',
+      type: 'step',
       position: { x: 100, y: 100 },
       data: {
         label: 'Gather Financial Statements',
@@ -90,7 +90,7 @@ async function main() {
     },
     {
       id: 'node_2',
-      type: 'artifact',
+      type: 'step',
       position: { x: 400, y: 100 },
       data: {
         label: 'Analyze Key Ratios',
@@ -101,7 +101,7 @@ async function main() {
     },
     {
       id: 'node_3',
-      type: 'artifact',
+      type: 'step',
       position: { x: 700, y: 100 },
       data: {
         label: 'Document Red Flags',

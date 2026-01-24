@@ -235,7 +235,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
                 </div>
                 <h3 className="text-xl font-semibold text-stone-600">No Workflow Yet</h3>
                 <p className="text-stone-500 text-sm leading-relaxed">
-                  Click the "Add Artifact" button above to create your first workflow node.
+                  Click the "Add Step" button above to create your first workflow node.
                   Connect nodes to define the flow of your audit process.
                 </p>
               </div>

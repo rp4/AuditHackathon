@@ -15,7 +15,7 @@ export const DEFAULT_EDGE_STYLE = {
   strokeDasharray: '5,5'  // dashed
 } as const
 
-export const DEFAULT_NODE_TYPE = 'artifact' as const
+export const DEFAULT_NODE_TYPE = 'step' as const
 export const DEFAULT_EDGE_TYPE = 'deletable' as const
 
 // Layout configuration
