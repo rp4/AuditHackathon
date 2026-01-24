@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collective Swarm</title>
+
+  <!-- React 18.3.1 -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+
+  <!-- Babel for JSX (no build step) -->
+  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
+
+  <!-- ReactFlow 11.11.4 -->
+  <script src="https://unpkg.com/reactflow@11.11.4/dist/umd/index.js"></script>
+  <link href="https://unpkg.com/reactflow@11.11.4/dist/style.css" rel="stylesheet" />
+
+  <!-- Dagre for auto-layout -->
+  <script src="https://unpkg.com/@dagrejs/dagre@1.1.8/dist/dagre.min.js"></script>
+
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    html, body, #root {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* ReactFlow handle overrides */
+    .react-flow__handle {
+      width: 12px !important;
+      height: 12px !important;
+      background-color: #9ca3af !important;
+      border: 2px solid white !important;
+    }
+
+    .react-flow__handle:hover {
+      background-color: #6366f1 !important;
+    }
+
+    /* Modal animations */
+    .modal-backdrop {
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    .modal-content {
+      animation: slideIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95) !important;
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) !important;
+      }
+    }
+
+    #modal-root {
+      position: relative;
+      z-index: 9999;
+    }
+
+    /* Empty state overlay */
+    .empty-state-overlay {
+      pointer-events: none;
+    }
+
+    .empty-state-overlay > div {
+      pointer-events: auto;
+    }
+
+    /* Edge hover styles */
+    .react-flow__edge path {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="modal-root"></div>
+
+  <script type="text/babel">
+    const { useState, useCallback, useEffect, useRef, memo } = React;
+    const { createPortal } = ReactDOM;
+    const {
+      ReactFlowProvider,
+      ReactFlow,
+      Background,
+      Controls,
+      MiniMap,
+      Panel,
+      addEdge,
+      applyNodeChanges,
+      applyEdgeChanges,
+      Handle,
+      Position,
+      getBezierPath,
+      EdgeLabelRenderer,
+      useReactFlow,
+      BackgroundVariant
+    } = window.ReactFlow;
+
+    // ============================================
+    // Constants
+    // ============================================
+    const GRID_SIZE = 20;
+    const LOCAL_STORAGE_KEY = 'auditswarm-workflow-canvas';
+
+    const DEFAULT_EDGE_STYLE = {
+      stroke: '#6366f1',
+      strokeWidth: 2,
+      strokeDasharray: '5,5'
+    };
+
+    const DEFAULT_LAYOUT_OPTIONS = {
+      direction: 'LR',
+      nodeWidth: 300,
+      nodeHeight: 120,
+      horizontalSpacing: 50,
+      verticalSpacing: 100
+    };
+
+    // ============================================
+    // SVG Icons (inline)
+    // ============================================
+    const PlusIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+    );
+
+    const FileTextIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <polyline points="10 9 9 9 8 9" />
+      </svg>
+    );
+
+    const Settings2Icon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 7h-9" />
+        <path d="M14 17H5" />
+        <circle cx="17" cy="17" r="3" />
+        <circle cx="7" cy="7" r="3" />
+      </svg>
+    );
+
+    const Trash2Icon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <line x1="10" y1="11" x2="10" y2="17" />
+        <line x1="14" y1="11" x2="14" y2="17" />
+      </svg>
+    );
+
+    const XIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    );
+
+    const UploadIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+      </svg>
+    );
+
+    const DownloadIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+    );
+
+    const ClipboardIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      </svg>
+    );
+
+    const SparklesIcon = ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        <path d="M5 3v4" />
+        <path d="M19 17v4" />
+        <path d="M3 5h4" />
+        <path d="M17 19h4" />
+      </svg>
+    );
+
+    // ============================================
+    // Utility Functions
+    // ============================================
+
+    function nodesNeedLayout(nodes) {
+      if (nodes.length === 0) return false;
+      return nodes.some(node =>
+        !node.position ||
+        typeof node.position.x !== 'number' ||
+        typeof node.position.y !== 'number'
+      );
+    }
+
+    function applyDagreLayout(nodes, edges, options = {}) {
+      if (nodes.length === 0) return [];
+
+      const opts = { ...DEFAULT_LAYOUT_OPTIONS, ...options };
+      const g = new dagre.graphlib.Graph();
+
+      g.setGraph({
+        rankdir: opts.direction,
+        nodesep: opts.horizontalSpacing,
+        ranksep: opts.verticalSpacing,
+        marginx: 50,
+        marginy: 50
+      });
+
+      g.setDefaultEdgeLabel(() => ({}));
+
+      nodes.forEach(node => {
+        g.setNode(node.id, {
+          width: opts.nodeWidth,
+          height: opts.nodeHeight
+        });
+      });
+
+      edges.forEach(edge => {
+        if (g.hasNode(edge.source) && g.hasNode(edge.target)) {
+          g.setEdge(edge.source, edge.target);
+        }
+      });
+
+      dagre.layout(g);
+
+      return nodes.map(node => {
+        const nodeWithPosition = g.node(node.id);
+        return {
+          ...node,
+          type: 'step',
+          position: {
+            x: Math.round(nodeWithPosition.x - opts.nodeWidth / 2),
+            y: Math.round(nodeWithPosition.y - opts.nodeHeight / 2)
+          }
+        };
+      });
+    }
+
+    function normalizeEdges(edges) {
+      return edges.map(edge => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: 'deletable',
+        animated: true,
+        style: { ...DEFAULT_EDGE_STYLE }
+      }));
+    }
+
+    function processImportedWorkflow(jsonData) {
+      let data = jsonData;
+
+      // Handle double-stringified JSON
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          throw new Error('Invalid JSON format');
+        }
+      }
+
+      // Handle AuditSwarm export format
+      if (data.data?.workflows?.[0]?.diagramJson) {
+        data = data.data.workflows[0].diagramJson;
+      }
+
+      // Handle direct diagramJson format
+      if (data.diagramJson) {
+        data = data.diagramJson;
+      }
+
+      const nodes = data.nodes || [];
+      const edges = data.edges || [];
+
+      // Normalize nodes
+      let normalizedNodes = nodes.map(node => ({
+        id: node.id,
+        type: 'step',
+        position: node.position || { x: 0, y: 0 },
+        data: {
+          label: node.data?.label || 'Untitled',
+          description: node.data?.description || '',
+          instructions: node.data?.instructions || '',
+          linkedAgentUrl: node.data?.linkedAgentUrl || ''
+        }
+      }));
+
+      // Apply layout if nodes are missing positions
+      if (nodesNeedLayout(normalizedNodes)) {
+        normalizedNodes = applyDagreLayout(normalizedNodes, edges);
+      }
+
+      const normalizedEdges = normalizeEdges(edges);
+
+      return { nodes: normalizedNodes, edges: normalizedEdges };
+    }
+
+    // ============================================
+    // Modal Component
+    // ============================================
+    function Modal({ isOpen, onClose, title, description, children, wide = false }) {
+      useEffect(() => {
+        if (!isOpen) return;
+
+        const handleEscape = (e) => {
+          if (e.key === 'Escape') onClose();
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+          document.removeEventListener('keydown', handleEscape);
+          document.body.style.overflow = '';
+        };
+      }, [isOpen, onClose]);
+
+      if (!isOpen) return null;
+
+      const modalRoot = document.getElementById('modal-root');
+
+      return createPortal(
+        <div className="fixed inset-0" style={{ zIndex: 9999 }}>
+          {/* Backdrop */}
+          <div
+            className="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+          />
+
+          {/* Content */}
+          <div
+            className="modal-content fixed bg-white rounded-lg shadow-xl"
+            style={{
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '100%',
+              maxWidth: wide ? '56rem' : '32rem',
+              zIndex: 10000
+            }}
+          >
+            <div className="flex flex-col p-6">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  {title && <h2 className="text-lg font-semibold text-gray-900">{title}</h2>}
+                  {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                >
+                  <XIcon className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Body */}
+              {children}
+            </div>
+          </div>
+        </div>,
+        modalRoot
+      );
+    }
+
+    // ============================================
+    // Config Modal (Node Configuration Form)
+    // ============================================
+    function ConfigModal({ isOpen, onClose, nodeData, onSave }) {
+      const [formData, setFormData] = useState({
+        label: '',
+        description: '',
+        instructions: '',
+        linkedAgentUrl: ''
+      });
+
+      useEffect(() => {
+        if (nodeData) {
+          setFormData({
+            label: nodeData.label || '',
+            description: nodeData.description || '',
+            instructions: nodeData.instructions || '',
+            linkedAgentUrl: nodeData.linkedAgentUrl || ''
+          });
+        }
+      }, [nodeData]);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+      };
+
+      return (
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          title="Configure Step"
+          description="Edit the name, description, and instructions for this step"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="label" className="block text-sm font-medium text-gray-700">
+                Name<span className="text-red-500">*</span>
+              </label>
+              <input
+                id="label"
+                type="text"
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                placeholder="Step name"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Brief description of this step in the workflow"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="instructions" className="block text-sm font-medium text-gray-700">
+                Instructions
+              </label>
+              <textarea
+                id="instructions"
+                value={formData.instructions}
+                onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                placeholder="Instructions or notes for this step"
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="linkedAgentUrl" className="block text-sm font-medium text-gray-700">
+                AI Agent Link (Optional)
+              </label>
+              <input
+                id="linkedAgentUrl"
+                type="url"
+                value={formData.linkedAgentUrl}
+                onChange={(e) => setFormData({ ...formData, linkedAgentUrl: e.target.value })}
+                placeholder="https://claude.ai/project/... or https://chatgpt.com/..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <p className="text-xs text-gray-500">
+                Link to an AI agent that can help with this step
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </Modal>
+      );
+    }
+
+    // ============================================
+    // Import Modal (Paste JSON)
+    // ============================================
+    function ImportModal({ isOpen, onClose, onImport }) {
+      const [jsonText, setJsonText] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setError('');
+
+        try {
+          const data = JSON.parse(jsonText);
+          const processed = processImportedWorkflow(data);
+          onImport(processed);
+          setJsonText('');
+          onClose();
+        } catch (err) {
+          setError(err.message || 'Invalid JSON format');
+        }
+      };
+
+      return (
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          title="Import Workflow from JSON"
+          description="Paste your workflow JSON below"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <textarea
+                value={jsonText}
+                onChange={(e) => setJsonText(e.target.value)}
+                placeholder='{"nodes": [...], "edges": [...]}'
+                rows={10}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none font-mono text-sm"
+              />
+              {error && (
+                <p className="text-sm text-red-600">{error}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Import
+              </button>
+            </div>
+          </form>
+        </Modal>
+      );
+    }
+
+    // ============================================
+    // Workflow Generation Prompt
+    // ============================================
+    const WORKFLOW_GENERATION_PROMPT = `# Audit Workflow Designer Prompt
+
+You are an expert in designing workflows for internal audit procedures. Given the attached file(s), design a workflow for internal auditors and AI agents to complete. Focus on **what each step does** and **what context it needs** - positioning and styling are handled automatically by the app.
+
+---
+
+## Core Principle: Context Engineering
+
+**Edges represent data dependencies, not visual sequence.** Each edge means the output of one node becomes required input for another. This is the most critical aspect of workflow design.
+
+When designing a workflow, think about:
+1. What does each step produce?
+2. What does each step need to consume?
+3. How do outputs flow from one step to the next?
+4. Are there any upstream data required for this step (there may not be any pertinent upstream context)
+
+
+Core Principle: Quality + Quantity
+1. Include as many nodes/steps as needed (do not limit the number)
+2. Make sure the quality (context and prompts) of the each of the steps is expertly designed
+
+---
+
+## Workflow Design Process
+
+### Step 1: Understand the Source Document
+Read the audit document and identify:
+- The phase (Planning, Fieldwork, Reporting, Monitoring) - if not clear ask the user to specify
+- Distinct procedures or deliverables
+- Natural dependencies between steps
+
+### Step 2: Define Nodes (Audit Artifacts)
+For each distinct step in the given phase, define:
+- **id**: kebab-case identifier (e.g., \`risk-assessment\`)
+- **label**: 3-6 word action title using verbs (Assess, Document, Evaluate, Review, Test, Verify)
+- **description**: One sentence explaining what the step produces
+- **instructions**: Detailed prompt (see instruction templates below)
+
+Note, the steps the step types in each phase:
+• Pre-planning (Internal Audit Plan Development): Include only steps related to the organization-wide risk assessment, defining the audit universe, and establishing the annual or multiyear internal audit plan. This phase focuses on prioritizing risks at the organizational level to determine which engagements to perform.
+• Planning (Engagement Planning): Include only steps related to understanding the specific activity under review, performing an engagement-level risk assessment, and establishing the engagement's objectives and scope. This phase must culminate in a documented engagement work program that identifies tasks and internal auditors assigned.
+• Fieldwork (Conducting Engagement Work): Include only steps involved in implementing the work program, such as gathering information, performing analyses, and evaluating evidence. This phase is restricted to identifying potential findings, determining their causes and effects, and developing initial conclusions.
+• Reporting (Communicating Results): Include only steps for developing and disseminating the final engagement communication, which must include objectives, scope, findings, and conclusions. This phase also includes obtaining management action plans and conducting follow-up to confirm implementation.
+• Quality Assurance (QA): Include only steps regarding the Quality Assurance and Improvement Program (QAIP), such as ongoing monitoring through supervisory reviews, periodic internal self-assessments, and external assessments. These steps verify conformance with the Standards and the achievement of performance objectives across all other phases.
+
+### Step 3: Map Data Dependencies (Edges)
+This is the most important step. For each node, ask:
+- "What outputs from prior steps does this node need?"
+- "What specific artifacts must be referenced in the instructions?"
+
+Create edges only where real data dependencies exist. Every edge should correspond to an explicit reference in the downstream node's instructions.
+
+### Step 4: Generate JSON
+Output the workflow JSON following the schema below.
+
+---
+
+## Writing Effective Instructions
+
+### First/Root Nodes (No Upstream Dependencies)
+These nodes receive external inputs (documents, data, user context):
+
+\`\`\`
+You are an [role].
+
+**External Inputs Required:**
+- [List what documents/data this step needs from the user]
+
+**Task:**
+[Specific task to perform]
+
+**Output:**
+A [markdown/JSON] file containing [detailed format specification with field names].
+
+Reference [Standard Section] for requirements.
+\`\`\`
+
+### Downstream Nodes (With Upstream Context)
+\`\`\`
+You are a [role].
+
+**Input Context:**
+1. The [artifact 1] from [Step A] containing [fields/structure]
+2. The [artifact 2] from [Step B] containing [fields/structure]
+
+**Task:**
+Synthesize these inputs to [specific task]. Cross-reference [artifact 1] with [artifact 2] to [purpose].
+
+**Output:**
+A [markdown/JSON] file containing [detailed format specification].
+\`\`\`
+
+---
+
+## JSON Schema
+
+### Overall Structure
+
+\`\`\`json
+{
+  "version": "1.0",
+  "data": {
+    "workflows": [
+      {
+        "name": "[Phase]: [Descriptive Workflow Name]",
+        "description": "[2-3 sentence description of purpose and source standard]",
+        "diagramJson": {
+          "nodes": [...],
+          "edges": [...],
+        }
+      }
+    ]
+  }
+}
+\`\`\`
+
+### Node Schema
+
+\`\`\`json
+{
+  "id": "kebab-case-unique-id",
+  "data": {
+    "label": "3-6 Word Action Title",
+    "description": "One sentence explaining what this step produces",
+    "instructions": "Full prompt with Input Context, Task, and Output sections"
+  }
+}
+\`\`\`
+
+**Do NOT include** \`type\` or \`position\` - these are auto-applied.
+
+### Edge Schema
+
+\`\`\`json
+{
+  "id": "e-source-id-target-id",
+  "source": "source-node-id",
+  "target": "target-node-id"
+}
+\`\`\`
+
+**Do NOT include** \`type\`, \`animated\`, or \`style\` - these are auto-applied.
+
+---
+
+## Validation Checklist
+
+Before outputting, verify:
+
+### Structure
+- All node IDs are unique and kebab-case
+- All edge IDs follow pattern \`e-[source]-[target]\`
+- All edges reference valid source and target node IDs
+- JSON is valid (no trailing commas, proper quotes)
+
+### Instructions Quality
+- Each instruction sets a clear role
+- Root nodes specify what external inputs they need
+- Downstream nodes explicitly reference upstream outputs by name and format
+- Output format is specified (.md or .json) with structure details
+
+### Context Engineering (Edges)
+- Each edge represents a real data dependency
+- Every edge corresponds to an explicit reference in the target node's instructions
+- No orphan references (instructions don't reference artifacts without corresponding edges)
+
+---
+
+## Quick Reference: Minimal Node
+
+\`\`\`json
+{
+  "id": "step-id",
+  "data": {
+    "label": "Action Title",
+    "description": "What this produces",
+    "instructions": "You are a [role].\\n\\n**Input Context:**\\n[What you receive]\\n\\n**Task:**\\n[What to do]\\n\\n**Output:**\\n[Format and structure]"
+  }
+}
+\`\`\`
+
+## Quick Reference: Minimal Edge
+
+\`\`\`json
+{ "id": "e-from-to", "source": "from-node-id", "target": "to-node-id" }
+\`\`\`
+
+---
+
+## Output Instructions
+
+Output ONLY raw JSON. Do not wrap it in quotes, do not escape any characters, do not add backticks, and do not include explanations.
+THE OUTPUT SHOULD ONLY BE A JSON CODEBLOCK.`;
+
+    // ============================================
+    // Prompt Modal
+    // ============================================
+    function PromptModal({ isOpen, onClose }) {
+      const [copied, setCopied] = useState(false);
+
+      const handleCopy = useCallback(() => {
+        navigator.clipboard.writeText(WORKFLOW_GENERATION_PROMPT).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      }, []);
+
+      return (
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          title="AI Workflow Generation Prompt"
+          description="Copy this prompt and paste it into your AI assistant (Claude, ChatGPT, etc.) to generate workflow JSON"
+          wide={true}
+        >
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="relative">
+                <pre className="w-full h-96 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 overflow-auto text-xs font-mono whitespace-pre-wrap">
+                  {WORKFLOW_GENERATION_PROMPT}
+                </pre>
+              </div>
+              <p className="text-xs text-gray-500">
+                After generating the JSON, use "Import File" or "Paste JSON" to load it into the canvas.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {copied ? 'Copied!' : 'Copy Prompt'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      );
+    }
+
+    // ============================================
+    // StepNode Component
+    // ============================================
+    const StepNode = memo(({ id, data, selected }) => {
+      const { setNodes, setEdges } = useReactFlow();
+      const [showConfig, setShowConfig] = useState(false);
+      const readOnly = data.readOnly || false;
+      const isSelected = selected || data.isSelected || false;
+
+      const onDelete = useCallback(() => {
+        setNodes((nodes) => nodes.filter((node) => node.id !== id));
+        setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
+      }, [id, setNodes, setEdges]);
+
+      const handleSaveConfig = useCallback((configData) => {
+        setNodes((nodes) =>
+          nodes.map((node) =>
+            node.id === id
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    ...configData
+                  }
+                }
+              : node
+          )
+        );
+        setShowConfig(false);
+      }, [id, setNodes]);
+
+      return (
+        <>
+          <div
+            className={`
+              relative min-w-[280px] max-w-[320px] rounded-lg border-2 bg-white shadow-lg transition-all hover:shadow-xl
+              cursor-pointer group
+              ${isSelected
+                ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-amber-200/50'
+                : 'border-gray-300'
+              }
+            `}
+          >
+            <Handle
+              type="target"
+              position={Position.Left}
+              style={{ left: -7 }}
+            />
+
+            {/* Delete button */}
+            {!readOnly && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-md z-10"
+                title="Delete node"
+              >
+                <Trash2Icon className="h-3 w-3" />
+              </button>
+            )}
+
+            <div className="p-4">
+              {/* Header with icon and title */}
+              <div className="flex items-start gap-3 mb-2">
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <FileTextIcon className="h-5 w-5 text-blue-600" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
+                    {data.label || 'New Step'}
+                  </h3>
+                </div>
+              </div>
+
+              {/* Description */}
+              {data.description && (
+                <p className="text-xs text-gray-600 line-clamp-2 mb-3">
+                  {data.description}
+                </p>
+              )}
+
+              {/* Configure button */}
+              {!readOnly && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowConfig(true);
+                    }}
+                    className="inline-flex items-center h-6 px-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors nodrag"
+                  >
+                    <Settings2Icon className="h-3 w-3 mr-1" />
+                    Configure
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <Handle
+              type="source"
+              position={Position.Right}
+              style={{ right: -7 }}
+            />
+          </div>
+
+          {/* Config Modal */}
+          <ConfigModal
+            isOpen={showConfig}
+            onClose={() => setShowConfig(false)}
+            nodeData={data}
+            onSave={handleSaveConfig}
+          />
+        </>
+      );
+    });
+
+    StepNode.displayName = 'StepNode';
+
+    // ============================================
+    // DeletableEdge Component
+    // ============================================
+    const DeletableEdge = ({
+      id,
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+      style = {},
+      markerEnd,
+      data
+    }) => {
+      const { setEdges } = useReactFlow();
+      const [isHovered, setIsHovered] = useState(false);
+      const readOnly = data?.readOnly || false;
+
+      const [edgePath, labelX, labelY] = getBezierPath({
+        sourceX,
+        sourceY,
+        sourcePosition,
+        targetX,
+        targetY,
+        targetPosition,
+      });
+
+      const onEdgeClick = useCallback((evt) => {
+        evt.stopPropagation();
+        setEdges((edges) => edges.filter((edge) => edge.id !== id));
+      }, [id, setEdges]);
+
+      return (
+        <>
+          {/* Invisible wider path for hover detection */}
+          <path
+            d={edgePath}
+            fill="none"
+            strokeWidth={20}
+            stroke="transparent"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{ cursor: 'pointer' }}
+          />
+          {/* Visible edge */}
+          <path
+            d={edgePath}
+            fill="none"
+            markerEnd={markerEnd}
+            style={{
+              stroke: style.stroke || '#6366f1',
+              strokeWidth: style.strokeWidth || 2,
+              strokeDasharray: style.strokeDasharray || '5,5',
+              pointerEvents: 'none',
+            }}
+          />
+          {!readOnly && (
+            <EdgeLabelRenderer>
+              <div
+                style={{
+                  position: 'absolute',
+                  transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+                  pointerEvents: 'all',
+                }}
+                className="nodrag nopan"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                <button
+                  className={`w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-opacity shadow-md ${
+                    isHovered ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  onClick={onEdgeClick}
+                  title="Delete connection"
+                >
+                  <XIcon className="h-3 w-3" />
+                </button>
+              </div>
+            </EdgeLabelRenderer>
+          )}
+        </>
+      );
+    };
+
+    // ============================================
+    // Node and Edge Types
+    // ============================================
+    const nodeTypes = { step: StepNode };
+    const edgeTypes = { deletable: DeletableEdge };
+
+    // ============================================
+    // Main App Component
+    // ============================================
+    function WorkflowCanvas() {
+      const [nodes, setNodes] = useState([]);
+      const [edges, setEdges] = useState([]);
+      const [showImportModal, setShowImportModal] = useState(false);
+      const [showPromptModal, setShowPromptModal] = useState(false);
+      const fileInputRef = useRef(null);
+
+      // Load from localStorage on mount
+      useEffect(() => {
+        try {
+          const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (saved) {
+            const data = JSON.parse(saved);
+            if (data.nodes) setNodes(data.nodes);
+            if (data.edges) setEdges(data.edges);
+          }
+        } catch (e) {
+          console.warn('Failed to load from localStorage:', e);
+        }
+      }, []);
+
+      // Save to localStorage on change
+      useEffect(() => {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ nodes, edges }));
+        } catch (e) {
+          console.warn('Failed to save to localStorage:', e);
+        }
+      }, [nodes, edges]);
+
+      const onNodesChange = useCallback((changes) => {
+        setNodes((nds) => applyNodeChanges(changes, nds));
+      }, []);
+
+      const onEdgesChange = useCallback((changes) => {
+        setEdges((eds) => applyEdgeChanges(changes, eds));
+      }, []);
+
+      const onConnect = useCallback((params) => {
+        setEdges((eds) => addEdge({
+          ...params,
+          type: 'deletable',
+          animated: true,
+          style: { ...DEFAULT_EDGE_STYLE }
+        }, eds));
+      }, []);
+
+      // Add new step node
+      const handleAddStep = useCallback(() => {
+        const nodeWidth = 300;
+        const nodeSpacing = 100;
+
+        let maxX = 0;
+        let avgY = 200;
+
+        if (nodes.length > 0) {
+          maxX = Math.max(...nodes.map(n => n.position.x + nodeWidth));
+          avgY = nodes.reduce((sum, n) => sum + n.position.y, 0) / nodes.length;
+        }
+
+        const position = {
+          x: Math.round((maxX + nodeSpacing) / GRID_SIZE) * GRID_SIZE,
+          y: Math.round(avgY / GRID_SIZE) * GRID_SIZE
+        };
+
+        const newNode = {
+          id: `step_${Date.now()}`,
+          type: 'step',
+          position,
+          data: {
+            label: 'New Step',
+            description: '',
+            instructions: '',
+            linkedAgentUrl: ''
+          }
+        };
+
+        setNodes((nds) => [...nds, newNode]);
+      }, [nodes]);
+
+      // Export workflow as JSON
+      const handleExport = useCallback(() => {
+        const exportData = {
+          version: '1.0',
+          data: {
+            workflows: [{
+              name: 'Exported Workflow',
+              description: '',
+              diagramJson: {
+                nodes: nodes.map(n => ({
+                  id: n.id,
+                  type: n.type,
+                  position: n.position,
+                  data: {
+                    label: n.data.label,
+                    description: n.data.description,
+                    instructions: n.data.instructions,
+                    linkedAgentUrl: n.data.linkedAgentUrl
+                  }
+                })),
+                edges: edges.map(e => ({
+                  id: e.id,
+                  source: e.source,
+                  target: e.target
+                })),
+                metadata: {}
+              }
+            }]
+          }
+        };
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `workflow-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, [nodes, edges]);
+
+      // Import from file
+      const handleFileImport = useCallback((e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            let jsonData = event.target.result;
+
+            // Handle double-stringified JSON
+            if (typeof jsonData === 'string') {
+              jsonData = JSON.parse(jsonData);
+            }
+
+            const processed = processImportedWorkflow(jsonData);
+            setNodes(processed.nodes);
+            setEdges(processed.edges);
+          } catch (err) {
+            alert('Failed to import: ' + (err.message || 'Invalid JSON'));
+          }
+        };
+        reader.readAsText(file);
+
+        // Reset file input
+        e.target.value = '';
+      }, []);
+
+      // Import from pasted JSON
+      const handlePasteImport = useCallback((processed) => {
+        setNodes(processed.nodes);
+        setEdges(processed.edges);
+      }, []);
+
+      // Clear canvas
+      const handleClear = useCallback(() => {
+        if (nodes.length === 0 && edges.length === 0) return;
+        if (confirm('Are you sure you want to clear the canvas? This cannot be undone.')) {
+          setNodes([]);
+          setEdges([]);
+        }
+      }, [nodes.length, edges.length]);
+
+      const isEmpty = nodes.length === 0;
+
+      return (
+        <div className="w-full h-full flex flex-col">
+          {/* Header */}
+          <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h1 className="text-lg font-semibold text-gray-900">Collective Swarm</h1>
+                <button
+                  onClick={handleAddStep}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1.5" />
+                  Add Step
+                </button>
+                <button
+                  onClick={() => setShowPromptModal(true)}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-300 rounded-md hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors"
+                  title="Open AI Prompt"
+                >
+                  <SparklesIcon className="h-4 w-4 mr-1.5" />
+                  Prompt
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Import from file */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileImport}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                  title="Import from file"
+                >
+                  <UploadIcon className="h-4 w-4 mr-1.5" />
+                  Import File
+                </button>
+
+                {/* Import from paste */}
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                  title="Import pasted JSON"
+                >
+                  <ClipboardIcon className="h-4 w-4 mr-1.5" />
+                  Paste JSON
+                </button>
+
+                {/* Export */}
+                <button
+                  onClick={handleExport}
+                  disabled={isEmpty}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Export as JSON"
+                >
+                  <DownloadIcon className="h-4 w-4 mr-1.5" />
+                  Export
+                </button>
+
+                {/* Clear */}
+                <button
+                  onClick={handleClear}
+                  disabled={isEmpty}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Clear canvas"
+                >
+                  <Trash2Icon className="h-4 w-4 mr-1.5" />
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Canvas */}
+          <div className="flex-1 relative">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              deleteKeyCode={['Delete', 'Backspace']}
+              snapToGrid={true}
+              snapGrid={[GRID_SIZE, GRID_SIZE]}
+              defaultViewport={{ x: 50, y: 50, zoom: 1 }}
+              fitView={!isEmpty}
+              fitViewOptions={{ padding: 0.2 }}
+              className="bg-slate-50"
+            >
+              <Background
+                color="#3b82f6"
+                gap={GRID_SIZE}
+                variant={BackgroundVariant.Dots}
+                size={1.5}
+              />
+              <Controls />
+              <MiniMap
+                nodeColor="#6366f1"
+                nodeStrokeWidth={3}
+                zoomable
+                pannable
+                position="bottom-right"
+              />
+            </ReactFlow>
+
+            {/* Empty state overlay */}
+            {isEmpty && (
+              <div className="empty-state-overlay absolute inset-0 flex items-center justify-center bg-slate-50/80">
+                <div className="text-center max-w-md p-8">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <FileTextIcon className="h-8 w-8 text-indigo-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Start Building Your Workflow
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    Click "Add Step" to create your first node, or import an existing workflow from JSON.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={handleAddStep}
+                      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Add Step
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    >
+                      <UploadIcon className="h-4 w-4 mr-2" />
+                      Import JSON
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Import Modal */}
+          <ImportModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onImport={handlePasteImport}
+          />
+
+          {/* Prompt Modal */}
+          <PromptModal
+            isOpen={showPromptModal}
+            onClose={() => setShowPromptModal(false)}
+          />
+        </div>
+      );
+    }
+
+    // ============================================
+    // App with Provider
+    // ============================================
+    function App() {
+      return (
+        <ReactFlowProvider>
+          <WorkflowCanvas />
+        </ReactFlowProvider>
+      );
+    }
+
+    // ============================================
+    // Render
+    // ============================================
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

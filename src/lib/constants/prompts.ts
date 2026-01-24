@@ -1,6 +1,6 @@
 export const WORKFLOW_GENERATION_PROMPT = `# Audit Workflow Designer Prompt
 
-Generate workflow JSON files for import into OpenAuditSwarms. Focus on **what each step does** and **what context it needs** - positioning and styling are handled automatically by the app.
+You are an expert in designing workflows for internal audit procedures. Given the attached file(s), design a workflow for internal auditors and AI agents to complete. Focus on **what each step does** and **what context it needs** - positioning and styling are handled automatically by the app.
 
 ---
 
