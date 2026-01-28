@@ -1,20 +1,20 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
-import { getFeaturedSwarms } from '@/lib/db/swarms'
-import { SwarmCard } from '@/components/swarms/SwarmCard'
+// import { getFeaturedSwarms } from '@/lib/db/swarms'
+// import { SwarmCard } from '@/components/swarms/SwarmCard'
 
 // Revalidate homepage every 60 seconds to show updated featured swarms
 export const revalidate = 60
 
 export default async function HomePage() {
-  // Fetch featured/trending swarms
-  let featuredSwarms: any[] = []
-  try {
-    featuredSwarms = await getFeaturedSwarms(3)
-  } catch (error) {
-    console.error('Error fetching featured swarms:', error)
-  }
+  // Fetch featured/trending swarms - commented out due to loading issue
+  // let featuredSwarms: any[] = []
+  // try {
+  //   featuredSwarms = await getFeaturedSwarms(3)
+  // } catch (error) {
+  //   console.error('Error fetching featured swarms:', error)
+  // }
 
   return (
     <div className="flex flex-col relative">
@@ -51,7 +51,21 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Featured Swarms */}
+          {/* Video Section */}
+          <div className="animate-in max-w-4xl mx-auto">
+            <video
+              className="w-full rounded-lg shadow-lg"
+              autoPlay
+              muted
+              loop
+              playsInline
+            >
+              <source src="/swarmvid.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+
+          {/* Featured Swarms - Commented out due to loading issue
           {featuredSwarms.length > 0 && (
             <div className="animate-in">
               <div className="flex justify-between items-center mb-8">
@@ -73,6 +87,7 @@ export default async function HomePage() {
               </div>
             </div>
           )}
+          */}
         </div>
       </section>
 
