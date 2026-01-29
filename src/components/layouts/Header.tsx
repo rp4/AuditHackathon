@@ -45,11 +45,7 @@ export default function Header() {
   }, [lastScrollY])
 
   const handleAddClick = () => {
-    if (isAuthenticated) {
-      router.push('/create')
-    } else {
-      signIn('/create')
-    }
+    router.push('/create')
   }
 
   console.log('[Header] Rendering, isAuthenticated:', isAuthenticated)
