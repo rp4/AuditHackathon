@@ -1,6 +1,4 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import { HeroCTA } from '@/components/landing/HeroCTA'
 // import { getFeaturedSwarms } from '@/lib/db/swarms'
 // import { SwarmCard } from '@/components/swarms/SwarmCard'
 
@@ -17,9 +15,9 @@ export default async function HomePage() {
   // }
 
   return (
-    <div className="flex flex-col relative">
+    <div className="flex flex-col relative min-h-screen items-center justify-center">
       {/* Hero Section */}
-      <section className="relative py-32 px-4">
+      <section className="relative px-4">
         <div className="container mx-auto text-center relative z-10">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-semibold mb-8 animate-in border border-amber-200">
@@ -37,21 +35,9 @@ export default async function HomePage() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-in">
-            <Link href="/browse">
-              <Button size="lg" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-amber-500 hover:bg-amber-600 text-black border-0 shadow-md">
-                Browse Templates
-                <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
-              </Button>
-            </Link>
-            <Link href="/create">
-              <Button size="lg" variant="outline" className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-700">
-                Create Workflow
-              </Button>
-            </Link>
-          </div>
+          <HeroCTA />
 
-          {/* Video Section */}
+          {/* Video Section - commented out for cleaner landing page
           <div className="animate-in max-w-4xl mx-auto">
             <video
               className="w-full rounded-lg shadow-lg"
@@ -60,10 +46,11 @@ export default async function HomePage() {
               loop
               playsInline
             >
-              <source src="/swarmvid.mp4" type="video/mp4" />
+              <source src="https://storage.googleapis.com/toolbox-478717-storage/public/swarmvid.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
+          */}
 
           {/* Featured Swarms - Commented out due to loading issue
           {featuredSwarms.length > 0 && (

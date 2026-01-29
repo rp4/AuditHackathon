@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -30,7 +31,8 @@ import {
   Wand2,
   Copy,
   Check,
-  ClipboardPaste
+  ClipboardPaste,
+  LogIn
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Node, Edge } from 'reactflow'
@@ -38,9 +40,11 @@ import { useRef } from "react"
 import { processImportedWorkflow } from "@/lib/utils/workflowImport"
 import { WORKFLOW_GENERATION_PROMPT } from "@/lib/constants/prompts"
 
+const DRAFT_WORKFLOW_KEY = 'draft-swarm-workflow'
+
 export default function UploadPage() {
   const router = useRouter()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, signIn } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [categories, setCategories] = useState<any[]>([])
@@ -49,6 +53,7 @@ export default function UploadPage() {
   const [promptCopied, setPromptCopied] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [pastedJson, setPastedJson] = useState("")
+  const [showSignInDialog, setShowSignInDialog] = useState(false)
 
   const [formData, setFormData] = useState({
     name: "",
@@ -62,12 +67,33 @@ export default function UploadPage() {
   // File input ref for JSON import
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Redirect if not authenticated
+  // Restore draft from localStorage on mount
   useEffect(() => {
-    if (!isAuthenticated && user !== undefined) {
-      router.push("/")
+    const savedDraft = localStorage.getItem(DRAFT_WORKFLOW_KEY)
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft)
+        if (draft.formData) {
+          setFormData(draft.formData)
+        }
+        if (draft.workflowNodes) {
+          setWorkflowNodes(draft.workflowNodes)
+        }
+        if (draft.workflowEdges) {
+          setWorkflowEdges(draft.workflowEdges)
+        }
+        if (draft.selectedCategoryId) {
+          setSelectedCategoryId(draft.selectedCategoryId)
+        }
+        // Clear the draft after restoring
+        localStorage.removeItem(DRAFT_WORKFLOW_KEY)
+        toast.success('Your previous draft has been restored')
+      } catch (err) {
+        console.error('Error restoring draft:', err)
+        localStorage.removeItem(DRAFT_WORKFLOW_KEY)
+      }
     }
-  }, [isAuthenticated, user, router])
+  }, [])
 
   // Load categories
   useEffect(() => {
@@ -95,12 +121,30 @@ export default function UploadPage() {
     setWorkflowEdges(edges)
   }, [])
 
+  const saveDraftToLocalStorage = () => {
+    const draft = {
+      formData,
+      workflowNodes,
+      workflowEdges,
+      selectedCategoryId,
+    }
+    localStorage.setItem(DRAFT_WORKFLOW_KEY, JSON.stringify(draft))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
     if (!formData.name || !formData.description || !selectedCategoryId) {
       setError("Name, description, and category are required")
+      return
+    }
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      // Save draft to localStorage before prompting sign-in
+      saveDraftToLocalStorage()
+      setShowSignInDialog(true)
       return
     }
 
@@ -135,6 +179,9 @@ export default function UploadPage() {
       if (!response.ok) {
         throw new Error(data.error || "Failed to create swarm")
       }
+
+      // Clear any saved draft on successful save
+      localStorage.removeItem(DRAFT_WORKFLOW_KEY)
 
       // Redirect to the new swarm page
       router.push(`/swarms/${data.slug}`)
@@ -270,10 +317,6 @@ export default function UploadPage() {
       console.error('Error parsing JSON:', err)
       toast.error('Failed to parse JSON. Please check the format.')
     }
-  }
-
-  if (!isAuthenticated) {
-    return null
   }
 
   const nodeCount = workflowNodes.length
@@ -551,6 +594,34 @@ export default function UploadPage() {
           </div>
         </aside>
       </div>
+
+      {/* Sign In Dialog */}
+      <Dialog open={showSignInDialog} onOpenChange={setShowSignInDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign in to save your workflow</DialogTitle>
+            <DialogDescription className="text-stone-500">
+              Your workflow has been saved locally. Sign in to publish it to the community.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              onClick={() => signIn('/create')}
+              className="w-full bg-[#0A66C2] hover:bg-[#004182] text-white"
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign in with LinkedIn
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowSignInDialog(false)}
+              className="w-full"
+            >
+              Continue editing
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
