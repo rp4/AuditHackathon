@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,15 +37,16 @@ interface SwarmCardProps {
 
 function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, isSelected = false, onSelect }: SwarmCardProps) {
   // Count nodes to show workflow complexity
-  let nodeCount = 0
-  try {
-    if (swarm.workflowNodes) {
-      const nodes = JSON.parse(swarm.workflowNodes)
-      nodeCount = nodes.length
+  const nodeCount = useMemo(() => {
+    try {
+      if (swarm.workflowNodes) {
+        return JSON.parse(swarm.workflowNodes).length
+      }
+    } catch {
+      // Ignore parse errors
     }
-  } catch {
-    // Ignore parse errors
-  }
+    return 0
+  }, [swarm.workflowNodes])
 
   const handleClick = (e: React.MouseEvent) => {
     if (selectionMode && onSelect) {

@@ -3,24 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Copy, Check } from "lucide-react"
-import { toast } from "sonner"
-import { WORKFLOW_GENERATION_PROMPT } from "@/lib/constants/prompts"
+import { ArrowRight, BookOpen } from "lucide-react"
+import { HowToDialog } from "@/components/landing/HowToDialog"
 
 export function HeroCTA() {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopyPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(WORKFLOW_GENERATION_PROMPT)
-      setCopied(true)
-      toast.success("AI prompt copied to clipboard")
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Failed to copy prompt:", err)
-      toast.error("Failed to copy prompt")
-    }
-  }
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in">
@@ -36,21 +23,13 @@ export function HeroCTA() {
       <Button
         size="lg"
         variant="outline"
-        onClick={handleCopyPrompt}
+        onClick={() => setDialogOpen(true)}
         className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
       >
-        {copied ? (
-          <>
-            Copied!
-            <Check className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
-          </>
-        ) : (
-          <>
-            Copy AI Prompt
-            <Copy className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
-          </>
-        )}
+        How To
+        <BookOpen className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
       </Button>
+      <HowToDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )
 }

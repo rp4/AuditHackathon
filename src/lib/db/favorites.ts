@@ -111,12 +111,3 @@ export async function removeFavorite(userId: string, swarmId: string) {
     }),
   ])
 }
-
-/**
- * Get favorite count for a swarm
- */
-export async function getFavoriteCount(swarmId: string): Promise<number> {
-  return prisma.favorite.count({
-    where: { swarmId },
-  })
-}

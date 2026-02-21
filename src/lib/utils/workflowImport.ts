@@ -11,9 +11,7 @@ import {
   normalizeEdges
 } from './workflowLayout'
 
-export type { WorkflowNodeInput, WorkflowEdgeInput }
-
-export interface ProcessedWorkflow {
+interface ProcessedWorkflow {
   nodes: WorkflowNode[]
   edges: WorkflowEdge[]
   layoutApplied: boolean
@@ -55,26 +53,4 @@ export function processImportedWorkflow(
     edges: normalizedEdges,
     layoutApplied: needsLayout
   }
-}
-
-/**
- * Validate that all edge references point to existing nodes
- */
-export function validateEdgeReferences(
-  nodes: WorkflowNodeInput[],
-  edges: WorkflowEdgeInput[]
-): { valid: boolean; errors: string[] } {
-  const nodeIds = new Set(nodes.map(n => n.id))
-  const errors: string[] = []
-
-  edges.forEach(edge => {
-    if (!nodeIds.has(edge.source)) {
-      errors.push(`Edge "${edge.id}" references non-existent source node "${edge.source}"`)
-    }
-    if (!nodeIds.has(edge.target)) {
-      errors.push(`Edge "${edge.id}" references non-existent target node "${edge.target}"`)
-    }
-  })
-
-  return { valid: errors.length === 0, errors }
 }

@@ -25,23 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    // Log to monitoring service
     console.error('Error caught by boundary:', error, errorInfo)
-
-    // Send to Sentry with context
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-      import('@sentry/nextjs').then((Sentry) => {
-        Sentry.captureException(error, {
-          contexts: {
-            react: {
-              componentStack: errorInfo.componentStack,
-            },
-          },
-        })
-      }).catch(err => {
-        console.error('Failed to send error to Sentry:', err)
-      })
-    }
 
     this.setState({
       error,

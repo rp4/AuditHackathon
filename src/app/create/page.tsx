@@ -18,7 +18,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { WorkflowDesigner } from "@/components/workflows/shared/WorkflowDesigner"
+import dynamic from 'next/dynamic'
+
+const WorkflowDesigner = dynamic(
+  () => import('@/components/workflows/shared/WorkflowDesigner').then(mod => ({ default: mod.WorkflowDesigner })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    ),
+  }
+)
 import {
   Upload,
   Loader2,
@@ -28,17 +40,17 @@ import {
   PanelRight,
   Sparkles,
   FileUp,
-  Wand2,
-  Copy,
-  Check,
   ClipboardPaste,
+  Download,
   LogIn
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Node, Edge } from 'reactflow'
 import { useRef } from "react"
 import { processImportedWorkflow } from "@/lib/utils/workflowImport"
-import { WORKFLOW_GENERATION_PROMPT } from "@/lib/constants/prompts"
+import { parseWorkflowJson } from "@/lib/utils/parseWorkflowJson"
+import { downloadJson } from "@/lib/utils/downloadJson"
+import { useCategories } from "@/hooks/useSwarms"
 
 const DRAFT_WORKFLOW_KEY = 'draft-swarm-workflow'
 
@@ -47,10 +59,9 @@ export default function UploadPage() {
   const { user, isAuthenticated, signIn } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [categories, setCategories] = useState<any[]>([])
+  const { data: categories = [] } = useCategories()
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [promptCopied, setPromptCopied] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [pastedJson, setPastedJson] = useState("")
   const [showSignInDialog, setShowSignInDialog] = useState(false)
@@ -93,24 +104,6 @@ export default function UploadPage() {
         localStorage.removeItem(DRAFT_WORKFLOW_KEY)
       }
     }
-  }, [])
-
-  // Load categories
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const categoriesRes = await fetch("/api/categories")
-
-        if (categoriesRes.ok) {
-          const data = await categoriesRes.json()
-          setCategories(data)
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err)
-      }
-    }
-
-    fetchData()
   }, [])
 
   const handleNodesChange = useCallback((nodes: Node[]) => {
@@ -203,43 +196,16 @@ export default function UploadPage() {
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
-        let json = JSON.parse(event.target?.result as string)
+        const parsed = parseWorkflowJson(event.target?.result as string)
 
-        // Handle double-stringified JSON (when AI outputs JSON as a string)
-        if (typeof json === 'string') {
-          json = JSON.parse(json)
+        if (parsed.name && !formData.name) {
+          setFormData(prev => ({ ...prev, name: parsed.name! }))
+        }
+        if (parsed.description && !formData.description) {
+          setFormData(prev => ({ ...prev, description: parsed.description! }))
         }
 
-        let rawNodes: any[] = []
-        let rawEdges: any[] = []
-
-        // Handle the export format from the detail page
-        if (json.version && json.data?.workflows?.[0]?.diagramJson) {
-          const workflow = json.data.workflows[0]
-          rawNodes = workflow.diagramJson.nodes || []
-          rawEdges = workflow.diagramJson.edges || []
-
-          // Optionally populate name and description from the workflow
-          if (workflow.name && !formData.name) {
-            setFormData(prev => ({ ...prev, name: workflow.name }))
-          }
-          if (workflow.description && !formData.description) {
-            setFormData(prev => ({ ...prev, description: workflow.description }))
-          }
-        }
-        // Handle direct nodes/edges format
-        else if (json.nodes || json.edges) {
-          rawNodes = json.nodes || []
-          rawEdges = json.edges || []
-        }
-        else {
-          toast.error('Invalid workflow format')
-          return
-        }
-
-        // Process: auto-layout if needed, normalize styles
-        const { nodes, edges, layoutApplied } = processImportedWorkflow(rawNodes, rawEdges)
-
+        const { nodes, edges, layoutApplied } = processImportedWorkflow(parsed.rawNodes, parsed.rawEdges)
         setWorkflowNodes(nodes)
         setWorkflowEdges(edges)
 
@@ -266,43 +232,16 @@ export default function UploadPage() {
     }
 
     try {
-      let json = JSON.parse(pastedJson)
+      const parsed = parseWorkflowJson(pastedJson)
 
-      // Handle double-stringified JSON (when AI outputs JSON as a string)
-      if (typeof json === 'string') {
-        json = JSON.parse(json)
+      if (parsed.name && !formData.name) {
+        setFormData(prev => ({ ...prev, name: parsed.name! }))
+      }
+      if (parsed.description && !formData.description) {
+        setFormData(prev => ({ ...prev, description: parsed.description! }))
       }
 
-      let rawNodes: any[] = []
-      let rawEdges: any[] = []
-
-      // Handle the export format from the detail page
-      if (json.version && json.data?.workflows?.[0]?.diagramJson) {
-        const workflow = json.data.workflows[0]
-        rawNodes = workflow.diagramJson.nodes || []
-        rawEdges = workflow.diagramJson.edges || []
-
-        // Optionally populate name and description from the workflow
-        if (workflow.name && !formData.name) {
-          setFormData(prev => ({ ...prev, name: workflow.name }))
-        }
-        if (workflow.description && !formData.description) {
-          setFormData(prev => ({ ...prev, description: workflow.description }))
-        }
-      }
-      // Handle direct nodes/edges format
-      else if (json.nodes || json.edges) {
-        rawNodes = json.nodes || []
-        rawEdges = json.edges || []
-      }
-      else {
-        toast.error('Invalid workflow format')
-        return
-      }
-
-      // Process: auto-layout if needed, normalize styles
-      const { nodes, edges, layoutApplied } = processImportedWorkflow(rawNodes, rawEdges)
-
+      const { nodes, edges, layoutApplied } = processImportedWorkflow(parsed.rawNodes, parsed.rawEdges)
       setWorkflowNodes(nodes)
       setWorkflowEdges(edges)
       setImportDialogOpen(false)
@@ -317,6 +256,40 @@ export default function UploadPage() {
       console.error('Error parsing JSON:', err)
       toast.error('Failed to parse JSON. Please check the format.')
     }
+  }
+
+  const handleExport = () => {
+    const exportData = {
+      version: '1.0',
+      data: {
+        workflows: [{
+          name: formData.name || 'Exported Workflow',
+          description: formData.description || '',
+          diagramJson: {
+            nodes: workflowNodes.map(n => ({
+              id: n.id,
+              type: n.type,
+              position: n.position,
+              data: {
+                label: n.data.label,
+                description: n.data.description,
+                instructions: n.data.instructions,
+                linkedAgentUrl: n.data.linkedAgentUrl
+              }
+            })),
+            edges: workflowEdges.map(e => ({
+              id: e.id,
+              source: e.source,
+              target: e.target
+            })),
+            metadata: {}
+          }
+        }]
+      }
+    }
+
+    downloadJson(exportData, `workflow-${new Date().toISOString().slice(0, 10)}.json`)
+    toast.success('Workflow exported')
   }
 
   const nodeCount = workflowNodes.length
@@ -335,54 +308,6 @@ export default function UploadPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-amber-600 border-amber-200 hover:bg-amber-50"
-              >
-                <Wand2 className="mr-2 h-4 w-4" />
-                AI Prompt
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-              <DialogHeader>
-                <DialogTitle className="flex items-center justify-between">
-                  <span>Workflow Generation Prompt</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(WORKFLOW_GENERATION_PROMPT)
-                      setPromptCopied(true)
-                      setTimeout(() => setPromptCopied(false), 2000)
-                      toast.success('Prompt copied to clipboard')
-                    }}
-                    className="mr-6"
-                  >
-                    {promptCopied ? (
-                      <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy Prompt
-                      </>
-                    )}
-                  </Button>
-                </DialogTitle>
-              </DialogHeader>
-              <div className="flex-1 overflow-y-auto mt-4">
-                <pre className="text-xs bg-stone-50 p-4 rounded-lg whitespace-pre-wrap font-mono">
-                  {WORKFLOW_GENERATION_PROMPT}
-                </pre>
-              </div>
-            </DialogContent>
-          </Dialog>
-
           <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
             <DialogTrigger asChild>
               <Button
@@ -453,6 +378,17 @@ export default function UploadPage() {
               </div>
             </DialogContent>
           </Dialog>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={workflowNodes.length === 0}
+            className="text-stone-600 border-stone-200 hover:bg-stone-50"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download JSON
+          </Button>
 
           <Button
             variant="ghost"

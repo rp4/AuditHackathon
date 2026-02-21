@@ -1,5 +1,16 @@
+'use client'
+
+import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const DotLottieReact = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
+  {
+    ssr: false,
+    loading: () => <Loader2 className="h-8 w-8 animate-spin text-primary" />,
+  }
+)
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
@@ -7,24 +18,38 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-const sizeClasses = {
-  sm: 'h-4 w-4',
-  md: 'h-8 w-8',
-  lg: 'h-12 w-12',
+const pixelSizes = {
+  sm: 16,
+  md: 32,
+  lg: 48,
 }
 
 export function LoadingSpinner({
   size = 'md',
   fullPage = false,
-  className
+  className,
 }: LoadingSpinnerProps) {
   const wrapperClass = fullPage
     ? 'min-h-screen flex items-center justify-center'
     : 'flex items-center justify-center py-20'
 
+  if (size === 'sm') {
+    return (
+      <Loader2 className={cn('h-4 w-4 animate-spin', className)} />
+    )
+  }
+
   return (
     <div className={cn(wrapperClass, className)}>
-      <Loader2 className={cn(sizeClasses[size], 'animate-spin text-primary')} />
+      <DotLottieReact
+        src="/Loading.lottie"
+        loop
+        autoplay
+        style={{
+          width: pixelSizes[size],
+          height: pixelSizes[size],
+        }}
+      />
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { Loader2, Search, Star, Eye, Heart, Check, X, Sparkles } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 interface Swarm {
   id: string
@@ -111,9 +112,7 @@ export default function FeaturedSwarmsManager() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

@@ -6,6 +6,7 @@ import { isFavorited } from '@/lib/db/favorites'
 import { isAdmin } from '@/lib/auth/admin'
 import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
+import { requireAuth, handleApiError } from '@/lib/api/helpers'
 
 // GET /api/swarms/[id] - Get a single swarm
 export async function GET(
@@ -62,14 +63,9 @@ export async function PATCH(
 ) {
   let existingSwarm
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const { id } = await params
     existingSwarm = await getSwarmBySlug(id)
@@ -81,7 +77,7 @@ export async function PATCH(
       )
     }
 
-    if (existingSwarm.userId !== session.user.id) {
+    if (existingSwarm.userId !== userId) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -107,21 +103,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedSwarm)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.issues },
-        { status: 400 }
-      )
-    }
-
-    logger.serverError(error instanceof Error ? error : String(error), {
-      endpoint: 'PATCH /api/swarms/[id]',
-      swarmId: existingSwarm?.id
-    })
-    return NextResponse.json(
-      { error: 'Failed to update swarm' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'update swarm')
   }
 }
 
@@ -132,14 +114,9 @@ export async function DELETE(
 ) {
   let existingSwarm
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const { id } = await params
     existingSwarm = await getSwarmBySlug(id)
@@ -151,7 +128,7 @@ export async function DELETE(
       )
     }
 
-    if (existingSwarm.userId !== session.user.id) {
+    if (existingSwarm.userId !== userId) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -162,13 +139,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    logger.serverError(error instanceof Error ? error : String(error), {
-      endpoint: 'DELETE /api/swarms/[id]',
-      swarmId: existingSwarm?.id
-    })
-    return NextResponse.json(
-      { error: 'Failed to delete swarm' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'delete swarm')
   }
 }

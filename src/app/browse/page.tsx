@@ -5,12 +5,14 @@ import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Filter, Search, Star, Loader2, CheckSquare, Square, Download, X } from 'lucide-react'
+import { Filter, Search, Star, CheckSquare, Square, Download, X } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSwarms, useCategories } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
 import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
+import { downloadJson } from '@/lib/utils/downloadJson'
 
 export default function BrowsePage() {
   const { isAuthenticated, signIn } = useAuth()
@@ -118,13 +120,7 @@ export default function BrowsePage() {
       }
     }
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `openauditswarms-workflows-${selectedSwarms.length}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadJson(exportData, `openauditswarms-workflows-${selectedSwarms.length}.json`)
 
     toast.success(`Downloaded ${selectedSwarms.length} workflow${selectedSwarms.length > 1 ? 's' : ''}`)
   }
@@ -265,9 +261,7 @@ export default function BrowsePage() {
 
           {/* Loading State */}
           {isLoading && (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <LoadingSpinner />
           )}
 
           {/* Selection bar when in selection mode */}

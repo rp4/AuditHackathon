@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { ArrowLeft, Loader2, Upload, Trash2, Linkedin } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserProfile } from '@/hooks/useSwarms'
 import {
@@ -79,9 +80,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <LoadingSpinner fullPage />
     )
   }
 

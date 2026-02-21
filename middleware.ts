@@ -79,6 +79,7 @@ export async function middleware(request: NextRequest) {
     font-src 'self' data:;
     connect-src 'self' https://storage.googleapis.com https://vercel.live;
     frame-src 'self' https://vercel.live;
+    media-src 'self';
     object-src 'none';
     base-uri 'self';
     form-action 'self';
@@ -100,6 +101,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4)$).*)',
   ],
 }

@@ -6,20 +6,6 @@ import type { Prisma } from '@prisma/client'
  * Renamed from 'tools' to 'swarms'
  */
 
-export type SwarmWithRelations = Prisma.SwarmGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true
-        name: true
-        email: true
-        image: true
-      }
-    }
-    category: true
-  }
-}>
-
 export type SwarmFilters = {
   search?: string
   categoryId?: string
@@ -265,36 +251,6 @@ export async function incrementSwarmViews(id: string) {
     data: {
       views_count: { increment: 1 },
     },
-  })
-}
-
-/**
- * Get featured swarms
- */
-export async function getFeaturedSwarms(limit: number = 6) {
-  return prisma.swarm.findMany({
-    where: {
-      is_public: true,
-      is_featured: true,
-      isDeleted: false,
-      user: {
-        isDeleted: false,
-      },
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-        },
-      },
-      category: true,
-    },
-    orderBy: {
-      publishedAt: 'desc',
-    },
-    take: limit,
   })
 }
 

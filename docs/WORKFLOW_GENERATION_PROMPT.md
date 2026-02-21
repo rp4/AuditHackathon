@@ -1,6 +1,6 @@
 # Audit Workflow Designer Prompt
 
-Generate workflow JSON files for import into OpenAuditSwarms. Focus on **what each step does** and **what context it needs** - positioning and styling are handled automatically by the app.
+Generate workflow JSON files for import into OpenAuditSwarms. Focus on **what each step does** and **what context it needs**.
 
 ---
 

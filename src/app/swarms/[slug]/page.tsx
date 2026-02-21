@@ -1,7 +1,10 @@
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getSwarmBySlug } from '@/lib/db/swarms'
 import SwarmDetailClient from './SwarmDetailClient'
+
+const getSwarmBySlugCached = cache(getSwarmBySlug)
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -10,7 +13,7 @@ interface PageProps {
 // Generate dynamic metadata for each swarm page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const swarm = await getSwarmBySlug(slug)
+  const swarm = await getSwarmBySlugCached(slug)
 
   if (!swarm) {
     return {
@@ -109,7 +112,7 @@ export default async function SwarmDetailPage({ params }: PageProps) {
   const { slug } = await params
 
   // Fetch swarm data for JSON-LD (metadata is generated separately)
-  const swarm = await getSwarmBySlug(slug)
+  const swarm = await getSwarmBySlugCached(slug)
 
   if (!swarm) {
     notFound()

@@ -18,10 +18,23 @@ import {
   AlertCircle,
   Sparkles
 } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useSwarm, useUpdateSwarm, useCategories } from '@/hooks/useSwarms'
 import { getCategoryColor } from '@/lib/utils/categoryColors'
-import { WorkflowDesigner } from '@/components/workflows/shared/WorkflowDesigner'
+import dynamic from 'next/dynamic'
+
+const WorkflowDesigner = dynamic(
+  () => import('@/components/workflows/shared/WorkflowDesigner').then(mod => ({ default: mod.WorkflowDesigner })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    ),
+  }
+)
 import type { Node, Edge } from 'reactflow'
 
 export default function EditSwarmPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -123,8 +136,8 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   // Loading state
   if (loadingSwarm) {
     return (
-      <div className="h-screen flex items-center justify-center bg-stone-50">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      <div className="h-screen bg-stone-50">
+        <LoadingSpinner fullPage />
       </div>
     )
   }

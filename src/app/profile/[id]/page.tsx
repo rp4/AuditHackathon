@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Upload, LogOut, Edit } from 'lucide-react'
+import { Upload, LogOut, Edit } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserSwarms, useUserProfile, useFavorites } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
@@ -33,9 +34,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <LoadingSpinner fullPage />
     )
   }
 
@@ -174,9 +173,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           {/* Created Swarms Tab */}
           <TabsContent value="created">
             {loadingSwarms ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
+              <LoadingSpinner />
             ) : swarms.length === 0 ? (
               <Card className="shadow-sm">
                 <CardContent className="py-20">
@@ -208,9 +205,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           {isOwnProfile && (
             <TabsContent value="favorites">
               {loadingFavorites ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
+                <LoadingSpinner />
               ) : favorites.length === 0 ? (
                 <Card className="shadow-sm">
                   <CardContent className="py-16">

@@ -7,55 +7,6 @@ import { useAuth } from './useAuth'
  * Custom hooks for swarms data fetching
  */
 
-export type Swarm = {
-  id: string
-  name: string
-  slug: string
-  description: string
-  workflowNodes?: string
-  workflowEdges?: string
-  workflowMetadata?: string
-  workflowVersion?: string
-  image_url?: string
-  userId: string
-  categoryId?: string
-  is_public: boolean
-  is_featured: boolean
-  views_count: number
-  downloads_count: number
-  favorites_count: number
-  rating_avg: number
-  rating_count: number
-  createdAt: string
-  updatedAt: string
-  publishedAt?: string
-  isFavorited?: boolean
-  user: {
-    id: string
-    name?: string
-    email: string
-    image?: string
-  }
-  category?: {
-    id: string
-    name: string
-    slug: string
-  }
-}
-
-export type UserProfile = {
-  id: string
-  name?: string
-  email: string
-  image?: string
-  bio?: string
-  linkedin_url?: string
-  website?: string
-  company?: string
-  role?: string
-  createdAt: string
-}
-
 export type SwarmFilters = {
   search?: string
   categoryId?: string
@@ -106,33 +57,6 @@ export function useSwarm(slug: string) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 5 * 60 * 1000,
-  })
-}
-
-/**
- * Create a new swarm
- */
-export function useCreateSwarm() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (data: any) => {
-      const res = await fetch('/api/swarms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to create swarm')
-      }
-
-      return res.json()
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['swarms'] })
-    },
   })
 }
 
@@ -200,6 +124,25 @@ export function useCategories() {
       if (!res.ok) throw new Error('Failed to fetch categories')
       return res.json()
     },
+    staleTime: 30 * 60 * 1000, // 30 minutes - categories rarely change
+  })
+}
+
+/**
+ * Check if current user is an admin
+ */
+export function useIsAdmin() {
+  const { user } = useAuth()
+
+  return useQuery({
+    queryKey: ['admin-status', user?.id],
+    queryFn: async () => {
+      const res = await fetch('/api/user/admin-status')
+      if (!res.ok) return { isAdmin: false }
+      return res.json()
+    },
+    enabled: !!user?.id,
+    staleTime: 10 * 60 * 1000, // 10 minutes - admin status rarely changes
   })
 }
 

@@ -1,36 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/config'
 import { getUserFavorites, addFavorite, removeFavorite, isFavorited } from '@/lib/db/favorites'
 import { prisma } from '@/lib/prisma/client'
-import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
+import { requireAuth, handleApiError } from '@/lib/api/helpers'
 
 // GET /api/favorites - Get user's favorited swarms
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const result = await getUserFavorites(session.user.id, limit, offset)
+    const result = await getUserFavorites(userId, limit, offset)
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error('Error fetching favorites:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch favorites' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'fetch favorites')
   }
 }
 
@@ -41,14 +30,9 @@ const favoriteSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const body = await request.json()
     const { swarmId } = favoriteSchema.parse(body)
@@ -67,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already favorited
-    const alreadyFavorited = await isFavorited(session.user.id, swarmId)
+    const alreadyFavorited = await isFavorited(userId, swarmId)
     if (alreadyFavorited) {
       return NextResponse.json(
         { error: 'Already favorited' },
@@ -75,36 +59,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const favorite = await addFavorite(session.user.id, swarmId)
+    const favorite = await addFavorite(userId, swarmId)
 
     return NextResponse.json(favorite, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.issues },
-        { status: 400 }
-      )
-    }
-
-    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'POST /api/favorites' })
-    return NextResponse.json(
-      { error: 'Failed to add favorite' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'add favorite')
   }
 }
 
 // DELETE /api/favorites - Remove a swarm from favorites
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const { searchParams } = new URL(request.url)
     const swarmId = searchParams.get('swarmId')
@@ -116,14 +84,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await removeFavorite(session.user.id, swarmId)
+    await removeFavorite(userId, swarmId)
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error removing favorite:', error)
-    return NextResponse.json(
-      { error: 'Failed to remove favorite' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'remove favorite')
   }
 }

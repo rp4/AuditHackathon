@@ -1,5 +1,4 @@
 /**
-import { logger } from '@/lib/utils/logger'
  * Production-ready rate limiter using Upstash Redis
  * Falls back to in-memory for development
  */

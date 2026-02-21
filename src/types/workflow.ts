@@ -51,9 +51,6 @@ export interface WorkflowExport {
   }
 }
 
-// Import format (same as export)
-export type WorkflowImport = WorkflowExport
-
 // Flexible input types for imports (position optional, styles ignored)
 export interface WorkflowNodeInput {
   id: string

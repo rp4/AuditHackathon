@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/config'
 import { getSwarms, createSwarm } from '@/lib/db/swarms'
 import { prisma } from '@/lib/prisma/client'
 import { z } from 'zod'
+import { requireAuth, handleApiError } from '@/lib/api/helpers'
 
 /**
  * Generate a unique slug by appending a number if the base slug already exists
@@ -82,14 +83,9 @@ const createSwarmSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const body = await request.json()
     const validated = createSwarmSchema.parse(body)
@@ -100,22 +96,11 @@ export async function POST(request: NextRequest) {
     const swarm = await createSwarm({
       ...validated,
       slug: uniqueSlug,
-      userId: session.user.id,
+      userId,
     })
 
     return NextResponse.json(swarm, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.issues },
-        { status: 400 }
-      )
-    }
-
-    console.error('Error creating swarm:', error)
-    return NextResponse.json(
-      { error: 'Failed to create swarm' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'create swarm')
   }
 }

@@ -1,0 +1,26 @@
+# Ignore version control
+.git
+.gitignore
+
+# Ignore development files
+node_modules/
+npm-debug.log
+.next/
+.vscode/
+
+# Ignore local env files
+.env*.local
+
+# Ignore documentation (but keep essential files)
+*.md
+!README.md
+
+# Ignore test files
+coverage/
+
+# Ignore Prisma dev databases
+prisma/*.db
+prisma/*.db-journal
+
+# DO NOT ignore public assets (including videos)
+# The video file (public/swarmvid.mp4) must be included in the upload

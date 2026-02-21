@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { upsertRating, deleteRating, getSwarmRatings, getUserRating } from '@/lib/db/ratings'
 import { prisma } from '@/lib/prisma/client'
-import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
+import { requireAuth, handleApiError } from '@/lib/api/helpers'
 
 // GET /api/ratings - Get ratings for a swarm or user's rating
 export async function GET(request: NextRequest) {
@@ -56,14 +56,9 @@ const ratingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const body = await request.json()
     const { swarmId, rating, review } = ratingSchema.parse(body)
@@ -81,36 +76,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await upsertRating(session.user.id, swarmId, rating, review)
+    const result = await upsertRating(userId, swarmId, rating, review)
 
     return NextResponse.json(result, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.issues },
-        { status: 400 }
-      )
-    }
-
-    logger.serverError(error instanceof Error ? error : String(error), { endpoint: 'POST /api/ratings' })
-    return NextResponse.json(
-      { error: 'Failed to create rating' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'create rating')
   }
 }
 
 // DELETE /api/ratings - Delete a rating
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { userId } = auth
 
     const { searchParams } = new URL(request.url)
     const swarmId = searchParams.get('swarmId')
@@ -122,14 +101,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await deleteRating(session.user.id, swarmId)
+    await deleteRating(userId, swarmId)
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting rating:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete rating' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'delete rating')
   }
 }

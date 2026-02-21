@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""
+Audit Workflow HTML Generator
+==============================
+Generates standalone HTML audit workflow diagrams. The template is embedded
+directly in the script - no network access required at runtime.
+
+Fetch: https://audittoolbox.com/apps/workflow-generate.py.txt
+
+Usage:
+  python workflow-generate.py '{"nodes":[...],"edges":[...]}'
+
+  # Or pipe JSON:
+  echo '{"nodes":[...],"edges":[...]}' | python workflow-generate.py
+
+  # Or with a file:
+  python workflow-generate.py < data.json > output.html
+
+Output is a standalone HTML file that renders the audit workflow diagram.
+
+JSON Schema:
+{
+  "nodes": [
+    {
+      "id": "string",                    // Unique identifier (kebab-case)
+      "type": "step",                    // Optional, defaults to "step"
+      "position": {"x": number, "y": number},  // Optional (auto-layout if missing)
+      "data": {
+        "label": "string",              // Display title
+        "description": "string",        // Optional description
+        "instructions": "string",       // Optional detailed instructions
+        "linkedAgentUrl": "string",     // Optional linked agent URL
+        "completed": boolean            // Optional completed status
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "string",                   // Unique identifier
+      "source": "string",               // Source node id
+      "target": "string"                // Target node id
+    }
+  ]
+}
+
+Also accepts AuditSwarm export format:
+{
+  "version": "1.0",
+  "data": {
+    "workflows": [{
+      "name": "...",
+      "description": "...",
+      "diagramJson": {
+        "nodes": [...],
+        "edges": [...]
+      }
+    }]
+  }
+}
+"""
+import sys
+import json
+import re
+import os
+
+
+def read_template():
+    """Read the HTML template from standalone-canvas.html."""
+    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'standalone-canvas.html')
+    with open(template_path, 'r', encoding='utf-8') as f:
+        return f.read()
+
+
+def normalize_workflow(json_data):
+    """Normalize various JSON input formats into {nodes, edges} for the canvas."""
+    if isinstance(json_data, str):
+        parsed = json.loads(json_data)
+    else:
+        parsed = json_data
+
+    # Handle AuditSwarm export format: {version, data: {workflows: [{diagramJson: ...}]}}
+    if isinstance(parsed.get('data'), dict):
+        workflows = parsed['data'].get('workflows', [])
+        if workflows and isinstance(workflows, list):
+            diagram = workflows[0].get('diagramJson', {})
+            if diagram:
+                parsed = diagram
+
+    # Handle direct diagramJson wrapper
+    if 'diagramJson' in parsed:
+        parsed = parsed['diagramJson']
+
+    nodes = parsed.get('nodes', [])
+    edges = parsed.get('edges', [])
+
+    # Normalize nodes: ensure each has type:'step' and proper data structure
+    normalized_nodes = []
+    for node in nodes:
+        n = {
+            'id': node['id'],
+            'type': 'step',
+            'data': {
+                'label': node.get('data', {}).get('label', 'Untitled'),
+                'description': node.get('data', {}).get('description', ''),
+                'instructions': node.get('data', {}).get('instructions', ''),
+                'linkedAgentUrl': node.get('data', {}).get('linkedAgentUrl', ''),
+                'completed': node.get('data', {}).get('completed', False),
+            }
+        }
+        # Preserve position if present
+        pos = node.get('position')
+        if pos and isinstance(pos, dict) and 'x' in pos and 'y' in pos:
+            n['position'] = {'x': pos['x'], 'y': pos['y']}
+        else:
+            n['position'] = {'x': 0, 'y': 0}
+        normalized_nodes.append(n)
+
+    # Normalize edges: ensure each has type:'deletable', animated:true, style
+    default_style = {'stroke': '#6366f1', 'strokeWidth': 2, 'strokeDasharray': '5,5'}
+    normalized_edges = []
+    for edge in edges:
+        normalized_edges.append({
+            'id': edge['id'],
+            'source': edge['source'],
+            'target': edge['target'],
+            'type': 'deletable',
+            'animated': True,
+            'style': dict(default_style),
+        })
+
+    return {'nodes': normalized_nodes, 'edges': normalized_edges}
+
+
+def generate_html(json_data):
+    """Generate HTML with embedded JSON data."""
+    try:
+        data = normalize_workflow(json_data)
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        print(f"Error: Invalid JSON - {e}", file=sys.stderr)
+        sys.exit(1)
+
+    json_str = json.dumps(data)
+    template = read_template()
+
+    # Replace only the first occurrence of the @CSDATA marker (the actual data line),
+    # not the regex pattern inside handleSaveHtml which also contains the marker text.
+    html = re.sub(
+        r'const COLLECTIVE_SWARM_DATA = .+; // @CSDATA',
+        'const COLLECTIVE_SWARM_DATA = ' + json_str + '; // @CSDATA',
+        template,
+        count=1
+    )
+    return html
+
+
+if __name__ == '__main__':
+    # Get JSON from argument or stdin
+    if len(sys.argv) > 1:
+        json_data = sys.argv[1]
+    else:
+        json_data = sys.stdin.read().strip()
+
+    if not json_data:
+        print(__doc__)
+        sys.exit(0)
+
+    print(generate_html(json_data))

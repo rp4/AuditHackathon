@@ -29,11 +29,27 @@ import type { Node } from 'reactflow'
 import { useSwarm, useToggleFavorite, useDeleteSwarm, useFavorites, useRateSwarm, useSwarmRatings, useUserRating } from '@/hooks/useSwarms'
 import { useAuth } from '@/hooks/useAuth'
 import { getCategoryColor } from '@/lib/utils/categoryColors'
-import { Loader2 } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { toast } from 'sonner'
+import { downloadJson } from '@/lib/utils/downloadJson'
 import { Textarea } from '@/components/ui/textarea'
-import { WorkflowDesigner } from '@/components/workflows/shared/WorkflowDesigner'
+import dynamic from 'next/dynamic'
+import { Loader2 as WorkflowLoader } from 'lucide-react'
+
+const WorkflowDesigner = dynamic(
+  () => import('@/components/workflows/shared/WorkflowDesigner').then(mod => ({ default: mod.WorkflowDesigner })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full flex items-center justify-center">
+        <WorkflowLoader className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    ),
+  }
+)
 import type { WorkflowExport } from '@/types/workflow'
+
+const noop = () => {}
 
 interface SwarmDetailClientProps {
   slug: string
@@ -120,13 +136,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
       }
     }
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${swarm.slug}-workflow.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadJson(exportData, `${swarm.slug}-workflow.json`)
     toast.success('Workflow exported successfully')
   }
 
@@ -228,8 +238,8 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-stone-50">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      <div className="h-screen bg-stone-50">
+        <LoadingSpinner fullPage />
       </div>
     )
   }
@@ -397,8 +407,8 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
               <WorkflowDesigner
                 nodes={workflowNodes}
                 edges={workflowEdges}
-                onNodesChange={() => {}}
-                onEdgesChange={() => {}}
+                onNodesChange={noop}
+                onEdgesChange={noop}
                 onNodeClick={handleNodeClick}
                 readOnly={true}
                 selectedNodeId={selectedNode?.id}

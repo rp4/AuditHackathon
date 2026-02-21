@@ -7,33 +7,23 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Upload, User, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
+import { useIsAdmin } from "@/hooks/useSwarms"
 
 export default function Header() {
   const router = useRouter()
   const { user, isAuthenticated, signIn } = useAuth()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  // Check admin status
-  useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      fetch('/api/user/admin-status')
-        .then(res => res.json())
-        .then(data => setIsAdmin(data.isAdmin))
-        .catch(console.error)
-    }
-  }, [isAuthenticated, user?.id])
+  const { data: adminData } = useIsAdmin()
+  const isAdmin = adminData?.isAdmin ?? false
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
       if (currentScrollY < lastScrollY || currentScrollY < 10) {
-        // Scrolling up or at top
         setIsVisible(true)
       } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past threshold
         setIsVisible(false)
       }
 
@@ -48,11 +38,9 @@ export default function Header() {
     router.push('/create')
   }
 
-  console.log('[Header] Rendering, isAuthenticated:', isAuthenticated)
-
   return (
     <header className={`border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-      <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
+      <div className="w-full px-3 md:px-5 h-20 md:h-24 flex items-center justify-between">
         <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
           <div className="relative rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-amber-500/50 overflow-hidden">
             <Image
@@ -60,6 +48,7 @@ export default function Header() {
               alt="AuditSwarm Logo"
               fill
               className="object-cover"
+              sizes="64px"
               priority
             />
           </div>
@@ -85,48 +74,25 @@ export default function Header() {
           )}
 
           {isAuthenticated ? (
-            <>
-              {/* Desktop - show image only */}
-              <Link href={`/profile/${user?.username || user?.id}`} className="hidden md:block hover:opacity-80 transition-all duration-150 ease-out active:scale-90">
-                <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600">
-                  {user?.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user?.name || 'Profile'}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-white font-semibold">
-                      {user?.name?.[0] || user?.email?.[0] || <User className="h-5 w-5" />}
-                    </div>
-                  )}
-                </div>
-              </Link>
-
-              {/* Mobile - show image only */}
-              <Link href={`/profile/${user?.username || user?.id}`} className="md:hidden transition-all duration-150 ease-out active:scale-90">
-                <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600">
-                  {user?.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user?.name || 'Profile'}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-white font-semibold">
-                      {user?.name?.[0] || user?.email?.[0] || <User className="h-5 w-5" />}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </>
+            <Link href={`/profile/${user?.username || user?.id}`} className="hover:opacity-80 transition-all duration-150 ease-out active:scale-90">
+              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600">
+                {user?.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user?.name || 'Profile'}
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-white font-semibold">
+                    {user?.name?.[0] || user?.email?.[0] || <User className="h-5 w-5" />}
+                  </div>
+                )}
+              </div>
+            </Link>
           ) : (
-            <Button variant="default" size="lg" className="text-sm sm:text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={() => {
-              console.log('[Header] Sign In button clicked')
-              signIn()
-            }}>
+            <Button variant="default" size="lg" className="text-sm sm:text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={() => signIn()}>
               Sign In
             </Button>
           )}

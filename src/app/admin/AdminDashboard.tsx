@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Users, Package, TrendingUp, Eye, Heart, Star, Clock } from 'lucide-react'
+import { Users, Package, TrendingUp, Eye, Heart, Star, Clock } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import FeaturedSwarmsManager from './FeaturedSwarmsManager'
 
 interface Stats {
@@ -51,9 +52,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <LoadingSpinner />
     )
   }
 

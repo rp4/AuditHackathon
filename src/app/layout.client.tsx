@@ -52,7 +52,6 @@ export function RootLayoutClient({
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed',
           }}
         />
         {isCanvasPage ? (

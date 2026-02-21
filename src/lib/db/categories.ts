@@ -5,24 +5,6 @@ import { prisma } from '@/lib/prisma/client'
  */
 
 /**
- * Get all categories
- */
-export async function getCategories() {
-  return prisma.category.findMany({
-    orderBy: { name: 'asc' },
-  })
-}
-
-/**
- * Get category by slug
- */
-export async function getCategoryBySlug(slug: string) {
-  return prisma.category.findUnique({
-    where: { slug },
-  })
-}
-
-/**
  * Get categories with swarm counts
  */
 export async function getCategoriesWithCounts() {

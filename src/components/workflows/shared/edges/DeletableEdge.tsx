@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useCallback, useState } from 'react'
+import { FC, memo, useCallback, useState } from 'react'
 import {
   EdgeProps,
   getBezierPath,
@@ -9,7 +9,7 @@ import {
 } from 'reactflow'
 import { X } from 'lucide-react'
 
-export const DeletableEdge: FC<EdgeProps> = ({
+const DeletableEdgeComponent: FC<EdgeProps> = ({
   id,
   sourceX,
   sourceY,
@@ -89,3 +89,5 @@ export const DeletableEdge: FC<EdgeProps> = ({
     </>
   )
 }
+
+export const DeletableEdge = memo(DeletableEdgeComponent)

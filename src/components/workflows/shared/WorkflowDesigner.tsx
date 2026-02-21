@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -125,11 +125,16 @@ function WorkflowDesignerInner({
     [edges, onEdgesChange]
   )
 
+  const transformedNodes = useMemo(
+    () => nodes.map(n => ({ ...n, data: { ...n.data, readOnly, isSelected: n.id === selectedNodeId } })),
+    [nodes, readOnly, selectedNodeId]
+  )
+
   return (
     <div className="flex w-full" style={{ height: '100%', minHeight: '600px' }}>
       <div className="flex-1" style={{ height: '100%' }}>
         <ReactFlow
-          nodes={nodes.map(n => ({ ...n, data: { ...n.data, readOnly, isSelected: n.id === selectedNodeId } }))}
+          nodes={transformedNodes}
           edges={edges}
           onNodesChange={readOnly ? undefined : handleNodesChange}
           onEdgesChange={readOnly ? undefined : handleEdgesChange}

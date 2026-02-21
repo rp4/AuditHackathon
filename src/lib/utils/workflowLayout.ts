@@ -6,17 +6,15 @@ import type {
   WorkflowEdgeInput
 } from '@/types/workflow'
 
-export type { WorkflowNodeInput, WorkflowEdgeInput }
-
 // Default style constants (matching WorkflowDesigner.tsx and DeletableEdge.tsx)
-export const DEFAULT_EDGE_STYLE = {
+const DEFAULT_EDGE_STYLE = {
   stroke: '#6366f1',      // indigo-500
   strokeWidth: 2,
   strokeDasharray: '5,5'  // dashed
 } as const
 
-export const DEFAULT_NODE_TYPE = 'step' as const
-export const DEFAULT_EDGE_TYPE = 'deletable' as const
+const DEFAULT_NODE_TYPE = 'step' as const
+const DEFAULT_EDGE_TYPE = 'deletable' as const
 
 // Layout configuration
 interface LayoutOptions {

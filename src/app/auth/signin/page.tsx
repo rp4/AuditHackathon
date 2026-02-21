@@ -46,10 +46,7 @@ function SignInForm() {
   }
 
   const handleLinkedInSignIn = () => {
-    console.log('[SignInPage] LinkedIn sign in clicked, callbackUrl:', callbackUrl)
     signIn('linkedin', { callbackUrl })
-      .then((result) => console.log('[SignInPage] signIn result:', result))
-      .catch((error) => console.error('[SignInPage] signIn error:', error))
   }
 
   return (
