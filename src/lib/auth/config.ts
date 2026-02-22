@@ -111,6 +111,23 @@ export const authOptions: NextAuthOptions = {
             }
           })
         }
+
+        // Auto-create copilot spending limit for new users
+        try {
+          const limit = await prisma.userSpendingLimit.findUnique({
+            where: { userId: user.id }
+          })
+          if (!limit) {
+            await prisma.userSpendingLimit.create({
+              data: {
+                userId: user.id,
+                monthlyLimit: parseFloat(process.env.DEFAULT_MONTHLY_LIMIT || '5.00'),
+              }
+            })
+          }
+        } catch {
+          // Table may not exist yet — don't block sign-in
+        }
       }
 
       return true
@@ -124,7 +141,7 @@ export const authOptions: NextAuthOptions = {
         // Fetch the user's username
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { username: true, isDeleted: true }
+          select: { username: true, isDeleted: true, is_admin: true }
         })
 
         // Should not be deleted at this point (restored in signIn callback)
@@ -133,6 +150,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         token.username = dbUser?.username
+        token.isAdmin = dbUser?.is_admin ?? false
       }
 
       // LinkedIn OAuth - update user profile with LinkedIn data and generate username if needed
@@ -192,6 +210,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.username = token.username as string
+        session.user.isAdmin = token.isAdmin as boolean
       }
       return session
     },

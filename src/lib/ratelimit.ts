@@ -32,6 +32,9 @@ export const RATE_LIMITS = {
 
   // Very strict for sensitive operations
   UPLOAD: { maxRequests: 10, windowMs: 300000 }, // 10 uploads per 5 minutes
+
+  // Copilot chat (SSE streaming, moderate limit)
+  COPILOT_CHAT: { maxRequests: 30, windowMs: 60000 }, // 30 messages per minute
 } as const
 
 // Create rate limiters for different endpoints using Upstash
@@ -80,6 +83,18 @@ export const apiLimiter = redis
       ),
       analytics: true,
       prefix: 'ratelimit:api',
+    })
+  : null
+
+export const copilotChatLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(
+        RATE_LIMITS.COPILOT_CHAT.maxRequests,
+        `${RATE_LIMITS.COPILOT_CHAT.windowMs / 1000} s`
+      ),
+      analytics: true,
+      prefix: 'ratelimit:copilot-chat',
     })
   : null
 
@@ -204,6 +219,10 @@ export function getLimiterForPath(pathname: string): {
   limiter: Ratelimit | null
   config: { maxRequests: number; windowMs: number }
 } {
+  if (pathname.startsWith('/api/copilot/chat')) {
+    return { limiter: copilotChatLimiter, config: RATE_LIMITS.COPILOT_CHAT }
+  }
+
   if (pathname.startsWith('/api/auth') || pathname.includes('/auth/')) {
     return { limiter: authLimiter, config: RATE_LIMITS.AUTH }
   }

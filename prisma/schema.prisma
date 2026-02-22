@@ -80,13 +80,18 @@ model User {
   role          String?
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  swarms        Swarm[]
-  favorites     Favorite[]
-  ratings       Rating[]
-  downloads     Download[]
-  comments      Comment[]
+  accounts        Account[]
+  sessions        Session[]
+  swarms          Swarm[]
+  favorites       Favorite[]
+  ratings         Rating[]
+  downloads       Download[]
+  comments        Comment[]
+  apiUsage        ApiUsage[]
+  spendingLimit   UserSpendingLimit?
+  copilotSessions CopilotSession[]
+  stepResults     StepResult[]
+  auditScores     AuditScore[]
 
   @@index([email])
   @@index([username])
@@ -155,6 +160,7 @@ model Swarm {
   downloads        Download[]
   comments         Comment[]
   versions         SwarmVersion[]
+  stepResults      StepResult[]
 
   @@index([slug])
   @@index([userId])
@@ -250,4 +256,115 @@ model SwarmVersion {
   @@index([swarmId])
   @@index([createdAt])
   @@map("swarm_versions")
+}
+
+// ============================================
+// Copilot Models (for copilot.auditswarm.com)
+// ============================================
+
+// API usage tracking for Gemini API calls
+model ApiUsage {
+  id            String   @id @default(cuid())
+  userId        String
+  userEmail     String
+  model         String
+  promptTokens  Int      @default(0)
+  outputTokens  Int      @default(0)
+  totalTokens   Int      @default(0)
+  estimatedCost Float    @default(0)
+  sessionId     String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([model])
+  @@map("api_usage")
+}
+
+// User spending limits for Gemini API usage
+model UserSpendingLimit {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  monthlyLimit Float    @default(5.00)
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_spending_limits")
+}
+
+// Server-side chat sessions for copilot
+model CopilotSession {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @default("New Chat")
+  model     String   @default("gemini-3-flash-preview")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages CopilotMessage[]
+
+  @@index([userId])
+  @@index([updatedAt])
+  @@map("copilot_sessions")
+}
+
+// Chat messages (server-side persistence)
+model CopilotMessage {
+  id          String   @id @default(cuid())
+  sessionId   String
+  role        String   // 'user' | 'assistant' | 'system'
+  content     String   @db.Text
+  attachments String?  @db.Text  // JSON array of file attachments
+  toolCalls   String?  @db.Text  // JSON array of tool call records
+  createdAt   DateTime @default(now())
+
+  session CopilotSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("copilot_messages")
+}
+
+// Audit challenge scores — persisted for leaderboard
+model AuditScore {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionId   String?
+  score       Float    // 1-10 overall
+  details     String   @db.Text  // JSON: category breakdown, missed findings, etc.
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([score])
+  @@index([createdAt])
+  @@map("audit_scores")
+}
+
+// Per-user step results — one result per user per step per workflow (personal workbook)
+model StepResult {
+  id          String    @id @default(cuid())
+  userId      String
+  swarmId     String
+  nodeId      String    // Matches React Flow node ID
+  result      String?   @db.Text  // AI-generated result content
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  swarm Swarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, swarmId, nodeId])
+  @@index([userId, swarmId])
+  @@index([swarmId])
+  @@map("step_results")
 }

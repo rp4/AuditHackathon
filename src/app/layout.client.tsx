@@ -20,6 +20,7 @@ export function RootLayoutClient({
   const isProfilePage = pathname?.startsWith('/profile/')
   const isCreatePage = pathname === '/create'
   const isSwarmPage = pathname?.startsWith('/swarms/') // includes detail and edit pages
+  const isCopilotPage = pathname?.startsWith('/copilot')
   const isCanvasPage = isBrowsePage || isCreatePage || isSwarmPage
   const [showHeader, setShowHeader] = useState(true)
 
@@ -54,7 +55,10 @@ export function RootLayoutClient({
             backgroundRepeat: 'no-repeat',
           }}
         />
-        {isCanvasPage ? (
+        {isCopilotPage ? (
+          // Copilot gets its own full-screen layout (no header, no footer, no background)
+          <>{children}</>
+        ) : isCanvasPage ? (
           <div className="h-screen flex flex-col overflow-hidden">
             {isBrowsePage ? (
               <div

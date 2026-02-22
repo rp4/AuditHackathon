@@ -77,7 +77,7 @@ export async function middleware(request: NextRequest) {
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: https://storage.googleapis.com https://media.licdn.com https://*.licdn.com blob:;
     font-src 'self' data:;
-    connect-src 'self' https://storage.googleapis.com https://vercel.live;
+    connect-src 'self' https://storage.googleapis.com https://vercel.live https://data.auditswarm.com;
     frame-src 'self' https://vercel.live;
     media-src 'self';
     object-src 'none';

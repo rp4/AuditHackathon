@@ -54,11 +54,18 @@ export default function Header() {
           </div>
           <div className="flex flex-col">
             <span className="font-black text-lg sm:text-xl md:text-3xl">AuditSwarm</span>
-            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">For Auditors, By Auditors</span>
+            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">A Workflow Library & Game</span>
           </div>
         </Link>
 
         <nav className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+          <Link href="/copilot">
+            <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
+              <Image src="/copilot.png" alt="Game" width={24} height={24} />
+              <span className="hidden sm:inline">Game</span>
+            </Button>
+          </Link>
+
           <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={handleAddClick}>
             <Upload className="h-5 w-5 md:h-6 md:w-6" />
             <span className="hidden sm:inline">Create</span>
