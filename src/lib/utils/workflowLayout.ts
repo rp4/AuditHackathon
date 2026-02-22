@@ -107,7 +107,6 @@ export function applyDagreLayout(
         label: node.data.label,
         description: node.data.description,
         instructions: node.data.instructions,
-        linkedAgentUrl: node.data.linkedAgentUrl,
         skills: node.data.skills,
         outputs: node.data.outputs
       }
@@ -131,7 +130,6 @@ export function normalizeNodes(nodes: WorkflowNodeInput[]): WorkflowNode[] {
       label: node.data.label,
       description: node.data.description,
       instructions: node.data.instructions,
-      linkedAgentUrl: node.data.linkedAgentUrl,
       skills: node.data.skills,
       outputs: node.data.outputs
     }

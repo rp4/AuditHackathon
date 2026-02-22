@@ -19,6 +19,15 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
   const { swarmId, nodeId } = await params
 
+  // Verify ownership
+  const swarm = await prisma.swarm.findUnique({
+    where: { id: swarmId },
+    select: { userId: true },
+  })
+  if (!swarm || swarm.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Forbidden: only the workflow owner can access step results' }, { status: 403 })
+  }
+
   const stepResult = await prisma.stepResult.findUnique({
     where: {
       userId_swarmId_nodeId: {
@@ -64,6 +73,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   const { swarmId, nodeId } = await params
+
+  // Verify ownership
+  const swarm = await prisma.swarm.findUnique({
+    where: { id: swarmId },
+    select: { userId: true },
+  })
+  if (!swarm || swarm.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Forbidden: only the workflow owner can save step results' }, { status: 403 })
+  }
+
   const body = await request.json()
   const { result, completed } = body as { result?: string; completed?: boolean }
 

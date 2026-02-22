@@ -84,7 +84,7 @@ export default function UsagePage() {
 
   useEffect(() => {
     if (status !== 'loading' && !session?.user) {
-      router.replace('/copilot')
+      router.replace('/create')
     }
   }, [session, status, router])
 
@@ -137,7 +137,7 @@ export default function UsagePage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => router.push('/copilot')}
+              onClick={() => router.push('/create')}
               className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />

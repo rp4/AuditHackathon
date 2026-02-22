@@ -141,7 +141,7 @@ The application follows a simplified user-centric model:
 4. **Authentication Flow**
    - NextAuth.js with LinkedIn OAuth
    - Guest users can browse but not interact
-   - Registered users can favorite, rate, comment, and create swarms
+   - Registered users can favorite, rate, comment, and create workflows
 
 ### Frontend Structure
 
@@ -191,7 +191,6 @@ src/
     label: string
     description?: string
     instructions?: string
-    linkedAgentUrl?: string
   }
 }
 ```

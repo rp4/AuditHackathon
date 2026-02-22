@@ -11,7 +11,6 @@ export interface WorkflowNodeData {
   label: string
   description?: string
   instructions?: string
-  linkedAgentUrl?: string
   skills?: string[]
   outputs?: string[]
 }
@@ -60,7 +59,6 @@ export interface WorkflowNodeInput {
     label: string
     description?: string
     instructions?: string
-    linkedAgentUrl?: string
     skills?: string[]
     outputs?: string[]
     [key: string]: unknown   // Allow extra fields to be stripped

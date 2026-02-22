@@ -5,7 +5,7 @@ import { useDebounce } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Filter, Search, Star, CheckSquare, Square, Download, X } from 'lucide-react'
+import { Filter, Search, CheckSquare, Square, Download, X } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSwarms, useCategories } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
@@ -19,7 +19,7 @@ export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'recent' | 'downloads'>('popular')
+  const [sortBy, setSortBy] = useState<'popular' | 'recent' | 'downloads'>('popular')
   const [showFilters, setShowFilters] = useState(false)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedSwarmIds, setSelectedSwarmIds] = useState<Set<string>>(new Set())
@@ -174,7 +174,6 @@ export default function BrowsePage() {
                   {[
                     { value: 'popular', label: 'Popular' },
                     { value: 'recent', label: 'Recent' },
-                    { value: 'rating', label: 'Top Rated' },
                   ].map((option) => (
                     <Badge
                       key={option.value}

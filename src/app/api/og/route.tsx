@@ -93,9 +93,6 @@ export async function GET(request: NextRequest) {
   const title = sanitizeInput(searchParams.get('title'), 200)
   const description = sanitizeInput(searchParams.get('description'), 300)
   const author = sanitizeInput(searchParams.get('author'), 100)
-  const ratingParam = searchParams.get('rating')
-  const rating = ratingParam ? Math.min(Math.max(parseFloat(ratingParam), 0), 5).toFixed(1) : null
-
   // Check if this is a swarm-specific OG image
   const isSwarmPage = title && title !== 'AuditSwarm'
 
@@ -163,13 +160,6 @@ export async function GET(request: NextRequest) {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: 8, fontSize: 18 }}>by</span>
             <span style={{ fontWeight: 600, color: '#525252' }}>{author}</span>
-          </div>
-        )}
-
-        {rating && (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ marginRight: 6, color: '#f59e0b' }}>★</span>
-            {rating}
           </div>
         )}
 

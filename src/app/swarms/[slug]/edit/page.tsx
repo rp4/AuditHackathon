@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect, useCallback } from 'react'
+import { use, useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -13,29 +13,30 @@ import {
   ChevronLeft,
   Loader2,
   Save,
-  PanelRightClose,
-  PanelRight,
   AlertCircle,
-  Sparkles
+  Heart,
+  Download,
+  Share2,
+  Trash2,
 } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAuth } from '@/hooks/useAuth'
-import { useSwarm, useUpdateSwarm, useCategories } from '@/hooks/useSwarms'
+import { useSwarm, useUpdateSwarm, useCategories, useToggleFavorite, useDeleteSwarm, useFavorites } from '@/hooks/useSwarms'
+import { downloadJson } from '@/lib/utils/downloadJson'
 import { getCategoryColor } from '@/lib/utils/categoryColors'
-import dynamic from 'next/dynamic'
-
-const WorkflowDesigner = dynamic(
-  () => import('@/components/workflows/shared/WorkflowDesigner').then(mod => ({ default: mod.WorkflowDesigner })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-full flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-      </div>
-    ),
-  }
-)
+import { WorkflowWorkspace } from '@/components/workflows/WorkflowWorkspace'
+import { NodeEditorPanel } from '@/components/workflows/shared/NodeEditorPanel'
+import { useRegisterCopilotOptions } from '@/lib/copilot/CopilotOptionsContext'
 import type { Node, Edge } from 'reactflow'
+
+interface StepResultData {
+  nodeId: string
+  result: string | null
+  completed: boolean
+  completedAt: string | null
+  updatedAt?: string | null
+}
 
 export default function EditSwarmPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
@@ -44,8 +45,11 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const { data: swarm, isLoading: loadingSwarm } = useSwarm(resolvedParams.slug)
   const { data: categories = [], isLoading: loadingCategories } = useCategories()
   const updateSwarm = useUpdateSwarm(resolvedParams.slug)
+  const toggleFavorite = useToggleFavorite()
+  const deleteSwarm = useDeleteSwarm(resolvedParams.slug)
+  const { data: favorites } = useFavorites()
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -56,7 +60,94 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const [workflowNodes, setWorkflowNodes] = useState<Node[]>([])
   const [workflowEdges, setWorkflowEdges] = useState<Edge[]>([])
 
+  // Step results state
+  const [stepResults, setStepResults] = useState<Map<string, StepResultData>>(new Map())
+  const [editingResult, setEditingResult] = useState('')
+  const [editingCompleted, setEditingCompleted] = useState(false)
+  const [savingResult, setSavingResult] = useState(false)
+
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [localFavorited, setLocalFavorited] = useState<boolean | null>(null)
+
+  // Initialize local favorite state when swarm loads
+  useEffect(() => {
+    if (swarm && localFavorited === null) {
+      const initialFavorited = swarm.isFavorited || favorites?.swarms?.some((f: any) => f.id === swarm.id) || false
+      setLocalFavorited(initialFavorited)
+    }
+  }, [swarm, favorites, localFavorited])
+
+  const isFavorited = localFavorited === true
+
+  const handleFavorite = () => {
+    if (!swarm) return
+    const wasFavorited = isFavorited
+    setLocalFavorited(!isFavorited)
+
+    toggleFavorite.mutate(
+      { swarmId: swarm.id, isFavorited },
+      {
+        onSuccess: () => {
+          toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites')
+        },
+        onError: () => {
+          setLocalFavorited(wasFavorited)
+          toast.error('Failed to update favorite')
+        },
+      }
+    )
+  }
+
+  const handleExportWorkflow = () => {
+    if (!swarm) return
+
+    const categoryPrefix = swarm.category?.name ? `${swarm.category.name}: ` : ''
+    const exportData = {
+      version: "1.0",
+      data: {
+        workflows: [{
+          name: `${categoryPrefix}${swarm.name}`,
+          description: swarm.description,
+          diagramJson: {
+            nodes: workflowNodes,
+            edges: workflowEdges,
+            metadata: swarm.workflowMetadata ? JSON.parse(swarm.workflowMetadata) : {}
+          }
+        }]
+      }
+    }
+
+    downloadJson(exportData, `${swarm.slug}-workflow.json`)
+    toast.success('Workflow exported successfully')
+  }
+
+  const handleShare = () => {
+    const url = window.location.href.replace('/edit', '')
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success('Link copied to clipboard')
+    }).catch(() => {
+      toast.error('Failed to copy link')
+    })
+  }
+
+  const handleDelete = () => {
+    if (!confirm('Are you sure you want to delete this swarm?')) return
+
+    deleteSwarm.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('Swarm deleted successfully')
+        router.push('/browse')
+      },
+      onError: () => {
+        toast.error('Failed to delete swarm')
+      },
+    })
+  }
+
+  // Register copilot options so the global panel has run mode context
+  useRegisterCopilotOptions({
+    ...(swarm?.id ? { runMode: { swarmId: swarm.id, swarmSlug: resolvedParams.slug } } : {}),
+  })
 
   // Populate form when swarm loads
   useEffect(() => {
@@ -81,6 +172,65 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     }
   }, [swarm])
 
+  // Fetch step results when swarm loads
+  useEffect(() => {
+    if (!swarm?.id) return
+
+    const fetchStepResults = async () => {
+      try {
+        const res = await fetch(`/api/copilot/step-results?swarmId=${swarm.id}`)
+        if (!res.ok) return
+        const data = await res.json()
+        const map = new Map<string, StepResultData>()
+        if (data.steps) {
+          for (const step of data.steps) {
+            map.set(step.nodeId, {
+              nodeId: step.nodeId,
+              result: null,
+              completed: step.completed,
+              completedAt: step.completedAt,
+              updatedAt: step.lastUpdated,
+            })
+          }
+        }
+        setStepResults(map)
+      } catch {
+        // ignore
+      }
+    }
+    fetchStepResults()
+  }, [swarm?.id])
+
+  // Fetch individual step result when a node is selected
+  useEffect(() => {
+    if (!selectedNodeId || !swarm?.id) return
+
+    const fetchNodeResult = async () => {
+      try {
+        const res = await fetch(`/api/copilot/step-results/${swarm.id}/${selectedNodeId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        setEditingResult(data.result || '')
+        setEditingCompleted(data.completed || false)
+        setStepResults(prev => {
+          const next = new Map(prev)
+          next.set(selectedNodeId, {
+            nodeId: selectedNodeId,
+            result: data.result || null,
+            completed: data.completed || false,
+            completedAt: data.completedAt || null,
+            updatedAt: data.updatedAt || null,
+          })
+          return next
+        })
+      } catch {
+        setEditingResult('')
+        setEditingCompleted(false)
+      }
+    }
+    fetchNodeResult()
+  }, [selectedNodeId, swarm?.id])
+
   const handleNodesChange = useCallback((nodes: Node[]) => {
     setWorkflowNodes(nodes)
   }, [])
@@ -88,6 +238,64 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const handleEdgesChange = useCallback((edges: Edge[]) => {
     setWorkflowEdges(edges)
   }, [])
+
+  const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    setSelectedNodeId(node.id)
+  }, [])
+
+  const handleDeselectNode = useCallback(() => {
+    setSelectedNodeId(null)
+  }, [])
+
+  const handleNodeUpdate = useCallback((nodeId: string, field: string, value: string) => {
+    setWorkflowNodes(prev =>
+      prev.map(node =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, [field]: value } }
+          : node
+      )
+    )
+  }, [])
+
+  const handleSaveStepResult = useCallback(async () => {
+    if (!swarm?.id || !selectedNodeId) return
+
+    setSavingResult(true)
+    try {
+      const res = await fetch(`/api/copilot/step-results/${swarm.id}/${selectedNodeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          result: editingResult,
+          completed: editingCompleted,
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to save step result')
+        return
+      }
+
+      const data = await res.json()
+      setStepResults(prev => {
+        const next = new Map(prev)
+        next.set(selectedNodeId, {
+          nodeId: selectedNodeId,
+          result: data.result || null,
+          completed: data.completed || false,
+          completedAt: data.completedAt || null,
+          updatedAt: data.updatedAt || null,
+        })
+        return next
+      })
+      toast.success('Step result saved')
+    } catch {
+      toast.error('Failed to save step result')
+    } finally {
+      setSavingResult(false)
+    }
+  }, [swarm?.id, selectedNodeId, editingResult, editingCompleted])
 
   const toggleCategory = (categoryId: string) => {
     setFormData(prev => ({
@@ -172,7 +380,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
           <h1 className="text-2xl font-bold text-stone-800">Not Authorized</h1>
-          <p className="text-stone-500">You don't have permission to edit this swarm</p>
+          <p className="text-stone-500">You don&apos;t have permission to edit this swarm</p>
           <Link href={`/swarms/${resolvedParams.slug}`}>
             <Button className="bg-amber-500 hover:bg-amber-600 text-white">
               <ChevronLeft className="mr-2 h-4 w-4" />
@@ -184,173 +392,239 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     )
   }
 
-  const nodeCount = workflowNodes.length
   const hasErrors = Object.keys(errors).length > 0
 
-  return (
-    <div className="h-screen flex flex-col overflow-hidden bg-stone-50">
-      {/* Compact Header */}
-      <header className="h-14 border-b border-stone-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Link href={`/swarms/${resolvedParams.slug}`}>
-            <Button variant="ghost" size="sm" className="text-stone-600 hover:text-stone-900 hover:bg-stone-100">
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-          </Link>
-        </div>
+  // Compute progress
+  const completedSteps = Array.from(stepResults.values()).filter(r => r.completed).length
+  const totalSteps = workflowNodes.length
+  const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0
 
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-          >
-            {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-          </Button>
-        </div>
-      </header>
+  // Get selected node
+  const selectedNode = selectedNodeId
+    ? workflowNodes.find(n => n.id === selectedNodeId) || null
+    : null
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Canvas Area */}
-        <main className="flex-1 relative bg-stone-100">
-          {/* Subtle grid background pattern */}
-          <div
-            className="absolute inset-0 opacity-40"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(120,113,108,0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(120,113,108,0.08) 1px, transparent 1px)
-              `,
-              backgroundSize: '24px 24px'
-            }}
-          />
+  const headerLeft = (
+    <div className="flex items-center gap-3">
+      <Link href="/browse">
+        <Button variant="ghost" size="sm" className="text-stone-600 hover:text-stone-900 hover:bg-stone-100">
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Browse
+        </Button>
+      </Link>
 
-          {/* Workflow Designer */}
-          <div className="absolute inset-0">
-            <WorkflowDesigner
-              nodes={workflowNodes}
-              edges={workflowEdges}
-              onNodesChange={handleNodesChange}
-              onEdgesChange={handleEdgesChange}
-              readOnly={updateSwarm.isPending}
+      {/* Progress indicator */}
+      {totalSteps > 0 && (
+        <div className="flex items-center gap-2 text-sm text-stone-600">
+          <div className="w-24 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
+          <span className="font-medium">{completedSteps}/{totalSteps}</span>
+        </div>
+      )}
+    </div>
+  )
 
-          {/* Empty state overlay */}
-          {nodeCount === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center space-y-4 max-w-md px-8">
-                <div className="h-20 w-20 mx-auto rounded-2xl bg-white border border-stone-200 shadow-sm flex items-center justify-center">
-                  <Sparkles className="h-10 w-10 text-stone-300" />
-                </div>
-                <h3 className="text-xl font-semibold text-stone-600">No Workflow Yet</h3>
-                <p className="text-stone-500 text-sm leading-relaxed">
-                  Click the "Add Step" button above to create your first workflow node.
-                  Connect nodes to define the flow of your audit process.
-                </p>
-              </div>
-            </div>
-          )}
-        </main>
+  const headerRight = (
+    <TooltipProvider delayDuration={300}>
+      <div className="flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleFavorite}
+              variant="ghost"
+              size="sm"
+              disabled={toggleFavorite.isPending}
+              className={isFavorited ? 'text-pink-600 hover:text-pink-700' : 'text-stone-600'}
+            >
+              <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{isFavorited ? 'Remove from favorites' : 'Add to favorites'}</p>
+          </TooltipContent>
+        </Tooltip>
 
-        {/* Right Sidebar */}
-        <aside
-          className={`${
-            sidebarOpen ? 'w-80' : 'w-0'
-          } transition-all duration-300 ease-out overflow-hidden border-l border-stone-200 bg-white shrink-0`}
-        >
-          <div className="w-80 h-full overflow-y-auto p-5 space-y-6">
-            {hasErrors && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>Please fix the form errors</span>
-              </div>
-            )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleExportWorkflow}
+              variant="ghost"
+              size="sm"
+              className="text-stone-600"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Download workflow</p>
+          </TooltipContent>
+        </Tooltip>
 
-            {/* Swarm Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-stone-700 text-sm font-medium">
-                Swarm Name <span className="text-amber-600">*</span>
-              </Label>
-              <Input
-                id="name"
-                placeholder="e.g., SOC 2 Control Testing"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                disabled={updateSwarm.isPending}
-                className={`bg-stone-50 border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 ${
-                  errors.name ? 'border-red-500' : ''
-                }`}
-              />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-            </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleShare}
+              variant="ghost"
+              size="sm"
+              className="text-stone-600"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Copy link to clipboard</p>
+          </TooltipContent>
+        </Tooltip>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-stone-700 text-sm font-medium">
-                Description <span className="text-amber-600">*</span>
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Describe your workflow template..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                disabled={updateSwarm.isPending}
-                rows={4}
-                className={`bg-stone-50 border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 resize-none ${
-                  errors.description ? 'border-red-500' : ''
-                }`}
-              />
-              {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
-            </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleteSwarm.isPending}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Delete swarm</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  )
 
-            {/* Category */}
-            <div className="space-y-2">
-              <Label className="text-stone-700 text-sm font-medium">Category</Label>
-              <div className="flex flex-wrap gap-2">
-                {loadingCategories ? (
-                  <p className="text-sm text-stone-400">Loading categories...</p>
-                ) : (
-                  categories.map((category: any) => (
-                    <Badge
-                      key={category.id}
-                      variant="outline"
-                      className={`cursor-pointer transition-all ${getCategoryColor(category.name, formData.categoryId === category.id)} ${updateSwarm.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
-                      onClick={() => !updateSwarm.isPending && toggleCategory(category.id)}
-                    >
-                      {category.name}
-                    </Badge>
-                  ))
-                )}
-              </div>
-            </div>
+  // Node editor sidebar (using shared NodeEditorPanel)
+  const nodeDetailSidebar = selectedNode ? (
+    <NodeEditorPanel
+      node={selectedNode}
+      onClose={handleDeselectNode}
+      onUpdateField={handleNodeUpdate}
+      stepResult={{
+        result: editingResult,
+        completed: editingCompleted,
+        saving: savingResult,
+        onResultChange: setEditingResult,
+        onCompletedChange: setEditingCompleted,
+        onSave: handleSaveStepResult,
+      }}
+    />
+  ) : null
 
-            {/* Save Button */}
-            <div className="pt-4 border-t border-stone-200">
-              <Button
-                onClick={handleSubmit}
-                disabled={updateSwarm.isPending || !formData.name || !formData.description}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg shadow-amber-200"
-              >
-                {updateSwarm.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
+  // Enrich nodes with completed status from step results
+  const enrichedNodes = useMemo(
+    () => workflowNodes.map(node => {
+      const result = stepResults.get(node.id)
+      if (result?.completed) {
+        return { ...node, data: { ...node.data, completed: true } }
+      }
+      return node
+    }),
+    [workflowNodes, stepResults]
+  )
+
+  // Banner content — editable template details
+  const bannerContent = (
+    <div className="shrink-0 border-b border-stone-200 bg-white px-6 py-4">
+      {hasErrors && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm mb-3">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>Please fix the form errors</span>
+        </div>
+      )}
+      <div className="flex items-start gap-4">
+        {/* Name + Category */}
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center gap-3">
+            <Input
+              id="name"
+              placeholder="Swarm name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              disabled={updateSwarm.isPending}
+              className={`text-lg font-semibold h-9 bg-transparent border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 ${
+                errors.name ? 'border-red-500' : ''
+              }`}
+            />
           </div>
-        </aside>
+          <Textarea
+            id="description"
+            placeholder="Describe your workflow template..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            disabled={updateSwarm.isPending}
+            rows={2}
+            className={`text-sm bg-transparent border-stone-200 text-stone-700 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 resize-none ${
+              errors.description ? 'border-red-500' : ''
+            }`}
+          />
+        </div>
+
+        {/* Category + Save */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap gap-1.5">
+            {loadingCategories ? (
+              <span className="text-xs text-stone-400">Loading...</span>
+            ) : (
+              categories.map((category: any) => (
+                <Badge
+                  key={category.id}
+                  variant="outline"
+                  className={`cursor-pointer text-xs transition-all ${getCategoryColor(category.name, formData.categoryId === category.id)} ${updateSwarm.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={() => !updateSwarm.isPending && toggleCategory(category.id)}
+                >
+                  {category.name}
+                </Badge>
+              ))
+            )}
+          </div>
+
+          <div className="h-6 w-px bg-stone-200" />
+
+          <Button
+            onClick={handleSubmit}
+            disabled={updateSwarm.isPending || !formData.name || !formData.description}
+            size="sm"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md"
+          >
+            {updateSwarm.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
+  )
+
+  return (
+    <WorkflowWorkspace
+      nodes={enrichedNodes}
+      edges={workflowEdges}
+      onNodesChange={handleNodesChange}
+      onEdgesChange={handleEdgesChange}
+      readOnly={updateSwarm.isPending}
+      bannerContent={bannerContent}
+      sidebarContent={nodeDetailSidebar}
+      sidebarOpen={!!selectedNodeId}
+      headerLeft={headerLeft}
+      headerRight={headerRight}
+      selectedNodeId={selectedNodeId}
+      onNodeClick={handleNodeClick}
+      emptyStateTitle="No Workflow Yet"
+    />
   )
 }

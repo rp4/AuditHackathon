@@ -14,12 +14,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (status === 'loading') return
 
     if (!session?.user) {
-      router.replace('/copilot')
+      router.replace('/create')
       return
     }
 
     if (!session.user.isAdmin) {
-      router.replace('/copilot')
+      router.replace('/create')
       return
     }
 

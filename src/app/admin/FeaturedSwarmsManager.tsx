@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { Loader2, Search, Star, Eye, Heart, Check, X, Sparkles } from 'lucide-react'
+import { Loader2, Search, Eye, Heart, Check, X, Sparkles } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 interface Swarm {
@@ -20,7 +20,6 @@ interface Swarm {
   is_featured?: boolean
   views_count: number
   favorites_count: number
-  rating_avg: number
   user: {
     name?: string
     username?: string
@@ -154,12 +153,6 @@ export default function FeaturedSwarmsManager() {
                           <Heart className="h-3 w-3" />
                           {swarm.favorites_count}
                         </span>
-                        {swarm.rating_avg > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Star className="h-3 w-3" />
-                            {swarm.rating_avg.toFixed(1)}
-                          </span>
-                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -226,12 +219,6 @@ export default function FeaturedSwarmsManager() {
                         <Heart className="h-3 w-3" />
                         {swarm.favorites_count}
                       </span>
-                      {swarm.rating_avg > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3" />
-                          {swarm.rating_avg.toFixed(1)}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>

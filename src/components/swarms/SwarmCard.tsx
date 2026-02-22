@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, Heart, GitBranch, Check } from 'lucide-react'
+import { Heart, GitBranch, Check } from 'lucide-react'
 import { getCategoryColor } from '@/lib/utils/categoryColors'
 
 interface SwarmCardProps {
@@ -117,10 +117,6 @@ function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, i
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{swarm.rating_avg.toFixed(1)}</span>
-                </div>
                 <div className="flex items-center gap-1">
                   <Heart
                     className={`h-4 w-4 ${

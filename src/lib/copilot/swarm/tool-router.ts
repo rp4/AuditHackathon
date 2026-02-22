@@ -6,6 +6,7 @@
  */
 
 import { prisma } from '@/lib/prisma/client'
+import { processImportedWorkflow } from '@/lib/utils/workflowImport'
 
 interface ToolResult {
   success: boolean
@@ -20,11 +21,17 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '')
 }
 
+export interface SwarmToolRouterOptions {
+  canvasMode?: boolean
+}
+
 export class SwarmToolRouter {
   private userId: string
+  private options: SwarmToolRouterOptions
 
-  constructor(userId: string) {
+  constructor(userId: string, options?: SwarmToolRouterOptions) {
     this.userId = userId
+    this.options = options || {}
   }
 
   async callTool(name: string, args: Record<string, unknown>): Promise<ToolResult> {
@@ -212,6 +219,24 @@ export class SwarmToolRouter {
     if (!name) return { success: false, error: 'name is required' }
     if (!description) return { success: false, error: 'description is required' }
 
+    // In canvasMode, return data without saving to DB
+    // The frontend will render it on the canvas for the user to review and save
+    if (this.options.canvasMode) {
+      return {
+        success: true,
+        result: {
+          canvasMode: true,
+          name,
+          description,
+          nodes: nodes || [],
+          edges: edges || [],
+          metadata: metadata || {},
+          categorySlug,
+          message: `Workflow "${name}" generated. It's now displayed on the canvas for you to review and save.`,
+        },
+      }
+    }
+
     // Generate unique slug
     let baseSlug = slugify(name)
     let slug = baseSlug
@@ -227,13 +252,20 @@ export class SwarmToolRouter {
       if (category) categoryId = category.id
     }
 
+    // Apply dagre layout for proper node positioning
+    const { nodes: layoutNodes, edges: layoutEdges } = processImportedWorkflow(
+      (nodes || []) as any[],
+      (edges || []) as any[],
+      { forceLayout: true }
+    )
+
     const swarm = await prisma.swarm.create({
       data: {
         name,
         slug,
         description,
-        workflowNodes: JSON.stringify(nodes || []),
-        workflowEdges: JSON.stringify(edges || []),
+        workflowNodes: JSON.stringify(layoutNodes),
+        workflowEdges: JSON.stringify(layoutEdges),
         workflowMetadata: metadata ? JSON.stringify(metadata) : null,
         userId: this.userId,
         categoryId,
@@ -390,10 +422,13 @@ export class SwarmToolRouter {
     // Get the workflow to know total steps
     const swarm = await prisma.swarm.findUnique({
       where: { id: swarmId },
-      select: { id: true, name: true, workflowNodes: true },
+      select: { id: true, name: true, workflowNodes: true, userId: true },
     })
 
     if (!swarm) return { success: false, error: 'Workflow not found' }
+    if (swarm.userId !== this.userId) {
+      return { success: false, error: 'Only the workflow owner can track step progress' }
+    }
 
     let nodes: Array<{ id: string; data?: { label?: string } }> = []
     try { nodes = JSON.parse(swarm.workflowNodes || '[]') } catch { /* empty */ }
@@ -444,6 +479,16 @@ export class SwarmToolRouter {
     if (!swarmId) return { success: false, error: 'swarmId is required' }
     if (!nodeId) return { success: false, error: 'nodeId is required' }
     if (!result) return { success: false, error: 'result is required' }
+
+    // Verify ownership
+    const swarm = await prisma.swarm.findUnique({
+      where: { id: swarmId },
+      select: { userId: true },
+    })
+    if (!swarm) return { success: false, error: 'Workflow not found' }
+    if (swarm.userId !== this.userId) {
+      return { success: false, error: 'Only the workflow owner can save step results' }
+    }
 
     const stepResult = await prisma.stepResult.upsert({
       where: {
@@ -496,12 +541,16 @@ export class SwarmToolRouter {
       select: {
         id: true,
         name: true,
+        userId: true,
         workflowNodes: true,
         workflowEdges: true,
       },
     })
 
     if (!swarm) return { success: false, error: 'Workflow not found' }
+    if (swarm.userId !== this.userId) {
+      return { success: false, error: 'Only the workflow owner can access step context' }
+    }
 
     let nodes: Array<{
       id: string

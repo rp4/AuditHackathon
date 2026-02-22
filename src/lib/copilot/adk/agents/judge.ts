@@ -1,19 +1,33 @@
 /**
  * Judge Agent — LLM-as-a-Judge for Audit Scoring
  *
- * Evaluates the user's submitted audit findings against the 67 known
- * anomalies in the Bluth Company mock data. Scores on completeness,
- * accuracy, evidence quality, and false positive rate.
+ * Evaluates the user's submitted audit findings against known issues
+ * stored in the database. Tracks individual issue discoveries per user
+ * and supports incremental scoring via report submissions.
  */
 
 import { ADKAgent } from '../client'
 import { prisma } from '@/lib/prisma/client'
+import {
+  getAllIssues,
+  getDiscoveredIssueCodes,
+  getUserDiscoveryCount,
+  getUserReportCount,
+  markIssuesFound,
+  createReport,
+  updateReport,
+} from '@/lib/db/audit-issues'
 import type { GeminiModel } from '@/lib/copilot/types'
 import type { FunctionDeclaration } from '@google/genai'
 
+// ============================================
+// Tool Declarations
+// ============================================
+
 const SAVE_AUDIT_SCORE_DECLARATION: FunctionDeclaration = {
   name: 'save_audit_score',
-  description: 'Save the audit evaluation score to the database for the leaderboard. Call this AFTER you have computed and presented the score to the user.',
+  description:
+    'Save the audit evaluation score to the database for the leaderboard. Call this AFTER you have computed and presented the score to the user.',
   parametersJsonSchema: {
     type: 'object',
     properties: {
@@ -23,12 +37,49 @@ const SAVE_AUDIT_SCORE_DECLARATION: FunctionDeclaration = {
       },
       details: {
         type: 'string',
-        description: 'JSON string with the full scoring breakdown (categories, missed findings, etc.)',
+        description:
+          'JSON string with the full scoring breakdown (categories, missed findings, etc.)',
       },
     },
     required: ['score', 'details'],
   },
 }
+
+const SUBMIT_AUDIT_REPORT_DECLARATION: FunctionDeclaration = {
+  name: 'submit_audit_report',
+  description:
+    "Submit the user's audit findings for evaluation. Evaluates the report against the known issues database, credits newly discovered issues, and saves the report. Call this when the user submits their findings for scoring.",
+  parametersJsonSchema: {
+    type: 'object',
+    properties: {
+      reportContent: {
+        type: 'string',
+        description: "The full text of the user's submitted audit report/findings",
+      },
+      matchedIssueCodes: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          'Array of issue codes (e.g. ["AM-001", "SEC-004", "HR-001"]) that the user\'s report references. Only include codes for issues that the user has clearly identified.',
+      },
+    },
+    required: ['reportContent', 'matchedIssueCodes'],
+  },
+}
+
+const GET_USER_ISSUE_STATUS_DECLARATION: FunctionDeclaration = {
+  name: 'get_user_issue_status',
+  description:
+    "Get the current user's issue discovery status — how many issues they have found, which categories they have covered, and their overall progress. Call this when the user asks about their progress or score.",
+  parametersJsonSchema: {
+    type: 'object',
+    properties: {},
+  },
+}
+
+// ============================================
+// Tool Router
+// ============================================
 
 async function judgeToolRouter(
   userId: string,
@@ -40,11 +91,7 @@ async function judgeToolRouter(
     const details = args.details as string
 
     const auditScore = await prisma.auditScore.create({
-      data: {
-        userId,
-        score,
-        details,
-      },
+      data: { userId, score, details },
     })
 
     return {
@@ -57,189 +104,245 @@ async function judgeToolRouter(
     }
   }
 
+  if (name === 'submit_audit_report') {
+    const reportContent = args.reportContent as string
+    const matchedIssueCodes = args.matchedIssueCodes as string[]
+
+    // Create the report record
+    const report = await createReport({
+      userId,
+      content: reportContent,
+      totalMatched: matchedIssueCodes.length,
+    })
+
+    // Mark issues as found (idempotent)
+    const { newlyFound, alreadyFound } = await markIssuesFound(
+      userId,
+      report.id,
+      matchedIssueCodes
+    )
+
+    // Update the report with actual new count
+    await updateReport(report.id, { newIssues: newlyFound.length })
+
+    // Get updated totals
+    const totalDiscovered = await getUserDiscoveryCount(userId)
+    const totalIssues = await prisma.auditIssue.count({
+      where: { isActive: true },
+    })
+
+    return {
+      success: true,
+      result: {
+        reportId: report.id,
+        newlyFound,
+        alreadyFound,
+        newCount: newlyFound.length,
+        alreadyFoundCount: alreadyFound.length,
+        totalDiscovered,
+        totalIssues,
+        message:
+          newlyFound.length > 0
+            ? `${newlyFound.length} new issue(s) credited! You have now found ${totalDiscovered} of ${totalIssues} total issues.`
+            : `No new issues found in this report. You have found ${totalDiscovered} of ${totalIssues} total issues.`,
+      },
+    }
+  }
+
+  if (name === 'get_user_issue_status') {
+    const [discoveries, totalIssues, reportCount] = await Promise.all([
+      prisma.issueDiscovery.findMany({
+        where: { userId },
+        include: {
+          issue: {
+            select: { issueCode: true, title: true, category: true, severity: true },
+          },
+        },
+      }),
+      prisma.auditIssue.count({ where: { isActive: true } }),
+      getUserReportCount(userId),
+    ])
+
+    // Group by category
+    const allIssues = await prisma.auditIssue.groupBy({
+      by: ['category'],
+      where: { isActive: true },
+      _count: true,
+    })
+    const categoryTotals = Object.fromEntries(
+      allIssues.map(g => [g.category, g._count])
+    )
+
+    const byCategory: Record<string, { found: number; total: number; codes: string[] }> =
+      {}
+    for (const [cat, total] of Object.entries(categoryTotals)) {
+      byCategory[cat] = { found: 0, total, codes: [] }
+    }
+    for (const d of discoveries) {
+      const cat = d.issue.category
+      if (!byCategory[cat]) byCategory[cat] = { found: 0, total: 0, codes: [] }
+      byCategory[cat].found++
+      byCategory[cat].codes.push(d.issue.issueCode)
+    }
+
+    return {
+      success: true,
+      result: {
+        totalFound: discoveries.length,
+        totalIssues,
+        reportsSubmitted: reportCount,
+        percentage: Math.round((discoveries.length / Math.max(totalIssues, 1)) * 100),
+        byCategory,
+        foundIssueCodes: discoveries.map(d => d.issue.issueCode),
+      },
+    }
+  }
+
   return { success: false, error: `Unknown tool: ${name}` }
 }
 
-export function createJudgeAgent(config: {
-  model: GeminiModel
-  userId: string
-  userEmail: string
-  sessionId?: string
-}): ADKAgent {
-  return new ADKAgent({
-    model: config.model,
-    systemInstruction: getJudgeSystemInstruction(),
-    functionDeclarations: [SAVE_AUDIT_SCORE_DECLARATION],
-    toolRouter: (name, args) => judgeToolRouter(config.userId, name, args),
-    userContext: { userId: config.userId, userEmail: config.userEmail },
-    sessionId: config.sessionId,
-  })
-}
+// ============================================
+// Dynamic System Instruction
+// ============================================
 
-function getJudgeSystemInstruction(): string {
-  return `You are the Audit Judge for the Bluth Company audit challenge. Your role is to evaluate a user's audit findings against the known set of 67 embedded anomalies and provide a score from 1-10.
+async function getJudgeSystemInstruction(userId: string): Promise<string> {
+  // Load all active issues from database
+  const allIssues = await getAllIssues({ isActive: true })
+
+  // Load user's already-found issues
+  const foundCodes = await getDiscoveredIssueCodes(userId)
+
+  // Group issues by category for the prompt
+  const issuesByCategory: Record<string, typeof allIssues> = {}
+  for (const issue of allIssues) {
+    if (!issuesByCategory[issue.category]) issuesByCategory[issue.category] = []
+    issuesByCategory[issue.category].push(issue)
+  }
+
+  // Build the issues list section
+  let issuesSection = ''
+  for (const [category, issues] of Object.entries(issuesByCategory)) {
+    issuesSection += `\n### ${category} (${issues.length} findings)\n`
+    for (const issue of issues) {
+      const alreadyFound = foundCodes.has(issue.issueCode) ? ' [ALREADY FOUND]' : ''
+      issuesSection += `- ${issue.issueCode}: ${issue.title} (${issue.severity})${alreadyFound}\n`
+    }
+  }
+
+  return `You are the Audit Judge for the Bluth Company audit challenge. Your role is to evaluate a user's audit findings against the known set of ${allIssues.length} embedded issues and track their individual discoveries.
 
 ## How This Works
 
 The user has been investigating the Bluth Company's data (querying databases, interviewing employees) and will submit their findings to you. You must:
 
 1. Parse their submitted findings
-2. Match each finding against the expected findings list below
-3. Score them on 4 dimensions
-4. Present a detailed score card
-5. Save the score using the save_audit_score tool
+2. Match each finding against the known issues list below
+3. Use the submit_audit_report tool to credit newly discovered issues
+4. Present a detailed score card showing new vs already-found issues
+5. Optionally use save_audit_score for a holistic 1-10 score
 
-## Scoring Rubric (Total: 10 points)
+## Issue Tracking Game
+
+This is a competitive game where users earn credit for each SPECIFIC issue they discover.
+- There are ${allIssues.length} total issues in the database
+- The user has already found ${foundCodes.size} issues
+- Only NEW discoveries count — issues marked [ALREADY FOUND] below do NOT increment their score
+- When evaluating a report, identify which issue codes the user's findings correspond to
+- Use submit_audit_report with the matched issue codes to credit new discoveries
+- Use get_user_issue_status when the user asks about their progress
+
+## Available Tools
+1. **submit_audit_report** — Evaluate the user's findings, match to known issue codes, and credit new discoveries
+2. **get_user_issue_status** — Show the user's progress (issues found, categories covered)
+3. **save_audit_score** — Save a holistic 1-10 audit score (optional, for additional evaluation)
+
+## Known Issues (${allIssues.length} total)
+${issuesSection}
+
+## Scoring Rubric (if using save_audit_score)
 
 ### Completeness (4 points max)
-- How many of the 67 expected findings did they identify?
-- 4.0 pts: 60+ findings (90%+)
-- 3.5 pts: 50-59 findings (75-89%)
-- 3.0 pts: 40-49 findings (60-74%)
-- 2.5 pts: 30-39 findings (45-59%)
-- 2.0 pts: 20-29 findings (30-44%)
-- 1.5 pts: 10-19 findings (15-29%)
-- 1.0 pt:  1-9 findings (<15%)
-- 0.0 pts: No valid findings
+- 4.0 pts: 90%+ of issues found
+- 3.5 pts: 75-89%
+- 3.0 pts: 60-74%
+- 2.5 pts: 45-59%
+- 2.0 pts: 30-44%
+- 1.5 pts: 15-29%
+- 1.0 pt:  <15%
 
 ### Accuracy (3 points max)
-- Did they correctly classify the severity of findings?
-- 3.0 pts: 90%+ correct severity
-- 2.5 pts: 75-89% correct
-- 2.0 pts: 60-74% correct
-- 1.5 pts: 45-59% correct
-- 1.0 pt:  <45% correct or no severity provided
+- 3.0 pts: 90%+ correct severity classification
+- 2.5 pts: 75-89%
+- 2.0 pts: 60-74%
+- 1.5 pts: 45-59%
+- 1.0 pt:  <45%
 
 ### Evidence Quality (2 points max)
-- Did they cite specific data sources, employee IDs, system names, timestamps?
-- 2.0 pts: Specific evidence for most findings (employee IDs, dates, system names)
-- 1.5 pts: Some specific evidence, some general
+- 2.0 pts: Specific evidence for most findings
+- 1.5 pts: Some specific, some general
 - 1.0 pt:  Mostly general observations
 - 0.5 pts: Vague descriptions only
 
 ### False Positive Penalty (1 point max, deducted)
-- Start with 1.0 and deduct for fabricated findings
-- -0.1 per false positive (finding not in the expected list)
-- Minimum 0.0 (cannot go negative)
-
-## Expected Findings (67 total)
-
-### Access Management (18 findings)
-- AM-001: Bob Loblaw (E013) terminated, retains SAP access (Critical)
-- AM-002: Bob Loblaw (E013) terminated, retains Email access (Critical)
-- AM-003: Bob Loblaw (E013) terminated, retains VPN access (Critical)
-- AM-004: Rita Leeds (E025) terminated, retains SAP access (High)
-- AM-005: Bob Loblaw access removal ticket open 90+ days (High)
-- AM-006: Rita Leeds access removal ticket open 18 years (Critical)
-- AM-007: George Sr (E001) incarcerated, retains SAP admin + VPN (Critical)
-- AM-008: George Sr login attempts from Mexico (High)
-- AM-009: George Sr geo-anomaly security alert (Critical)
-- AM-010: GOB (E004) self-approved Domain Admin access (Critical)
-- AM-011: GOB self-approved change ticket CHG-003 (High)
-- AM-012: GOB access review still pending (High)
-- AM-013: GOB privilege escalation alert (Medium)
-- AM-014: Franklin (E020) puppet has badge access (High)
-- AM-015: Franklin puppet has SAP_PROD access (High)
-- AM-016: Franklin access review approved in 1 second (Medium)
-- AM-017: Service account svc-sap password not rotated 5 years (Critical)
-- AM-018: Service account svc-backup password not rotated 5 years (Critical)
-
-### Change Management (10 findings)
-- CM-001: George Michael self-approved Fakeblock deploy CHG-002 (Critical)
-- CM-002: GOB self-approved admin access CHG-003 (Critical)
-- CM-003: GOB self-approved Franklin badge access CHG-010 (High)
-- CM-004: George Sr self-approved file access CHG-014 (High)
-- CM-005: Cornballer fix emergency change no approval CHG-004 (High)
-- CM-006: Fakeblock restore emergency no approval CHG-012 (High)
-- CM-007: Unauthorized production deployment CHG-015 (Critical)
-- CM-008: Fakeblock production deploy without testing CHG-002 (High)
-- CM-009: GOB admin access change without testing CHG-003 (Medium)
-- CM-010: Lucille approved Annyong's data export tool CHG-008 (Medium)
-
-### Security (15 findings)
-- SEC-001: Annyong 10GB data export to external IP (Critical)
-- SEC-002: Annyong impossible travel China-US (Critical)
-- SEC-003: Annyong excessive access for intern (High)
-- SEC-004: Fakeblock ransomware infection (Critical)
-- SEC-005: Fakeblock database compromised (Critical)
-- SEC-006: GOB after-hours admin activity 3:15 AM (High)
-- SEC-007: GOB lateral movement server scanning (High)
-- SEC-008: Kitty accessed 50MB CEO files (High)
-- SEC-009: Tobias VPN from unusual location Reno (Medium)
-- SEC-010: Barry brute force attack (Medium)
-- SEC-011: Bob Loblaw terminated user login attempt (High)
-- SEC-012: Franklin puppet account authentication (Medium)
-- (3 additional implicit security findings from cross-references)
-
-### Payroll/HR (8 findings)
-- HR-001: Franklin puppet on payroll (Critical)
-- HR-002: Franklin & GOB duplicate bank account (High)
-- HR-003: Mrs Featherbottom duplicate identity same bank as Tobias (High)
-- HR-004: George Sr incarcerated receiving $35k/period pay (Critical)
-- HR-005: Annyong departed still receiving pay (High)
-- HR-006: Buster VP of Cartography no work product (Medium)
-- HR-007: Ann Veal unpaid intern $0 pay (Low)
-- HR-008: 60% related party employment concentration (Medium)
-
-### Vulnerability Management (10 findings)
-- VM-001: Critical SAP RCE CVE open 193 days (Critical)
-- VM-002: Critical DC privilege escalation CVE open 163 days (Critical)
-- VM-003: Zero-day with known exploit CVSS 9.5 (Critical)
-- VM-004: Fakeblock SQL injection CVE open 101 days (Critical)
-- VM-005: Payment card data exposure CVSS 10.0 Banana Stand POS (Critical)
-- VM-006: EOL operating system POSReady 7 on POS (High)
-- VM-007: VPN authentication bypass (High)
-- VM-008: XSS on public website open 118 days (High)
-- VM-009: EOL CentOS 6 on maps-01 (Medium)
-- VM-010: Improper access control HR system (Medium)
-
-### Compliance (6 findings)
-- CMP-001: Segregation of duties violation in change management (Critical)
-- CMP-002: Access review rubber-stamping 8 reviews < 10 seconds (High)
-- CMP-003: Self-review conflict of interest (High)
-- CMP-004: Audit log retention only 90 days insufficient (Critical)
-- CMP-005: Terminated employee laptops not recovered (High)
-- CMP-006: CEO laptop in Mexico unauthorized location (Medium)
+- -0.1 per false positive
+- Minimum 0.0
 
 ## Output Format
 
-When presenting the score, use this format:
+When presenting results after submit_audit_report, use this format:
 
-# Bluth Company Audit — Score Card
+# Audit Report — Results
 
-**Overall Score: X.X / 10**
+**New Issues Found: X**
+**Already Known: X**
+**Total Progress: X / ${allIssues.length} (X%)**
 
-| Category | Found | Total | Score |
-|----------|-------|-------|-------|
-| Access Management | X | 18 | X% |
-| Change Management | X | 10 | X% |
-| Security | X | 15 | X% |
-| Payroll/HR | X | 8 | X% |
-| Vulnerability Mgmt | X | 10 | X% |
-| Compliance | X | 6 | X% |
-| **Total** | **X** | **67** | **X%** |
+| Category | Found | Total | Progress |
+|----------|-------|-------|----------|
+${Object.entries(issuesByCategory)
+  .map(([cat, issues]) => `| ${cat} | ? | ${issues.length} | ?% |`)
+  .join('\n')}
 
-### Scoring Breakdown
-| Dimension | Score | Max |
-|-----------|-------|-----|
-| Completeness | X.X | 4.0 |
-| Accuracy | X.X | 3.0 |
-| Evidence Quality | X.X | 2.0 |
-| False Positive Penalty | -X.X | 1.0 |
-| **Total** | **X.X** | **10.0** |
+### Newly Credited Issues
+[List the new issue codes and titles]
 
-### Critical Findings Missed
-[List the most important findings they missed]
+### Already Found (no new credit)
+[List already-found codes]
 
 ### Improvement Suggestions
 [Specific advice on what to investigate next]
 
 ## Rules
-- Be fair and thorough in your evaluation
-- Give partial credit for findings that are close but not exact matches
-- A finding counts if the user identified the core issue, even with different wording
+- Be fair and thorough in matching findings to issue codes
+- Give credit if the user identified the core issue, even with different wording
 - Don't penalize for organization or formatting — focus on substance
-- ALWAYS call save_audit_score after presenting the score
+- ALWAYS call submit_audit_report when the user submits findings
 - If the user asks to be evaluated but hasn't submitted findings, ask them to list their findings first
-- Be encouraging — even low scores should come with constructive feedback`
+- Be encouraging — highlight progress and suggest next areas to explore`
+}
+
+// ============================================
+// Agent Factory
+// ============================================
+
+export async function createJudgeAgent(config: {
+  model: GeminiModel
+  userId: string
+  userEmail: string
+  sessionId?: string
+}): Promise<ADKAgent> {
+  const systemInstruction = await getJudgeSystemInstruction(config.userId)
+
+  return new ADKAgent({
+    model: config.model,
+    systemInstruction,
+    functionDeclarations: [
+      SAVE_AUDIT_SCORE_DECLARATION,
+      SUBMIT_AUDIT_REPORT_DECLARATION,
+      GET_USER_ISSUE_STATUS_DECLARATION,
+    ],
+    toolRouter: (name, args) => judgeToolRouter(config.userId, name, args),
+    userContext: { userId: config.userId, userEmail: config.userEmail },
+    sessionId: config.sessionId,
+  })
 }

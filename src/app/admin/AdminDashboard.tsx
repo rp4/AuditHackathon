@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Users, Package, TrendingUp, Eye, Heart, Star, Clock } from 'lucide-react'
+import { Users, Package, TrendingUp, Eye, Heart, Clock } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import FeaturedSwarmsManager from './FeaturedSwarmsManager'
 
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Avg Swarms/User</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -188,12 +188,6 @@ export default function AdminDashboard() {
                           <Heart className="h-3 w-3" />
                           {tool.favorites_count}
                         </span>
-                        {tool.rating_avg > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Star className="h-3 w-3" />
-                            {tool.rating_avg.toFixed(1)}
-                          </span>
-                        )}
                       </div>
                     </div>
                   ))}
@@ -234,12 +228,6 @@ export default function AdminDashboard() {
                           <Eye className="h-3 w-3" />
                           {tool.views_count}
                         </span>
-                        {tool.rating_avg > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Star className="h-3 w-3" />
-                            {tool.rating_avg.toFixed(1)}
-                          </span>
-                        )}
                       </div>
                     </div>
                   ))}

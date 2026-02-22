@@ -42,6 +42,8 @@ interface MultiAgentConfig {
   userId: string
   userEmail: string
   sessionId?: string
+  canvasMode?: boolean
+  runMode?: { swarmId: string; swarmSlug: string }
 }
 
 export class MultiAgentOrchestrator {
@@ -51,7 +53,9 @@ export class MultiAgentOrchestrator {
 
   constructor(config: MultiAgentConfig) {
     this.config = config
-    this.swarmRouter = new SwarmToolRouter(config.userId)
+    this.swarmRouter = new SwarmToolRouter(config.userId, {
+      canvasMode: config.canvasMode,
+    })
     this.bluthClient = createBluthMCPClient()
   }
 
@@ -146,7 +150,10 @@ export class MultiAgentOrchestrator {
     const chat = genai.chats.create({
       model: ORCHESTRATOR_MODEL,
       config: {
-        systemInstruction: getOrchestratorSystemInstruction(),
+        systemInstruction: getOrchestratorSystemInstruction({
+          canvasMode: this.config.canvasMode,
+          runMode: this.config.runMode,
+        }),
         tools: [
           {
             functionDeclarations: [
@@ -410,11 +417,15 @@ export function createMultiAgentOrchestrator(config: {
   userId: string
   userEmail: string
   sessionId?: string
+  canvasMode?: boolean
+  runMode?: { swarmId: string; swarmSlug: string }
 }): MultiAgentOrchestrator {
   return new MultiAgentOrchestrator({
     model: config.model || 'gemini-3-flash-preview',
     userId: config.userId,
     userEmail: config.userEmail,
     sessionId: config.sessionId,
+    canvasMode: config.canvasMode,
+    runMode: config.runMode,
   })
 }

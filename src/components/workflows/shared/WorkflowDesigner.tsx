@@ -101,7 +101,6 @@ function WorkflowDesignerInner({
         label: 'New Step',
         description: '',
         instructions: '',
-        linkedAgentUrl: '',
         readOnly: false
       }
     }

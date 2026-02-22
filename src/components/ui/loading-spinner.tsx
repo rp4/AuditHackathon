@@ -20,8 +20,8 @@ interface LoadingSpinnerProps {
 
 const pixelSizes = {
   sm: 16,
-  md: 32,
-  lg: 48,
+  md: 120,
+  lg: 200,
 }
 
 export function LoadingSpinner({

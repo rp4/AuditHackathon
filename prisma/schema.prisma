@@ -91,7 +91,9 @@ model User {
   spendingLimit   UserSpendingLimit?
   copilotSessions CopilotSession[]
   stepResults     StepResult[]
-  auditScores     AuditScore[]
+  auditScores      AuditScore[]
+  issueDiscoveries IssueDiscovery[]
+  auditReports     AuditReport[]
 
   @@index([email])
   @@index([username])
@@ -346,6 +348,71 @@ model AuditScore {
   @@index([score])
   @@index([createdAt])
   @@map("audit_scores")
+}
+
+// ============================================
+// Issue Tracking Game Models
+// ============================================
+
+// The answer key — known audit issues that users can discover
+model AuditIssue {
+  id              String   @id @default(cuid())
+  issueCode       String   @unique
+  title           String
+  description     String   @db.Text
+  category        String
+  severity        String
+  financialImpact Float?
+  dataSource      String?
+  evidence        String?  @db.Text
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  discoveries IssueDiscovery[]
+
+  @@index([category])
+  @@index([severity])
+  @@index([isActive])
+  @@map("audit_issues")
+}
+
+// Each report submission to the judge
+model AuditReport {
+  id            String   @id @default(cuid())
+  userId        String
+  content       String   @db.Text
+  judgeResponse String?  @db.Text
+  newIssues     Int      @default(0)
+  totalMatched  Int      @default(0)
+  sessionId     String?
+  createdAt     DateTime @default(now())
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discoveries IssueDiscovery[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_reports")
+}
+
+// Per-user per-issue discovery record (idempotent via unique constraint)
+model IssueDiscovery {
+  id        String   @id @default(cuid())
+  userId    String
+  issueId   String
+  reportId  String
+  createdAt DateTime @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  issue  AuditIssue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  report AuditReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, issueId])
+  @@index([userId])
+  @@index([issueId])
+  @@index([reportId])
+  @@map("issue_discoveries")
 }
 
 // Per-user step results — one result per user per step per workflow (personal workbook)

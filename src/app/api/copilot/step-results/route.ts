@@ -20,11 +20,15 @@ export async function GET(request: NextRequest) {
 
   const swarm = await prisma.swarm.findUnique({
     where: { id: swarmId },
-    select: { id: true, name: true, workflowNodes: true },
+    select: { id: true, name: true, workflowNodes: true, userId: true },
   })
 
   if (!swarm) {
     return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+  }
+
+  if (swarm.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Forbidden: only the workflow owner can access step results' }, { status: 403 })
   }
 
   let nodes: Array<{ id: string; data?: { label?: string } }> = []

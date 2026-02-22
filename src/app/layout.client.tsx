@@ -8,6 +8,8 @@ import { SessionProvider } from "@/components/providers/SessionProvider"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Toaster } from "sonner"
 import Link from "next/link"
+import { CopilotOptionsProvider } from "@/lib/copilot/CopilotOptionsContext"
+import { CopilotPanel } from "@/components/copilot/CopilotPanel"
 
 export function RootLayoutClient({
   children,
@@ -44,6 +46,7 @@ export function RootLayoutClient({
     <ErrorBoundary>
       <SessionProvider>
         <QueryProvider>
+        <CopilotOptionsProvider>
         <Toaster position="top-right" richColors closeButton />
         {/* Fixed Honeycomb Background - appears on all pages */}
         <div
@@ -58,9 +61,10 @@ export function RootLayoutClient({
         {isCopilotPage ? (
           // Copilot gets its own full-screen layout (no header, no footer, no background)
           <>{children}</>
-        ) : isCanvasPage ? (
+        ) : (
           <div className="h-screen flex flex-col overflow-hidden">
-            {isBrowsePage ? (
+            {/* Header - always full width on top */}
+            {isLandingPage ? null : isBrowsePage ? (
               <div
                 className="shrink-0 transition-transform duration-300 ease-in-out"
                 style={{
@@ -74,42 +78,49 @@ export function RootLayoutClient({
                 <Header />
               </div>
             )}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {children}
+
+            {/* Content area: copilot panel + page */}
+            <div className="flex-1 flex overflow-hidden">
+              <CopilotPanel />
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {isCanvasPage ? (
+                  children
+                ) : (
+                  <div className="flex-1 overflow-y-auto">
+                    <main className="min-h-full">
+                      {children}
+                    </main>
+                    {!isProfilePage && !isLandingPage && (
+                      <footer className="bg-muted mt-auto">
+                        <div className="container mx-auto px-4 py-8">
+                          <div className="flex flex-col items-center text-center">
+                            <h3 className="font-semibold mb-2">AuditSwarm</h3>
+                            <p className="text-sm text-muted-foreground mb-6">
+                              The premier platform for sharing audit workflows
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              © 2025 AuditSwarm. All rights reserved.
+                            </p>
+                            <div className="flex flex-wrap justify-center items-center gap-x-3 mt-4 text-xs text-muted-foreground/50">
+                              <Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy</Link>
+                              <span>·</span>
+                              <Link href="/terms" className="hover:text-muted-foreground transition-colors">Terms</Link>
+                              <span>·</span>
+                              <Link href="/about" className="hover:text-muted-foreground transition-colors">About</Link>
+                              <span>·</span>
+                              <Link href="/contact" className="hover:text-muted-foreground transition-colors">Contact</Link>
+                            </div>
+                          </div>
+                        </div>
+                      </footer>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        ) : (
-          <>
-            {!isLandingPage && <Header />}
-            <main className="min-h-screen">
-              {children}
-            </main>
-            {!isProfilePage && (
-              <footer className="bg-muted mt-auto">
-                <div className="container mx-auto px-4 py-8">
-                  <div className="flex flex-col items-center text-center">
-                    <h3 className="font-semibold mb-2">AuditSwarm</h3>
-                    <p className="text-sm text-muted-foreground mb-6">
-                      The premier platform for sharing audit workflows
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      © 2025 AuditSwarm. All rights reserved.
-                    </p>
-                    <div className="flex flex-wrap justify-center items-center gap-x-3 mt-4 text-xs text-muted-foreground/50">
-                      <Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy</Link>
-                      <span>·</span>
-                      <Link href="/terms" className="hover:text-muted-foreground transition-colors">Terms</Link>
-                      <span>·</span>
-                      <Link href="/about" className="hover:text-muted-foreground transition-colors">About</Link>
-                      <span>·</span>
-                      <Link href="/contact" className="hover:text-muted-foreground transition-colors">Contact</Link>
-                    </div>
-                  </div>
-                </div>
-              </footer>
-            )}
-          </>
         )}
+        </CopilotOptionsProvider>
         </QueryProvider>
       </SessionProvider>
     </ErrorBoundary>

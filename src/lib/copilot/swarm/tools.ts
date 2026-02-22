@@ -139,14 +139,6 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
     },
   },
   {
-    name: 'get_categories',
-    description: 'List available workflow categories with their slugs.',
-    parametersJsonSchema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
     name: 'get_workflow_progress',
     description:
       "Get the current user's progress on a workflow — which steps are completed and their saved results.",

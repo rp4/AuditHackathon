@@ -5,9 +5,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Upload, User, Shield } from "lucide-react"
+import { Plus, User, Shield, Trophy, Library } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useIsAdmin } from "@/hooks/useSwarms"
+import { useCopilotPanelStore } from "@/lib/copilot/stores/panelStore"
 
 export default function Header() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function Header() {
   const [lastScrollY, setLastScrollY] = useState(0)
   const { data: adminData } = useIsAdmin()
   const isAdmin = adminData?.isAdmin ?? false
+  const { isOpen: copilotOpen, togglePanel: toggleCopilot } = useCopilotPanelStore()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,35 +43,45 @@ export default function Header() {
   return (
     <header className={`border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="w-full px-3 md:px-5 h-20 md:h-24 flex items-center justify-between">
-        <Link href="/browse" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
-          <div className="relative rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg shadow-amber-500/50 overflow-hidden">
+        <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+          <button
+            onClick={toggleCopilot}
+            className={`relative rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg overflow-hidden transition-all duration-150 ease-out active:scale-95 hover:opacity-80 ${copilotOpen ? 'shadow-amber-500/80 ring-2 ring-amber-400' : 'shadow-amber-500/50'}`}
+          >
             <Image
               src="/queen.png"
-              alt="AuditSwarm Logo"
+              alt="AuditSwarm Copilot"
               fill
               className="object-cover"
               sizes="64px"
               priority
             />
-          </div>
-          <div className="flex flex-col">
+          </button>
+          <Link href="/browse" className="flex flex-col hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
             <span className="font-black text-lg sm:text-xl md:text-3xl">AuditSwarm</span>
             <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">A Workflow Library & Game</span>
-          </div>
-        </Link>
+          </Link>
+        </div>
 
         <nav className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
-          <Link href="/copilot">
-            <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
-              <Image src="/copilot.png" alt="Game" width={24} height={24} />
-              <span className="hidden sm:inline">Game</span>
+          <Link href="/leaderboard">
+            <Button variant="outline" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
+              <Trophy className="h-5 w-5 md:h-6 md:w-6" />
+              <span className="hidden sm:inline">Leaderboard</span>
             </Button>
           </Link>
 
           <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={handleAddClick}>
-            <Upload className="h-5 w-5 md:h-6 md:w-6" />
+            <Plus className="h-5 w-5 md:h-6 md:w-6" />
             <span className="hidden sm:inline">Create</span>
           </Button>
+
+          <Link href="/browse">
+            <Button variant="outline" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
+              <Library className="h-5 w-5 md:h-6 md:w-6" />
+              <span className="hidden sm:inline">Workflows</span>
+            </Button>
+          </Link>
 
           {isAdmin && (
             <Link href="/admin">

@@ -23,6 +23,8 @@ interface ChatRequest {
   sessionId?: string
   history?: HistoryMessage[]
   agentId?: AgentId
+  canvasMode?: boolean
+  runMode?: { swarmId: string; swarmSlug: string }
 }
 
 /**
@@ -47,7 +49,7 @@ export async function POST(request: NextRequest) {
     const userEmail = session.user.email || ''
 
     const body: ChatRequest = await request.json()
-    const { message, attachments, model = 'gemini-3-flash-preview', sessionId, history = [], agentId = 'copilot' } = body
+    const { message, attachments, model = 'gemini-3-flash-preview', sessionId, history = [], agentId = 'copilot', canvasMode, runMode } = body
 
     if (!message && (!attachments || attachments.length === 0)) {
       return NextResponse.json(
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest) {
     let agent: any
 
     if (agentId === 'judge') {
-      agent = createJudgeAgent({ model, userId, userEmail, sessionId })
+      agent = await createJudgeAgent({ model, userId, userEmail, sessionId })
     } else if (agentId.startsWith('character:')) {
       const characterId = agentId.replace('character:', '')
       if (!isValidCharacter(characterId)) {
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
       agent = createCharacterAgent({ characterId, model, userId, userEmail, sessionId })
     } else {
       // Default: Copilot (MultiAgentOrchestrator)
-      agent = createMultiAgentOrchestrator({ model, userId, userEmail, sessionId })
+      agent = createMultiAgentOrchestrator({ model, userId, userEmail, sessionId, canvasMode, runMode })
     }
 
     const encoder = new TextEncoder()

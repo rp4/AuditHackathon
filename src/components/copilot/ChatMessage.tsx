@@ -193,7 +193,7 @@ export const ChatMessage = memo(function ChatMessage({ message }: ChatMessagePro
         {isUser ? (
           <User className="w-4 h-4 text-white" />
         ) : (
-          <span className="text-lg">🤖</span>
+          <img src="/queen.png" alt="Agent" className="w-6 h-6 object-contain" />
         )}
       </div>
 

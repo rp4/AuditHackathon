@@ -9,8 +9,9 @@ import { ModelSelector } from './ModelSelector'
 import { AgentSelector } from './AgentSelector'
 import { useChatStore } from '@/lib/copilot/stores/chatStore'
 import { useSessionStore } from '@/lib/copilot/stores/sessionStore'
+import { useCopilotPanelStore } from '@/lib/copilot/stores/panelStore'
 import { getAgentOption } from '@/lib/copilot/adk/agents/registry'
-import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle } from 'lucide-react'
+import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle, Maximize2, Minimize2 } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import type { GeminiModel, AgentId, FileAttachment } from '@/lib/copilot/types'
@@ -25,16 +26,22 @@ interface User {
 
 interface ChatInterfaceProps {
   user: User | null
+  compact?: boolean
+  onExpandRequest?: () => void
+  onWorkflowGenerated?: (data: { name: string; description: string; nodes: unknown[]; edges: unknown[]; metadata?: unknown; categorySlug?: string }) => void
+  copilotOptions?: { canvasMode?: boolean; runMode?: { swarmId: string; swarmSlug: string } }
 }
 
-export function ChatInterface({ user }: ChatInterfaceProps) {
+export function ChatInterface({ user, compact = false, onExpandRequest, onWorkflowGenerated, copilotOptions }: ChatInterfaceProps) {
   const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { openPanel, referrerPath, clearReferrer } = useCopilotPanelStore()
+  const [sidebarOpen, setSidebarOpen] = useState(!compact)
   const [model, setModel] = useState<GeminiModel>('gemini-3-flash-preview')
   const [agentId, setAgentId] = useState<AgentId>('copilot')
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const processedToolCalls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -95,6 +102,64 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Detect create_workflow tool call completion
+  useEffect(() => {
+    for (const msg of messages) {
+      if (msg.role !== 'assistant' || !msg.toolCalls) continue
+
+      for (const tc of msg.toolCalls) {
+        if (tc.name !== 'create_workflow' || tc.status !== 'completed') continue
+        if (processedToolCalls.current.has(tc.id)) continue
+
+        processedToolCalls.current.add(tc.id)
+
+        // Canvas mode: pass data to onWorkflowGenerated callback
+        if (copilotOptions?.canvasMode && onWorkflowGenerated) {
+          try {
+            const resultData = tc.result ? JSON.parse(tc.result) : null
+            if (resultData?.canvasMode && resultData.nodes) {
+              onWorkflowGenerated({
+                name: resultData.name || '',
+                description: resultData.description || '',
+                nodes: resultData.nodes || [],
+                edges: resultData.edges || [],
+                metadata: resultData.metadata,
+                categorySlug: resultData.categorySlug,
+              })
+            }
+          } catch {
+            // Result might not be JSON — ignore
+          }
+        } else if (!copilotOptions?.canvasMode && tc.arguments) {
+          // Non-canvas mode: save draft to localStorage and navigate to /create
+          try {
+            const args = tc.arguments as Record<string, unknown>
+            const nodes = (args.nodes as unknown[]) || []
+            const edges = (args.edges as unknown[]) || []
+            const name = (args.name as string) || ''
+            const description = (args.description as string) || ''
+            const categorySlug = args.categorySlug as string | undefined
+
+            if (nodes.length > 0) {
+              const draft = {
+                formData: { name, description },
+                workflowNodes: nodes,
+                workflowEdges: edges,
+                categorySlug,
+              }
+              localStorage.setItem('draft-swarm-workflow', JSON.stringify(draft))
+              // Navigate to /create and open the copilot panel as sidebar
+              router.push('/create')
+              openPanel()
+            }
+          } catch {
+            // ignore parse errors
+          }
+        }
+      }
+    }
+  }, [messages, onWorkflowGenerated, copilotOptions?.canvasMode, router, openPanel])
+
   const handleSend = useCallback(
     async (content: string, attachments?: FileAttachment[]) => {
       try {
@@ -108,7 +173,7 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
         const title = content.slice(0, 50) + (content.length > 50 ? '...' : '')
         updateSession(sessionId, { title })
 
-        await sendMessage(content, attachments, model, agentId)
+        await sendMessage(content, attachments, model, agentId, undefined, copilotOptions)
       } catch (error) {
         console.error('handleSend error:', error)
         useChatStore.getState().setError(
@@ -116,7 +181,7 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
         )
       }
     },
-    [currentSessionId, createSession, model, agentId, sendMessage, updateSession, setSessionId]
+    [currentSessionId, createSession, model, agentId, sendMessage, updateSession, setSessionId, copilotOptions]
   )
 
   const handleNewChat = useCallback(() => {
@@ -146,6 +211,110 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
     }
   }, [currentSessionId, setSessionId])
 
+  // Compact mode: no sidebar, simplified header
+  if (compact) {
+    return (
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+        {/* Compact Header */}
+        <header className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2">
+            <Image src="/copilot.png" alt="Copilot" width={22} height={22} />
+            <h1 className="font-medium text-sm text-gray-900 dark:text-white">
+              {agentId === 'copilot' ? 'Copilot' : (getAgentOption(agentId)?.name || 'Copilot')}
+            </h1>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleNewChat}
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="New chat"
+            >
+              <Plus className="w-4 h-4 text-gray-500" />
+            </button>
+            {onExpandRequest && (
+              <button
+                onClick={onExpandRequest}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Expand to full view"
+              >
+                <Maximize2 className="w-4 h-4 text-gray-500" />
+              </button>
+            )}
+            {compact && (
+              <button
+                onClick={() => useCopilotPanelStore.getState().closePanel()}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Close panel"
+              >
+                <PanelLeftClose className="w-4 h-4 text-gray-500" />
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center px-4">
+              <div className="text-center max-w-sm">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  How can I help?
+                </h2>
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                    {error}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="px-3 py-4 space-y-4">
+              {messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+
+              {isLoading && (
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                    <img src="/queen.png" alt="Agent" className="w-5 h-5 object-contain" />
+                  </div>
+                  <div className="flex gap-1 py-2">
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                  </div>
+                  <button
+                    onClick={stopGeneration}
+                    className="ml-1 p-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
+                    title="Stop generating"
+                  >
+                    <Square className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" fill="currentColor" />
+                  </button>
+                </div>
+              )}
+
+              {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="px-3 py-2">
+            <ChatInput onSend={handleSend} disabled={isLoading} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Full mode (original layout)
   return (
     <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
@@ -195,6 +364,18 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
               ) : (
                 <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               )}
+            </button>
+            <button
+              onClick={() => {
+                const target = referrerPath || '/create'
+                clearReferrer()
+                openPanel()
+                router.push(target)
+              }}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title={referrerPath ? 'Back to previous page' : 'Open in side panel'}
+            >
+              <Minimize2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
             <Image src="/copilot.png" alt="Copilot" width={28} height={28} />
             <h1 className="font-semibold text-gray-900 dark:text-white">
@@ -304,9 +485,9 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
                     { icon: '📄', text: 'What are my assigned tasks?' },
                   ] : agentId === 'judge' ? [
                     { icon: '📋', text: 'Here are my findings from the Bluth audit...' },
+                    { icon: '📊', text: 'Show me my issue discovery progress' },
                     { icon: '❓', text: 'How does the scoring work?' },
-                    { icon: '🏆', text: 'What score do I need for excellent?' },
-                    { icon: '📊', text: 'Evaluate my audit based on our conversation' },
+                    { icon: '🏆', text: 'Evaluate my audit based on our conversation' },
                   ] : [
                     { icon: '👋', text: 'Hello, I have a few questions for you' },
                     { icon: '🔐', text: 'Can you tell me about your system access?' },
@@ -334,7 +515,7 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
               {isLoading && (
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm">{getAgentOption(agentId)?.icon || '🤖'}</span>
+                    <img src="/queen.png" alt="Agent" className="w-5 h-5 object-contain" />
                   </div>
                   <div className="flex gap-1 py-3">
                     <div className="typing-dot" />
@@ -380,7 +561,7 @@ export function ChatInterface({ user }: ChatInterfaceProps) {
             )}
             <ChatInput onSend={handleSend} disabled={isLoading} />
             <p className="mt-2 text-xs text-center text-gray-500 dark:text-gray-500">
-              Gemini may display inaccurate info. All AI suggestions require your approval.
+              Copilot may display inaccurate info. All AI suggestions require your approval.
             </p>
           </div>
         </div>

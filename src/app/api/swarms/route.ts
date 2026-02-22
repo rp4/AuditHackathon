@@ -101,6 +101,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(swarm, { status: 201 })
   } catch (error) {
-    return handleApiError(error, 'create swarm')
+    return handleApiError(error, 'create workflow')
   }
 }

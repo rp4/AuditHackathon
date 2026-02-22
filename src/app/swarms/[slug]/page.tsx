@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
   const title = `${swarm.name} - Audit Workflow`
   const description = swarm.description?.slice(0, 160) || `${swarm.name} audit workflow template on AuditSwarm`
-  const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(swarm.name)}&description=${encodeURIComponent(description)}&author=${encodeURIComponent(swarm.user.name || 'Anonymous')}&rating=${swarm.rating_avg.toFixed(1)}`
+  const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(swarm.name)}&description=${encodeURIComponent(description)}&author=${encodeURIComponent(swarm.user.name || 'Anonymous')}`
 
   return {
     title,
@@ -85,13 +85,6 @@ function SwarmJsonLd({ swarm }: { swarm: NonNullable<Awaited<ReturnType<typeof g
       price: '0',
       priceCurrency: 'USD',
     },
-    aggregateRating: swarm.rating_count > 0 ? {
-      '@type': 'AggregateRating',
-      ratingValue: swarm.rating_avg.toFixed(1),
-      ratingCount: swarm.rating_count,
-      bestRating: '5',
-      worstRating: '1',
-    } : undefined,
     author: {
       '@type': 'Person',
       name: swarm.user.name || 'Anonymous',

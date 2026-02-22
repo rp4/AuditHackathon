@@ -26,7 +26,8 @@ interface ChatActions {
     attachments?: FileAttachment[],
     model?: GeminiModel,
     agentId?: AgentId,
-    onFirstMessage?: (content: string) => void
+    onFirstMessage?: (content: string) => void,
+    options?: { canvasMode?: boolean; runMode?: { swarmId: string; swarmSlug: string } }
   ) => Promise<void>
 }
 
@@ -135,7 +136,8 @@ export const useChatStore = create<ChatStore>()(
         attachments,
         model = 'gemini-3-flash-preview',
         agentId = 'copilot',
-        onFirstMessage
+        onFirstMessage,
+        options
       ) => {
         const { currentSessionId } = get()
         if (!currentSessionId) {
@@ -194,6 +196,8 @@ export const useChatStore = create<ChatStore>()(
               sessionId: currentSessionId,
               history,
               agentId,
+              ...(options?.canvasMode && { canvasMode: true }),
+              ...(options?.runMode && { runMode: options.runMode }),
             }),
             signal: abortController.signal,
           })

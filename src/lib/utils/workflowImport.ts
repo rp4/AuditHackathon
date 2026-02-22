@@ -25,7 +25,8 @@ interface ProcessedWorkflow {
  */
 export function processImportedWorkflow(
   nodesInput: WorkflowNodeInput[] = [],
-  edgesInput: WorkflowEdgeInput[] = []
+  edgesInput: WorkflowEdgeInput[] = [],
+  options?: { forceLayout?: boolean }
 ): ProcessedWorkflow {
   // Handle empty inputs
   if (nodesInput.length === 0) {
@@ -35,8 +36,8 @@ export function processImportedWorkflow(
   // Normalize edges first (independent of nodes)
   const normalizedEdges = normalizeEdges(edgesInput)
 
-  // Check if layout is needed
-  const needsLayout = nodesNeedLayout(nodesInput)
+  // Check if layout is needed (or forced, e.g. for agent-generated workflows)
+  const needsLayout = options?.forceLayout || nodesNeedLayout(nodesInput)
 
   let normalizedNodes: WorkflowNode[]
 

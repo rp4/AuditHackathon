@@ -17,7 +17,6 @@ const workflowNodeSchema = z.object({
     label: z.string(),
     description: z.string().optional(),
     instructions: z.string().optional(),
-    linkedAgentUrl: z.string().optional(),
     skills: z.array(z.string()).optional(),
     outputs: z.array(z.string()).optional(),
   }).passthrough(),  // Allow extra fields that will be stripped
@@ -123,7 +122,7 @@ export async function POST(request: NextRequest) {
         results.push({
           name: workflow.name,
           success: false,
-          error: error.message || 'Failed to create swarm',
+          error: error.message || 'Failed to create workflow',
         })
       }
     }
