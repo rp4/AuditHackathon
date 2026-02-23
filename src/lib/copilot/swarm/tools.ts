@@ -9,7 +9,7 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: 'list_workflows',
     description:
-      'Search and browse public workflow templates. Returns name, description, category, stats (views, downloads, rating).',
+      "List the current user's own workflow templates. Returns name, description, category, stats (views, downloads, rating).",
     parametersJsonSchema: {
       type: 'object',
       properties: {
@@ -141,7 +141,7 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: 'get_workflow_progress',
     description:
-      "Get the current user's progress on a workflow — which steps are completed and their saved results.",
+      "Get the current user's progress on a workflow — which steps are completed, topological execution order, next available steps (frontier), and dependency edges.",
     parametersJsonSchema: {
       type: 'object',
       properties: {
@@ -156,7 +156,7 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: 'save_step_result',
     description:
-      'Save the AI-generated result for a workflow step and mark it as completed. One result per user per step (upserts on repeat calls).',
+      'Send an AI-generated result for a workflow step to the edit page for user review. The result will pre-populate the step\'s result field — the user must click "Approve & Continue" to confirm, save, and proceed to the next step.',
     parametersJsonSchema: {
       type: 'object',
       properties: {
@@ -197,6 +197,21 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
         },
       },
       required: ['swarmId', 'nodeId'],
+    },
+  },
+  {
+    name: 'get_execution_plan',
+    description:
+      'Get a complete execution plan for a workflow including topological step order, parallel groups, dependency graph, completion status, and recommended next steps. Use this at the start of run mode and after each step is approved to determine what to work on next.',
+    parametersJsonSchema: {
+      type: 'object',
+      properties: {
+        swarmId: {
+          type: 'string',
+          description: 'The swarm/workflow ID',
+        },
+      },
+      required: ['swarmId'],
     },
   },
 ]

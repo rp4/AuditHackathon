@@ -6,19 +6,12 @@
  */
 
 import { prisma } from '@/lib/prisma/client'
-import { processImportedWorkflow } from '@/lib/utils/workflowImport'
+import { computeTopologicalOrder, computeNextSteps } from './workflow-graph'
 
 interface ToolResult {
   success: boolean
   result?: unknown
   error?: string
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
 }
 
 export interface SwarmToolRouterOptions {
@@ -57,6 +50,8 @@ export class SwarmToolRouter {
           return await this.saveStepResult(args)
         case 'get_step_context':
           return await this.getStepContext(args)
+        case 'get_execution_plan':
+          return await this.getExecutionPlan(args)
         default:
           return { success: false, error: `Unknown tool: ${name}` }
       }
@@ -76,7 +71,7 @@ export class SwarmToolRouter {
     const sortBy = (args.sortBy as string) || 'recent'
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = { is_public: true, isDeleted: false }
+    const where: any = { userId: this.userId, isDeleted: false }
 
     if (search) {
       where.OR = [
@@ -219,8 +214,7 @@ export class SwarmToolRouter {
     if (!name) return { success: false, error: 'name is required' }
     if (!description) return { success: false, error: 'description is required' }
 
-    // In canvasMode, return data without saving to DB
-    // The frontend will render it on the canvas for the user to review and save
+    // In canvasMode, return data for the canvas to render
     if (this.options.canvasMode) {
       return {
         success: true,
@@ -237,51 +231,20 @@ export class SwarmToolRouter {
       }
     }
 
-    // Generate unique slug
-    let baseSlug = slugify(name)
-    let slug = baseSlug
-    let suffix = 1
-    while (await prisma.swarm.findUnique({ where: { slug } })) {
-      slug = `${baseSlug}-${suffix++}`
-    }
-
-    // Resolve category
-    let categoryId: string | null = null
-    if (categorySlug) {
-      const category = await prisma.category.findUnique({ where: { slug: categorySlug } })
-      if (category) categoryId = category.id
-    }
-
-    // Apply dagre layout for proper node positioning
-    const { nodes: layoutNodes, edges: layoutEdges } = processImportedWorkflow(
-      (nodes || []) as any[],
-      (edges || []) as any[],
-      { forceLayout: true }
-    )
-
-    const swarm = await prisma.swarm.create({
-      data: {
-        name,
-        slug,
-        description,
-        workflowNodes: JSON.stringify(layoutNodes),
-        workflowEdges: JSON.stringify(layoutEdges),
-        workflowMetadata: metadata ? JSON.stringify(metadata) : null,
-        userId: this.userId,
-        categoryId,
-        is_public: true,
-        publishedAt: new Date(),
-      },
-      select: { id: true, slug: true, name: true },
-    })
-
+    // Non-canvas mode: return draft data without saving to DB.
+    // The frontend will save it to localStorage and navigate to /create
+    // so the user can review and click "Create" themselves.
     return {
       success: true,
       result: {
-        id: swarm.id,
-        slug: swarm.slug,
-        name: swarm.name,
-        message: `Workflow "${swarm.name}" created successfully. View at /swarms/${swarm.slug}`,
+        draft: true,
+        name,
+        description,
+        nodes: nodes || [],
+        edges: edges || [],
+        metadata: metadata || {},
+        categorySlug,
+        message: `Workflow "${name}" generated as a draft. You'll be taken to the create page to review and publish it.`,
       },
     }
   }
@@ -419,10 +382,10 @@ export class SwarmToolRouter {
     const swarmId = args.swarmId as string
     if (!swarmId) return { success: false, error: 'swarmId is required' }
 
-    // Get the workflow to know total steps
+    // Get the workflow to know total steps and edges
     const swarm = await prisma.swarm.findUnique({
       where: { id: swarmId },
-      select: { id: true, name: true, workflowNodes: true, userId: true },
+      select: { id: true, name: true, workflowNodes: true, workflowEdges: true, userId: true },
     })
 
     if (!swarm) return { success: false, error: 'Workflow not found' }
@@ -431,7 +394,9 @@ export class SwarmToolRouter {
     }
 
     let nodes: Array<{ id: string; data?: { label?: string } }> = []
+    let edges: Array<{ source: string; target: string }> = []
     try { nodes = JSON.parse(swarm.workflowNodes || '[]') } catch { /* empty */ }
+    try { edges = JSON.parse(swarm.workflowEdges || '[]') } catch { /* empty */ }
 
     // Get user's step results for this workflow
     const stepResults = await prisma.stepResult.findMany({
@@ -445,8 +410,13 @@ export class SwarmToolRouter {
     })
 
     const resultMap = new Map(stepResults.map((r) => [r.nodeId, r] as const))
+    const completedSet = new Set(stepResults.filter((r) => r.completed).map((r) => r.nodeId))
     const totalSteps = nodes.length
-    const completedSteps = stepResults.filter((r) => r.completed).length
+    const completedCount = completedSet.size
+
+    // Compute topological order and next available steps
+    const { order, parallelGroups } = computeTopologicalOrder(nodes, edges)
+    const nextSteps = computeNextSteps(order, completedSet, edges)
 
     return {
       success: true,
@@ -454,8 +424,15 @@ export class SwarmToolRouter {
         workflowId: swarm.id,
         workflowName: swarm.name,
         totalSteps,
-        completedSteps,
-        progress: totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0,
+        completedSteps: completedCount,
+        progress: totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0,
+        topologicalOrder: order,
+        nextSteps: nextSteps.map((id) => {
+          const node = nodes.find((n) => n.id === id)
+          return { nodeId: id, label: node?.data?.label || id }
+        }),
+        parallelGroups,
+        edges: edges.map((e) => ({ source: e.source, target: e.target })),
         steps: nodes.map((node) => {
           const result = resultMap.get(node.id)
           return {
@@ -464,6 +441,79 @@ export class SwarmToolRouter {
             completed: result?.completed || false,
             completedAt: result?.completedAt || null,
             lastUpdated: result?.updatedAt || null,
+          }
+        }),
+      },
+    }
+  }
+
+  private async getExecutionPlan(args: Record<string, unknown>): Promise<ToolResult> {
+    const swarmId = args.swarmId as string
+    if (!swarmId) return { success: false, error: 'swarmId is required' }
+
+    const swarm = await prisma.swarm.findUnique({
+      where: { id: swarmId },
+      select: {
+        id: true, name: true, description: true, userId: true,
+        workflowNodes: true, workflowEdges: true,
+      },
+    })
+
+    if (!swarm) return { success: false, error: 'Workflow not found' }
+    if (swarm.userId !== this.userId) {
+      return { success: false, error: 'Only the workflow owner can access execution plans' }
+    }
+
+    let nodes: Array<{ id: string; data?: { label?: string; description?: string; instructions?: string } }> = []
+    let edges: Array<{ source: string; target: string }> = []
+    try { nodes = JSON.parse(swarm.workflowNodes || '[]') } catch { /* empty */ }
+    try { edges = JSON.parse(swarm.workflowEdges || '[]') } catch { /* empty */ }
+
+    const stepResults = await prisma.stepResult.findMany({
+      where: { userId: this.userId, swarmId },
+      select: { nodeId: true, completed: true, completedAt: true },
+    })
+
+    const completedSet = new Set(stepResults.filter((r) => r.completed).map((r) => r.nodeId))
+    const { order, parallelGroups, hasCycles } = computeTopologicalOrder(nodes, edges)
+    const nextSteps = computeNextSteps(order, completedSet, edges)
+
+    return {
+      success: true,
+      result: {
+        workflowId: swarm.id,
+        workflowName: swarm.name,
+        workflowDescription: swarm.description,
+        totalSteps: nodes.length,
+        completedSteps: completedSet.size,
+        progress: nodes.length > 0 ? Math.round((completedSet.size / nodes.length) * 100) : 0,
+        ...(hasCycles && { warning: 'Workflow contains cycles — some steps may not appear in the execution order.' }),
+        topologicalOrder: order.map((id) => {
+          const node = nodes.find((n) => n.id === id)
+          return { nodeId: id, label: node?.data?.label || id }
+        }),
+        parallelGroups: parallelGroups.map((group) =>
+          group.map((id) => {
+            const node = nodes.find((n) => n.id === id)
+            return { nodeId: id, label: node?.data?.label || id }
+          })
+        ),
+        nextSteps: nextSteps.map((id) => {
+          const node = nodes.find((n) => n.id === id)
+          return { nodeId: id, label: node?.data?.label || id }
+        }),
+        steps: order.map((id) => {
+          const node = nodes.find((n) => n.id === id)
+          const upstreams = edges.filter((e) => e.target === id).map((e) => e.source)
+          const downstreams = edges.filter((e) => e.source === id).map((e) => e.target)
+          return {
+            nodeId: id,
+            label: node?.data?.label || id,
+            description: node?.data?.description || '',
+            hasInstructions: !!(node?.data?.instructions),
+            completed: completedSet.has(id),
+            upstreamDependencies: upstreams,
+            downstreamDependents: downstreams,
           }
         }),
       },
@@ -483,47 +533,25 @@ export class SwarmToolRouter {
     // Verify ownership
     const swarm = await prisma.swarm.findUnique({
       where: { id: swarmId },
-      select: { userId: true },
+      select: { userId: true, slug: true },
     })
     if (!swarm) return { success: false, error: 'Workflow not found' }
     if (swarm.userId !== this.userId) {
       return { success: false, error: 'Only the workflow owner can save step results' }
     }
 
-    const stepResult = await prisma.stepResult.upsert({
-      where: {
-        userId_swarmId_nodeId: {
-          userId: this.userId,
-          swarmId,
-          nodeId,
-        },
-      },
-      create: {
-        userId: this.userId,
+    // Return pending review — do NOT persist to DB.
+    // The frontend will navigate to the edit page for user sign-off.
+    return {
+      success: true,
+      result: {
+        pendingReview: true,
+        swarmSlug: swarm.slug,
         swarmId,
         nodeId,
         result,
         completed,
-        completedAt: completed ? new Date() : null,
-      },
-      update: {
-        result,
-        completed,
-        completedAt: completed ? new Date() : null,
-      },
-      select: { id: true, completed: true, completedAt: true },
-    })
-
-    return {
-      success: true,
-      result: {
-        id: stepResult.id,
-        nodeId,
-        completed: stepResult.completed,
-        completedAt: stepResult.completedAt,
-        message: completed
-          ? `Step "${nodeId}" completed and result saved.`
-          : `Step "${nodeId}" result saved (not yet marked complete).`,
+        message: `Step result generated and sent to the edit page for your review. Please review and click "Approve & Continue" to confirm and proceed to the next step.`,
       },
     }
   }
@@ -541,6 +569,7 @@ export class SwarmToolRouter {
       select: {
         id: true,
         name: true,
+        slug: true,
         userId: true,
         workflowNodes: true,
         workflowEdges: true,
@@ -606,6 +635,7 @@ export class SwarmToolRouter {
     return {
       success: true,
       result: {
+        swarmSlug: swarm.slug,
         workflowName: swarm.name,
         step: {
           nodeId: targetNode.id,

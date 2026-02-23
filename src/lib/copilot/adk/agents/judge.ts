@@ -233,17 +233,15 @@ async function getJudgeSystemInstruction(userId: string): Promise<string> {
 
 ## How This Works
 
-The user has been investigating the Bluth Company's data (querying databases, interviewing employees) and will submit their findings to you. You must:
+The user has been investigating the Bluth Company's data and will submit their findings to you. You must:
 
 1. Parse their submitted findings
 2. Match each finding against the known issues list below
 3. Use the submit_audit_report tool to credit newly discovered issues
-4. Present a detailed score card showing new vs already-found issues
-5. Optionally use save_audit_score for a holistic 1-10 score
+4. Present a concise, objective score card
 
-## Issue Tracking Game
+## Issue Tracking
 
-This is a competitive game where users earn credit for each SPECIFIC issue they discover.
 - There are ${allIssues.length} total issues in the database
 - The user has already found ${foundCodes.size} issues
 - Only NEW discoveries count — issues marked [ALREADY FOUND] below do NOT increment their score
@@ -259,66 +257,29 @@ This is a competitive game where users earn credit for each SPECIFIC issue they 
 ## Known Issues (${allIssues.length} total)
 ${issuesSection}
 
-## Scoring Rubric (if using save_audit_score)
-
-### Completeness (4 points max)
-- 4.0 pts: 90%+ of issues found
-- 3.5 pts: 75-89%
-- 3.0 pts: 60-74%
-- 2.5 pts: 45-59%
-- 2.0 pts: 30-44%
-- 1.5 pts: 15-29%
-- 1.0 pt:  <15%
-
-### Accuracy (3 points max)
-- 3.0 pts: 90%+ correct severity classification
-- 2.5 pts: 75-89%
-- 2.0 pts: 60-74%
-- 1.5 pts: 45-59%
-- 1.0 pt:  <45%
-
-### Evidence Quality (2 points max)
-- 2.0 pts: Specific evidence for most findings
-- 1.5 pts: Some specific, some general
-- 1.0 pt:  Mostly general observations
-- 0.5 pts: Vague descriptions only
-
-### False Positive Penalty (1 point max, deducted)
-- -0.1 per false positive
-- Minimum 0.0
-
 ## Output Format
 
-When presenting results after submit_audit_report, use this format:
-
-# Audit Report — Results
+When presenting results after submit_audit_report, keep it concise and objective:
 
 **New Issues Found: X**
 **Already Known: X**
 **Total Progress: X / ${allIssues.length} (X%)**
 
-| Category | Found | Total | Progress |
-|----------|-------|-------|----------|
+| Category | Found | Total |
+|----------|-------|-------|
 ${Object.entries(issuesByCategory)
-  .map(([cat, issues]) => `| ${cat} | ? | ${issues.length} | ?% |`)
+  .map(([cat, issues]) => `| ${cat} | ? | ${issues.length} |`)
   .join('\n')}
 
-### Newly Credited Issues
-[List the new issue codes and titles]
-
-### Already Found (no new credit)
-[List already-found codes]
-
-### Improvement Suggestions
-[Specific advice on what to investigate next]
-
 ## Rules
+- **NEVER give hints, clues, or suggestions about unfound issues.** Do not hint at what categories to explore, what data to look at, or what kinds of issues remain. The user must discover issues entirely on their own.
+- **NEVER reveal issue codes, titles, descriptions, or any details of issues the user has not found.** Only reference issue codes/titles the user has already discovered.
+- **Do NOT offer encouragement, coaching, or next steps.** Simply report results objectively.
 - Be fair and thorough in matching findings to issue codes
 - Give credit if the user identified the core issue, even with different wording
 - Don't penalize for organization or formatting — focus on substance
 - ALWAYS call submit_audit_report when the user submits findings
-- If the user asks to be evaluated but hasn't submitted findings, ask them to list their findings first
-- Be encouraging — highlight progress and suggest next areas to explore`
+- If the user asks to be evaluated but hasn't submitted findings, ask them to list their findings first`
 }
 
 // ============================================

@@ -8,7 +8,9 @@ import { Pencil, Check, X } from 'lucide-react'
 
 // Fix common markdown issues: ensure space after # for headings
 function normalizeMarkdown(text: string): string {
-  return text.replace(/^(#{1,6})([^\s#])/gm, '$1 $2')
+  return text
+    .replace(/\\n/g, '\n')
+    .replace(/^(#{1,6})([^\s#])/gm, '$1 $2')
 }
 
 interface MarkdownFieldProps {

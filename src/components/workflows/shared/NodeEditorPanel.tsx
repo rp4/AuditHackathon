@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, X, Loader2, Save, CheckCircle2, Circle } from 'lucide-react'
+import { ArrowLeft, X, Loader2, Save, CheckCircle2, Circle, ArrowRight } from 'lucide-react'
 import { MarkdownField } from './MarkdownField'
 import type { Node } from 'reactflow'
 
@@ -11,6 +11,9 @@ interface StepResultProps {
   onResultChange: (value: string) => void
   onCompletedChange: (value: boolean) => void
   onSave: () => void
+  highlight?: boolean
+  isDraft?: boolean
+  onApproveAndContinue?: () => void
 }
 
 interface NodeEditorPanelProps {
@@ -90,7 +93,11 @@ export function NodeEditorPanel({
         {/* Step Result section — only on edit page */}
         {stepResult && (
           <>
-            <div className="border-t border-stone-200 pt-4">
+            <div className={`border-t border-stone-200 pt-4${
+              stepResult.highlight
+                ? ' ring-2 ring-amber-400 ring-offset-2 rounded-lg p-3 bg-amber-50/50 animate-pulse-once'
+                : ''
+            }`}>
               <div className="flex items-center gap-2 mb-4">
                 {stepResult.completed ? (
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -109,36 +116,68 @@ export function NodeEditorPanel({
               />
             </div>
 
-            {/* Completed checkbox */}
-            <label className="flex items-center gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={stepResult.completed}
-                onChange={(e) => stepResult.onCompletedChange(e.target.checked)}
-                disabled={stepResult.saving}
-                className="h-4 w-4 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500/20"
-              />
-              <span className="text-sm font-medium text-stone-700">Mark as completed</span>
-            </label>
+            {/* Completed checkbox — hidden when draft (approve auto-completes) */}
+            {!(stepResult.isDraft && stepResult.onApproveAndContinue) && (
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={stepResult.completed}
+                  onChange={(e) => stepResult.onCompletedChange(e.target.checked)}
+                  disabled={stepResult.saving}
+                  className="h-4 w-4 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500/20"
+                />
+                <span className="text-sm font-medium text-stone-700">Mark as completed</span>
+              </label>
+            )}
 
-            {/* Save step result button */}
-            <button
-              onClick={stepResult.onSave}
-              disabled={stepResult.saving}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {stepResult.saving ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
+            {/* Approve & Continue (draft from copilot) or Save Result (manual) */}
+            {stepResult.isDraft && stepResult.onApproveAndContinue ? (
+              <div className="space-y-2">
+                <button
+                  onClick={stepResult.onApproveAndContinue}
+                  disabled={stepResult.saving}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {stepResult.saving ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                      Approve &amp; Continue
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={stepResult.onSave}
+                  disabled={stepResult.saving}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Save className="h-3.5 w-3.5" />
-                  Save Result
-                </>
-              )}
-            </button>
+                  Save Only
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={stepResult.onSave}
+                disabled={stepResult.saving}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {stepResult.saving ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-3.5 w-3.5" />
+                    Save Result
+                  </>
+                )}
+              </button>
+            )}
           </>
         )}
       </div>

@@ -2,6 +2,7 @@
  * Bluth MCP Client
  *
  * Lightweight MCP client for the Bluth Company demo data server.
+ * Exposes 2 generic tools: get_schema and query_data.
  * No authentication required - public endpoint for testing.
  */
 
@@ -24,135 +25,51 @@ interface BluthToolResult {
 // Tool definitions matching the Bluth MCP server (prefixed with bluth_)
 export const BLUTH_TOOL_DEFINITIONS: BluthToolDefinition[] = [
   {
-    name: 'bluth_query_employees',
+    name: 'bluth_get_schema',
     description:
-      'Query Bluth Company employees. Use to find ghost employees, terminated staff with access, or related party employees. Returns employee records with employment status, salary, and relationship flags.',
+      'Get the database schema: all available tables, their columns with types, and row counts. Call this first to understand what data is available before querying.',
     inputSchema: {
       type: 'object',
       properties: {
+        table: {
+          type: 'string',
+          description:
+            'Optional: get detailed schema for a specific table only. If omitted, returns all tables with column names.',
+        },
+      },
+    },
+  },
+  {
+    name: 'bluth_query_data',
+    description:
+      'Query any table in the Bluth Company database. Supports filtering, sorting, and pagination.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        table: {
+          type: 'string',
+          description:
+            'Table name to query (use the display name from get_schema, e.g. "Employees", "Vendors", "JournalEntries")',
+        },
         filter: {
           type: 'string',
           description:
-            'SQL WHERE clause. Examples: "isRelatedParty = 1", "employmentStatus = \'Terminated\'", "salary > 100000"',
-        },
-        limit: {
-          type: 'number',
-          description: 'Maximum records to return (default: 50)',
-        },
-      },
-    },
-  },
-  {
-    name: 'bluth_query_vendors',
-    description:
-      'Query Bluth Company vendors. Use to find related party vendors, suspicious payment recipients, or vendor risk analysis. Includes related party flags and risk ratings.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        filter: {
-          type: 'string',
-          description: 'SQL WHERE clause. Examples: "isRelatedParty = 1", "riskRating = \'High\'"',
-        },
-        limit: {
-          type: 'number',
-          description: 'Maximum records to return',
-        },
-      },
-    },
-  },
-  {
-    name: 'bluth_query_journal_entries',
-    description:
-      'Query journal entries/financial transactions. Use to find high-value transactions, suspicious entries, round-dollar amounts, or weekend postings.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        filter: {
-          type: 'string',
-          description: 'SQL WHERE clause. Examples: "amount > 100000", "isManualEntry = 1"',
-        },
-        limit: {
-          type: 'number',
-          description: 'Maximum records to return',
+            "SQL WHERE clause. Examples: \"isRelatedParty = 1\", \"amount > 100000\", \"employmentStatus = 'Terminated'\"",
         },
         orderBy: {
           type: 'string',
-          description: 'SQL ORDER BY. Example: "amount DESC"',
-        },
-      },
-    },
-  },
-  {
-    name: 'bluth_query_audit_findings',
-    description:
-      'Query known audit findings - the "answer key" of embedded anomalies. Use to validate AI detection accuracy or get hints about what issues exist.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        filter: {
-          type: 'string',
-          description:
-            'SQL WHERE clause. Examples: "severity = \'Critical\'", "category = \'Fraud\'"',
-        },
-      },
-    },
-  },
-  {
-    name: 'bluth_query_bank_transactions',
-    description:
-      'Query bank transactions. Find suspicious transactions, unusual patterns, or flagged payments.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        filter: {
-          type: 'string',
-          description: 'SQL WHERE clause. Example: "suspiciousFlag = 1"',
+          description: 'SQL ORDER BY clause. Example: "amount DESC"',
         },
         limit: {
           type: 'number',
-          description: 'Maximum records to return',
+          description: 'Maximum records to return (default: 50, max: 500)',
+        },
+        offset: {
+          type: 'number',
+          description: 'Number of records to skip for pagination (default: 0)',
         },
       },
-    },
-  },
-  {
-    name: 'bluth_query_projects',
-    description: 'Query projects. Find cost overruns, troubled projects, or budget variances.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        filter: {
-          type: 'string',
-          description: 'SQL WHERE clause. Example: "costVariance > 0"',
-        },
-      },
-    },
-  },
-  {
-    name: 'bluth_detect_ghost_employees',
-    description:
-      'Automated analysis: Detect potential ghost employees by finding duplicate bank accounts across employees. Returns pairs of employees sharing the same bank account.',
-    inputSchema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'bluth_detect_related_party_transactions',
-    description:
-      'Automated analysis: Find all related party vendors and summarize their transaction exposure.',
-    inputSchema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'bluth_get_data_summary',
-    description:
-      'Get a summary of available data entities and record counts. Useful for understanding the scope of data available.',
-    inputSchema: {
-      type: 'object',
-      properties: {},
+      required: ['table'],
     },
   },
 ];
@@ -222,8 +139,8 @@ export class BluthMCPClient {
   }
 
   /**
-   * Call a tool via MCP JSON-RPC endpoint
-   * The tool name should include the bluth_ prefix
+   * Call a tool via MCP JSON-RPC endpoint.
+   * The tool name should include the bluth_ prefix.
    */
   async callTool(name: string, args: Record<string, unknown>): Promise<BluthToolResult> {
     // Strip the bluth_ prefix to get the actual Bluth MCP tool name

@@ -47,7 +47,6 @@ export default function UploadPage() {
   const [error, setError] = useState("")
   const { data: categories = [] } = useCategories()
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
-  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [pastedJson, setPastedJson] = useState("")
   const [showSignInDialog, setShowSignInDialog] = useState(false)
@@ -132,7 +131,6 @@ export default function UploadPage() {
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     setSelectedNodeId(node.id)
-    setSidebarOpen(true)
   }, [])
 
   const handleDeselectNode = useCallback(() => {
@@ -174,7 +172,6 @@ export default function UploadPage() {
       if (match) setSelectedCategoryId(match.id)
     }
 
-    setSidebarOpen(true)
     setSelectedNodeId(null)
     toast.success('Workflow generated! Review and save when ready.')
   }, [categories])
@@ -195,8 +192,8 @@ export default function UploadPage() {
     localStorage.setItem(DRAFT_WORKFLOW_KEY, JSON.stringify(draft))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    e?.preventDefault()
     setError("")
 
     if (!formData.name || !formData.description || !selectedCategoryId) {
@@ -461,94 +458,86 @@ export default function UploadPage() {
     </>
   )
 
-  const templateFormSidebar = (
-    <>
+  // Banner content — editable template details (top of page, like edit page)
+  const bannerContent = (
+    <div className="shrink-0 border-b border-stone-200 bg-white px-6 py-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm mb-3">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
+      <div className="flex items-start gap-4">
+        {/* Name + Description */}
+        <div className="flex-1 min-w-0 space-y-2">
+          <Input
+            id="name"
+            placeholder="Swarm name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            disabled={loading}
+            className="text-lg font-semibold h-9 bg-transparent border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20"
+          />
+          <Textarea
+            id="description"
+            placeholder="Describe your workflow template..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            disabled={loading}
+            rows={2}
+            className="text-sm bg-transparent border-stone-200 text-stone-700 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 resize-none"
+          />
+        </div>
 
-      {/* Swarm Name */}
-      <div className="space-y-2">
-        <Label htmlFor="name" className="text-stone-700 text-sm font-medium">
-          Swarm Name <span className="text-amber-600">*</span>
-        </Label>
-        <Input
-          id="name"
-          placeholder="e.g., SOC 2 Control Testing"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          disabled={loading}
-          className="bg-stone-50 border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20"
-        />
-      </div>
+        {/* Category + Create */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-col gap-1">
+            {categories.map((category) => (
+              <Badge
+                key={category.id}
+                variant="outline"
+                className={`cursor-pointer text-xs transition-all ${getCategoryColor(category.name, selectedCategoryId === category.id)} ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => !loading && toggleCategory(category.id)}
+              >
+                {category.name}
+              </Badge>
+            ))}
+          </div>
 
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description" className="text-stone-700 text-sm font-medium">
-          Description <span className="text-amber-600">*</span>
-        </Label>
-        <Textarea
-          id="description"
-          placeholder="Describe your workflow template..."
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          disabled={loading}
-          rows={4}
-          className="bg-stone-50 border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 resize-none"
-        />
-      </div>
+          <div className="h-6 w-px bg-stone-200" />
 
-      {/* Category */}
-      <div className="space-y-2">
-        <Label className="text-stone-700 text-sm font-medium">Category <span className="text-amber-600">*</span></Label>
-        <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
-            <Badge
-              key={category.id}
-              variant="outline"
-              className={`cursor-pointer transition-all ${getCategoryColor(category.name, selectedCategoryId === category.id)} ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={() => !loading && toggleCategory(category.id)}
-            >
-              {category.name}
-            </Badge>
-          ))}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !formData.name || !formData.description || !selectedCategoryId}
+            size="sm"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Create
+              </>
+            )}
+          </Button>
         </div>
       </div>
-
-      {/* Create Button */}
-      <div className="pt-4 border-t border-stone-200">
-        <Button
-          onClick={handleSubmit}
-          disabled={loading || !formData.name || !formData.description || !selectedCategoryId}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg shadow-amber-200"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
-            </>
-          ) : (
-            <>
-              <Upload className="mr-2 h-4 w-4" />
-              Create Workflow
-            </>
-          )}
-        </Button>
-      </div>
-    </>
+    </div>
   )
 
-  const sidebarContent = selectedNodeId && selectedNode ? (
+  // Sidebar reserved for node/step details only
+  const nodeDetailSidebar = selectedNode ? (
     <NodeEditorPanel
       node={selectedNode}
       onClose={handleDeselectNode}
       onUpdateField={handleNodeUpdate}
       readOnly={loading}
     />
-  ) : templateFormSidebar
+  ) : null
 
   return (
     <>
@@ -558,9 +547,9 @@ export default function UploadPage() {
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
         readOnly={loading}
-        sidebarContent={sidebarContent}
-        sidebarOpen={sidebarOpen}
-        onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
+        bannerContent={bannerContent}
+        sidebarContent={nodeDetailSidebar}
+        sidebarOpen={!!selectedNodeId}
         headerLeft={headerLeft}
         headerRight={headerRight}
         selectedNodeId={selectedNodeId}

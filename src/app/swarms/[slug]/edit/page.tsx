@@ -1,7 +1,7 @@
 'use client'
 
-import { use, useState, useEffect, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { use, useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,7 @@ import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { WorkflowWorkspace } from '@/components/workflows/WorkflowWorkspace'
 import { NodeEditorPanel } from '@/components/workflows/shared/NodeEditorPanel'
 import { useRegisterCopilotOptions } from '@/lib/copilot/CopilotOptionsContext'
+import { useChatStore } from '@/lib/copilot/stores/chatStore'
 import type { Node, Edge } from 'reactflow'
 
 interface StepResultData {
@@ -42,6 +43,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const resolvedParams = use(params)
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: swarm, isLoading: loadingSwarm } = useSwarm(resolvedParams.slug)
   const { data: categories = [], isLoading: loadingCategories } = useCategories()
   const updateSwarm = useUpdateSwarm(resolvedParams.slug)
@@ -65,6 +67,9 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const [editingResult, setEditingResult] = useState('')
   const [editingCompleted, setEditingCompleted] = useState(false)
   const [savingResult, setSavingResult] = useState(false)
+  const [highlightResult, setHighlightResult] = useState(false)
+  const [isDraftResult, setIsDraftResult] = useState(false)
+  const draftLoadedRef = useRef(false)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [localFavorited, setLocalFavorited] = useState<boolean | null>(null)
@@ -205,6 +210,13 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   useEffect(() => {
     if (!selectedNodeId || !swarm?.id) return
 
+    // Skip API fetch if a draft was just loaded from copilot
+    if (draftLoadedRef.current) {
+      draftLoadedRef.current = false
+      return
+    }
+
+    setIsDraftResult(false)
     const fetchNodeResult = async () => {
       try {
         const res = await fetch(`/api/copilot/step-results/${swarm.id}/${selectedNodeId}`)
@@ -231,6 +243,60 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     fetchNodeResult()
   }, [selectedNodeId, swarm?.id])
 
+  // Handle draft step result from copilot (via localStorage + query params)
+  useEffect(() => {
+    const nodeParam = searchParams.get('node')
+    const draftParam = searchParams.get('draft')
+    if (!nodeParam || draftParam !== '1') return
+
+    const draftJson = localStorage.getItem('draft-step-result')
+    if (!draftJson) return
+
+    try {
+      const draft = JSON.parse(draftJson)
+      if (draft.nodeId !== nodeParam) return
+
+      // Only use drafts less than 5 minutes old
+      if (Date.now() - draft.timestamp > 5 * 60 * 1000) {
+        localStorage.removeItem('draft-step-result')
+        return
+      }
+
+      // Pre-populate the result field
+      draftLoadedRef.current = true
+      setSelectedNodeId(nodeParam)
+      setEditingResult(draft.result || '')
+      setEditingCompleted(draft.completed ?? true)
+      setIsDraftResult(true)
+
+      // Clean up
+      localStorage.removeItem('draft-step-result')
+      router.replace(`/swarms/${resolvedParams.slug}/edit`, { scroll: false })
+
+      // Highlight the result field
+      setHighlightResult(true)
+      setTimeout(() => setHighlightResult(false), 5000)
+
+      toast.info('AI result loaded for review. Click "Approve & Continue" to confirm and proceed.')
+    } catch {
+      localStorage.removeItem('draft-step-result')
+    }
+  }, [searchParams, router, resolvedParams.slug])
+
+  // Handle ?node= param without draft — just auto-select the node
+  useEffect(() => {
+    const nodeParam = searchParams.get('node')
+    const draftParam = searchParams.get('draft')
+    if (!nodeParam || draftParam === '1') return
+    if (!workflowNodes.length) return
+
+    const nodeExists = workflowNodes.some(n => n.id === nodeParam)
+    if (nodeExists) {
+      setSelectedNodeId(nodeParam)
+      router.replace(`/swarms/${resolvedParams.slug}/edit`, { scroll: false })
+    }
+  }, [searchParams, workflowNodes, router, resolvedParams.slug])
+
   const handleNodesChange = useCallback((nodes: Node[]) => {
     setWorkflowNodes(nodes)
   }, [])
@@ -245,6 +311,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
 
   const handleDeselectNode = useCallback(() => {
     setSelectedNodeId(null)
+    setIsDraftResult(false)
   }, [])
 
   const handleNodeUpdate = useCallback((nodeId: string, field: string, value: string) => {
@@ -296,6 +363,64 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
       setSavingResult(false)
     }
   }, [swarm?.id, selectedNodeId, editingResult, editingCompleted])
+
+  const handleApproveAndContinue = useCallback(async () => {
+    if (!swarm?.id || !selectedNodeId) return
+
+    setSavingResult(true)
+    try {
+      const res = await fetch(`/api/copilot/step-results/${swarm.id}/${selectedNodeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          result: editingResult,
+          completed: true,
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to save step result')
+        return
+      }
+
+      const data = await res.json()
+      setStepResults(prev => {
+        const next = new Map(prev)
+        next.set(selectedNodeId, {
+          nodeId: selectedNodeId,
+          result: data.result || null,
+          completed: true,
+          completedAt: data.completedAt || null,
+          updatedAt: data.updatedAt || null,
+        })
+        return next
+      })
+
+      // Clear draft state and close panel
+      setIsDraftResult(false)
+      setSelectedNodeId(null)
+
+      toast.success('Step approved! Continuing to next step...')
+
+      // Signal the agent to continue via the chat store
+      const { currentSessionId } = useChatStore.getState()
+      if (currentSessionId) {
+        useChatStore.getState().sendMessage(
+          'Step approved, continue to next step.',
+          undefined,
+          undefined,
+          'copilot',
+          undefined,
+          { runMode: { swarmId: swarm.id, swarmSlug: resolvedParams.slug } }
+        )
+      }
+    } catch {
+      toast.error('Failed to save step result')
+    } finally {
+      setSavingResult(false)
+    }
+  }, [swarm?.id, selectedNodeId, editingResult, resolvedParams.slug])
 
   const toggleCategory = (categoryId: string) => {
     setFormData(prev => ({
@@ -513,6 +638,9 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
         onResultChange: setEditingResult,
         onCompletedChange: setEditingCompleted,
         onSave: handleSaveStepResult,
+        highlight: highlightResult,
+        isDraft: isDraftResult,
+        onApproveAndContinue: handleApproveAndContinue,
       }}
     />
   ) : null
@@ -568,7 +696,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
 
         {/* Category + Save */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-col gap-1">
             {loadingCategories ? (
               <span className="text-xs text-stone-400">Loading...</span>
             ) : (

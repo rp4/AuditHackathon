@@ -11,9 +11,15 @@ import { useChatStore } from '@/lib/copilot/stores/chatStore'
 import { useSessionStore } from '@/lib/copilot/stores/sessionStore'
 import { useCopilotPanelStore } from '@/lib/copilot/stores/panelStore'
 import { getAgentOption } from '@/lib/copilot/adk/agents/registry'
-import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle, Maximize2, Minimize2 } from 'lucide-react'
+import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle, Maximize2, Minimize2, Sparkles, FileText, Search, Play } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+
+const DotLottieReact = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
+  { ssr: false }
+)
 import type { GeminiModel, AgentId, FileAttachment } from '@/lib/copilot/types'
 
 interface User {
@@ -102,54 +108,109 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Detect create_workflow tool call completion
+  // Detect tool call completions (create_workflow, save_step_result)
   useEffect(() => {
     for (const msg of messages) {
       if (msg.role !== 'assistant' || !msg.toolCalls) continue
 
       for (const tc of msg.toolCalls) {
-        if (tc.name !== 'create_workflow' || tc.status !== 'completed') continue
+        if (tc.status !== 'completed') continue
         if (processedToolCalls.current.has(tc.id)) continue
 
-        processedToolCalls.current.add(tc.id)
+        // Handle create_workflow
+        if (tc.name === 'create_workflow') {
+          processedToolCalls.current.add(tc.id)
 
-        // Canvas mode: pass data to onWorkflowGenerated callback
-        if (copilotOptions?.canvasMode && onWorkflowGenerated) {
+          // Canvas mode: pass data to onWorkflowGenerated callback
+          if (copilotOptions?.canvasMode && onWorkflowGenerated) {
+            try {
+              const resultData = tc.result ? JSON.parse(tc.result) : null
+              if (resultData?.canvasMode && resultData.nodes) {
+                onWorkflowGenerated({
+                  name: resultData.name || '',
+                  description: resultData.description || '',
+                  nodes: resultData.nodes || [],
+                  edges: resultData.edges || [],
+                  metadata: resultData.metadata,
+                  categorySlug: resultData.categorySlug,
+                })
+              }
+            } catch {
+              // Result might not be JSON — ignore
+            }
+          } else if (!copilotOptions?.canvasMode && tc.arguments) {
+            // Non-canvas mode: save draft to localStorage and navigate to /create
+            try {
+              const args = tc.arguments as Record<string, unknown>
+              const nodes = (args.nodes as unknown[]) || []
+              const edges = (args.edges as unknown[]) || []
+              const name = (args.name as string) || ''
+              const description = (args.description as string) || ''
+              const categorySlug = args.categorySlug as string | undefined
+
+              if (nodes.length > 0) {
+                const draft = {
+                  formData: { name, description },
+                  workflowNodes: nodes,
+                  workflowEdges: edges,
+                  categorySlug,
+                }
+                localStorage.setItem('draft-swarm-workflow', JSON.stringify(draft))
+                // Navigate to /create and open the copilot panel as sidebar
+                router.push('/create')
+                openPanel()
+              }
+            } catch {
+              // ignore parse errors
+            }
+          }
+        }
+
+        // Handle save_step_result → navigate to edit page for user review
+        if (tc.name === 'save_step_result') {
+          processedToolCalls.current.add(tc.id)
+
           try {
             const resultData = tc.result ? JSON.parse(tc.result) : null
-            if (resultData?.canvasMode && resultData.nodes) {
-              onWorkflowGenerated({
-                name: resultData.name || '',
-                description: resultData.description || '',
-                nodes: resultData.nodes || [],
-                edges: resultData.edges || [],
-                metadata: resultData.metadata,
-                categorySlug: resultData.categorySlug,
-              })
+            if (resultData?.pendingReview) {
+              const draft = {
+                nodeId: resultData.nodeId,
+                result: resultData.result,
+                completed: resultData.completed,
+                timestamp: Date.now(),
+              }
+              localStorage.setItem('draft-step-result', JSON.stringify(draft))
+              router.push(`/swarms/${resultData.swarmSlug}/edit?node=${resultData.nodeId}&draft=1`)
+              openPanel()
             }
           } catch {
-            // Result might not be JSON — ignore
+            // ignore parse errors
           }
-        } else if (!copilotOptions?.canvasMode && tc.arguments) {
-          // Non-canvas mode: save draft to localStorage and navigate to /create
-          try {
-            const args = tc.arguments as Record<string, unknown>
-            const nodes = (args.nodes as unknown[]) || []
-            const edges = (args.edges as unknown[]) || []
-            const name = (args.name as string) || ''
-            const description = (args.description as string) || ''
-            const categorySlug = args.categorySlug as string | undefined
+        }
 
-            if (nodes.length > 0) {
-              const draft = {
-                formData: { name, description },
-                workflowNodes: nodes,
-                workflowEdges: edges,
-                categorySlug,
-              }
-              localStorage.setItem('draft-swarm-workflow', JSON.stringify(draft))
-              // Navigate to /create and open the copilot panel as sidebar
-              router.push('/create')
+        // Handle update_workflow → navigate to the workflow's edit page
+        if (tc.name === 'update_workflow') {
+          processedToolCalls.current.add(tc.id)
+
+          try {
+            const resultData = tc.result ? JSON.parse(tc.result) : null
+            if (resultData?.slug) {
+              router.push(`/swarms/${resultData.slug}/edit`)
+              openPanel()
+            }
+          } catch {
+            // ignore parse errors
+          }
+        }
+
+        // Handle get_step_context → navigate to the workflow's edit page with node selected
+        if (tc.name === 'get_step_context') {
+          processedToolCalls.current.add(tc.id)
+
+          try {
+            const resultData = tc.result ? JSON.parse(tc.result) : null
+            if (resultData?.swarmSlug && resultData?.step?.nodeId) {
+              router.push(`/swarms/${resultData.swarmSlug}/edit?node=${resultData.step.nodeId}`)
               openPanel()
             }
           } catch {
@@ -260,8 +321,24 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                   How can I help?
                 </h2>
+                <div className="flex flex-col gap-2 mt-3">
+                  {[
+                    { icon: Sparkles, label: 'Create a workflow', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800' },
+                    { icon: FileText, label: 'Edit step instructions', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' },
+                    { icon: Play, label: 'Run a step', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800' },
+                  ].map((action) => (
+                    <button
+                      key={action.label}
+                      onClick={() => handleSend(action.label)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border ${action.bg} hover:shadow-sm transition-all`}
+                    >
+                      <action.icon className={`w-3 h-3 ${action.color}`} />
+                      <span className={action.color}>{action.label}</span>
+                    </button>
+                  ))}
+                </div>
                 {error && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                  <div className="mb-4 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
                     {error}
                   </div>
                 )}
@@ -274,18 +351,16 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
               ))}
 
               {isLoading && (
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                    <img src="/queen.png" alt="Agent" className="w-5 h-5 object-contain" />
-                  </div>
-                  <div className="flex gap-1 py-2">
-                    <div className="typing-dot" />
-                    <div className="typing-dot" />
-                    <div className="typing-dot" />
-                  </div>
+                <div className="flex items-center gap-2">
+                  <DotLottieReact
+                    src="/Loading.lottie"
+                    loop
+                    autoplay
+                    style={{ width: 32, height: 32 }}
+                  />
                   <button
                     onClick={stopGeneration}
-                    className="ml-1 p-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
+                    className="p-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
                     title="Stop generating"
                   >
                     <Square className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" fill="currentColor" />
@@ -459,14 +534,15 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center px-4">
-              <div className="text-center max-w-md">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {agentId === 'copilot' && 'How can I help you today?'}
+              <div className="w-full max-w-2xl">
+                {/* Welcome heading */}
+                <h2 className="text-3xl font-semibold text-center text-gray-900 dark:text-white mb-8">
+                  {agentId === 'copilot' && 'Welcome, how can I help?'}
                   {agentId === 'judge' && 'Ready to score your audit?'}
                   {agentId.startsWith('character:') && `Interview: ${getAgentOption(agentId)?.name}`}
                 </h2>
                 {agentId.startsWith('character:') && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center">
                     {getAgentOption(agentId)?.title} — Cooperation: {getAgentOption(agentId)?.cooperationLevel}
                   </p>
                 )}
@@ -477,30 +553,54 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3 text-left mt-4">
+                {budgetStatus?.limit != null && budgetStatus.remaining !== null && (
+                  budgetStatus.remaining <= 0 ? (
+                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      Monthly spending limit reached. Contact your admin to continue.
+                    </div>
+                  ) : budgetStatus.remaining / budgetStatus.limit < 0.2 ? (
+                    <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      {`${Math.round((budgetStatus.spend / budgetStatus.limit) * 100)}% of monthly budget used ($${budgetStatus.remaining.toFixed(2)} remaining)`}
+                    </div>
+                  ) : null
+                )}
+
+                {/* Centered input */}
+                <div className="mb-8">
+                  <ChatInput onSend={handleSend} disabled={isLoading} />
+                </div>
+
+                {/* Suggestion cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(agentId === 'copilot' ? [
-                    { icon: '🕵️', text: 'Start a Bluth Company audit challenge' },
-                    { icon: '✨', text: 'Create a workflow for a T&E audit' },
-                    { icon: '🔍', text: 'Show me all open audits' },
-                    { icon: '📄', text: 'What are my assigned tasks?' },
+                    { icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', title: 'Create a workflow', subtitle: 'Generate from scratch' },
+                    { icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'Complete an audit', subtitle: 'Practice your skills' },
+                    { icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', title: 'Explore the Bluth data', subtitle: 'Browse available work' },
                   ] : agentId === 'judge' ? [
-                    { icon: '📋', text: 'Here are my findings from the Bluth audit...' },
-                    { icon: '📊', text: 'Show me my issue discovery progress' },
-                    { icon: '❓', text: 'How does the scoring work?' },
-                    { icon: '🏆', text: 'Evaluate my audit based on our conversation' },
+                    { icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'Here are my findings from the Bluth audit', subtitle: 'Submit your work' },
+                    { icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', title: 'Show me my issue discovery progress', subtitle: 'Track your score' },
+                    { icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', title: 'How does the scoring work?', subtitle: 'Understand the criteria' },
                   ] : [
-                    { icon: '👋', text: 'Hello, I have a few questions for you' },
-                    { icon: '🔐', text: 'Can you tell me about your system access?' },
-                    { icon: '📝', text: 'Walk me through your daily responsibilities' },
-                    { icon: '🤔', text: 'Have you noticed anything unusual recently?' },
-                  ]).map((action, index) => (
+                    { icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', title: 'Hello, I have a few questions for you', subtitle: 'Start the interview' },
+                    { icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'Walk me through your daily responsibilities', subtitle: 'Understand their role' },
+                    { icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', title: 'Have you noticed anything unusual recently?', subtitle: 'Ask about red flags' },
+                  ]).map((card, index) => (
                     <button
                       key={index}
-                      onClick={() => handleSend(action.text)}
-                      className="p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 transition-colors text-left"
+                      onClick={() => handleSend(card.title)}
+                      className="flex flex-col gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-left group"
                     >
-                      <span className="mr-2">{action.icon}</span>
-                      {action.text}
+                      <div className={`w-8 h-8 ${card.bg} rounded-lg flex items-center justify-center`}>
+                        <card.icon className={`w-4 h-4 ${card.color}`} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white leading-snug">
+                        {card.title}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {card.subtitle}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -514,17 +614,15 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
 
               {isLoading && (
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                    <img src="/queen.png" alt="Agent" className="w-5 h-5 object-contain" />
-                  </div>
-                  <div className="flex gap-1 py-3">
-                    <div className="typing-dot" />
-                    <div className="typing-dot" />
-                    <div className="typing-dot" />
-                  </div>
+                  <DotLottieReact
+                    src="/Loading.lottie"
+                    loop
+                    autoplay
+                    style={{ width: 40, height: 40 }}
+                  />
                   <button
                     onClick={stopGeneration}
-                    className="ml-2 p-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
+                    className="p-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
                     title="Stop generating"
                   >
                     <Square className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="currentColor" />
@@ -543,28 +641,30 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <div className="max-w-3xl mx-auto p-4">
-            {budgetStatus?.limit != null && budgetStatus.remaining !== null && (
-              budgetStatus.remaining <= 0 ? (
-                <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                  Monthly spending limit reached. Contact your admin to continue.
-                </div>
-              ) : budgetStatus.remaining / budgetStatus.limit < 0.2 ? (
-                <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                  {`${Math.round((budgetStatus.spend / budgetStatus.limit) * 100)}% of monthly budget used ($${budgetStatus.remaining.toFixed(2)} remaining)`}
-                </div>
-              ) : null
-            )}
-            <ChatInput onSend={handleSend} disabled={isLoading} />
-            <p className="mt-2 text-xs text-center text-gray-500 dark:text-gray-500">
-              Copilot may display inaccurate info. All AI suggestions require your approval.
-            </p>
+        {/* Input Area - only shown when there are messages */}
+        {messages.length > 0 && (
+          <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="max-w-3xl mx-auto p-4">
+              {budgetStatus?.limit != null && budgetStatus.remaining !== null && (
+                budgetStatus.remaining <= 0 ? (
+                  <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    Monthly spending limit reached. Contact your admin to continue.
+                  </div>
+                ) : budgetStatus.remaining / budgetStatus.limit < 0.2 ? (
+                  <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    {`${Math.round((budgetStatus.spend / budgetStatus.limit) * 100)}% of monthly budget used ($${budgetStatus.remaining.toFixed(2)} remaining)`}
+                  </div>
+                ) : null
+              )}
+              <ChatInput onSend={handleSend} disabled={isLoading} />
+              <p className="mt-2 text-xs text-center text-gray-500 dark:text-gray-500">
+                Copilot may display inaccurate info. All AI suggestions require your approval.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )
