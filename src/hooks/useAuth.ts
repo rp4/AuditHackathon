@@ -14,13 +14,13 @@ export function useAuth() {
     isAuthenticated: !!session?.user,
     isLoading: status === 'loading',
     signIn: (callbackUrl?: string) => {
-      const redirectUrl = callbackUrl || '/browse'
+      const redirectUrl = `${window.location.origin}${callbackUrl || '/browse'}`
       if (process.env.NODE_ENV === 'production') {
         signIn('linkedin', { callbackUrl: redirectUrl })
       } else {
         signIn(undefined, { callbackUrl: redirectUrl })
       }
     },
-    signOut: () => signOut({ callbackUrl: '/' }),
+    signOut: () => signOut({ callbackUrl: `${window.location.origin}/` }),
   }
 }

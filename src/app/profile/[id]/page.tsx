@@ -116,10 +116,10 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                     <img
                       src={profile.image}
                       alt={profile.name || profile.email}
-                      className="h-32 w-32 rounded-full object-cover ring-4 ring-amber-200"
+                      className="h-32 w-32 rounded-full object-cover ring-4 ring-brand-200"
                     />
                   ) : (
-                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-5xl font-bold text-white ring-4 ring-amber-200">
+                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-brand-400 to-brand-500 flex items-center justify-center text-5xl font-bold text-white ring-4 ring-brand-200">
                       {(profile.name || profile.email).charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -225,7 +225,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/80 backdrop-blur-md rounded-xl border shadow-lg h-auto p-2">
             <TabsTrigger
               value="created"
-              className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700"
+              className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-brand-100 data-[state=active]:text-brand-700"
             >
               <Upload className="h-4 w-4" />
               Created Swarms ({swarms.length})
@@ -233,7 +233,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             {isOwnProfile && (
               <TabsTrigger
                 value="favorites"
-                className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700"
+                className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-brand-100 data-[state=active]:text-brand-700"
               >
                 <svg
                   className="h-4 w-4"

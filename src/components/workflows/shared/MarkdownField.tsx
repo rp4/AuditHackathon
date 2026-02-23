@@ -89,7 +89,7 @@ export function MarkdownField({
           onKeyDown={handleKeyDown}
           rows={rows}
           placeholder={placeholder}
-          className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 resize-vertical font-mono bg-white"
+          className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 resize-vertical font-mono bg-white"
         />
         <div className="flex items-center justify-between">
           <span className="text-xs text-stone-400">
@@ -105,7 +105,7 @@ export function MarkdownField({
             </button>
             <button
               onClick={handleSave}
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-brand-600 rounded-md hover:bg-brand-700 transition-colors"
             >
               <Check className="h-3 w-3" />
               Done

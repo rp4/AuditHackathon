@@ -46,7 +46,7 @@ const WorkflowDesigner = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-full flex items-center justify-center">
-        <WorkflowLoader className="h-8 w-8 animate-spin text-amber-500" />
+        <WorkflowLoader className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     ),
   }
@@ -138,7 +138,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
 
   const handleFavorite = () => {
     if (!isAuthenticated) {
-      toast.error('Please sign in to favorite swarms')
+      toast.error('Please sign in to favorite workflows')
       return
     }
 
@@ -173,15 +173,15 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
   }
 
   const handleDelete = () => {
-    if (!confirm('Are you sure you want to delete this swarm?')) return
+    if (!confirm('Are you sure you want to delete this workflow?')) return
 
     deleteSwarm.mutate(undefined, {
       onSuccess: () => {
-        toast.success('Swarm deleted successfully')
+        toast.success('Workflow deleted successfully')
         router.push('/browse')
       },
       onError: () => {
-        toast.error('Failed to delete swarm')
+        toast.error('Failed to delete workflow')
       },
     })
   }
@@ -206,12 +206,12 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
     return (
       <div className="h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4 text-stone-800">Swarm Not Found</h1>
+          <h1 className="text-3xl font-bold mb-4 text-stone-800">Workflow Not Found</h1>
           <p className="text-stone-500 mb-8">
-            The swarm you&apos;re looking for doesn&apos;t exist or has been removed.
+            The workflow you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Link href="/browse">
-            <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+            <Button className="bg-brand-500 hover:bg-brand-600 text-white">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Browse
             </Button>
@@ -299,7 +299,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Edit swarm</p>
+                    <p>Edit workflow</p>
                   </TooltipContent>
                 </Tooltip>
 
@@ -316,7 +316,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Delete swarm</p>
+                    <p>Delete workflow</p>
                   </TooltipContent>
                 </Tooltip>
               </>
@@ -338,7 +338,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
                 </Badge>
               )}
               {swarm.is_featured && (
-                <Badge className="shrink-0 bg-amber-100 text-amber-700 border-amber-200">Featured</Badge>
+                <Badge className="shrink-0 bg-brand-100 text-brand-700 border-brand-200">Featured</Badge>
               )}
             </div>
             <p className="text-stone-600 text-sm line-clamp-2">{swarm.description}</p>
@@ -349,7 +349,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
             <Link href={`/profile/${swarm.user.id}`} className="flex items-center gap-2 hover:opacity-80">
               <Avatar className="h-8 w-8 ring-2 ring-stone-100">
                 <AvatarImage src={swarm.user.image || undefined} alt={swarm.user.name || 'User'} />
-                <AvatarFallback className="bg-amber-100 text-amber-700 text-xs">
+                <AvatarFallback className="bg-brand-100 text-brand-700 text-xs">
                   {swarm.user.name
                     ? swarm.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                     : <User className="h-3 w-3" />
@@ -400,7 +400,7 @@ export default function SwarmDetailClient({ slug }: SwarmDetailClientProps) {
                     <Eye className="h-10 w-10 text-stone-300" />
                   </div>
                   <h3 className="text-xl font-semibold text-stone-600">No Workflow</h3>
-                  <p className="text-stone-500 text-sm">This swarm doesn&apos;t have a workflow defined yet.</p>
+                  <p className="text-stone-500 text-sm">This workflow doesn&apos;t have any steps defined yet.</p>
                 </div>
               </div>
             )}

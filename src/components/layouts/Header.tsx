@@ -9,6 +9,7 @@ import { Plus, User, Shield, Trophy, Library } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useIsAdmin } from "@/hooks/useSwarms"
 import { useCopilotPanelStore } from "@/lib/copilot/stores/panelStore"
+import { useSiteConfig } from "@/lib/site/SiteContext"
 
 export default function Header() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function Header() {
   const { data: adminData } = useIsAdmin()
   const isAdmin = adminData?.isAdmin ?? false
   const { isOpen: copilotOpen, togglePanel: toggleCopilot } = useCopilotPanelStore()
+  const site = useSiteConfig()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,11 +48,11 @@ export default function Header() {
         <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
           <button
             onClick={toggleCopilot}
-            className={`relative rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg overflow-hidden transition-all duration-150 ease-out active:scale-95 hover:opacity-80 ${copilotOpen ? 'shadow-amber-500/80 ring-2 ring-amber-400' : 'shadow-amber-500/50'}`}
+            className={`relative rounded-xl w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 shadow-lg overflow-hidden transition-all duration-150 ease-out active:scale-95 hover:opacity-80 ${copilotOpen ? 'shadow-brand-500/80 ring-2 ring-brand-400' : 'shadow-brand-500/50'}`}
           >
             <Image
-              src="/queen.png"
-              alt="AuditSwarm Copilot"
+              src={site.logo}
+              alt={`${site.name} Copilot`}
               fill
               className="object-cover"
               sizes="64px"
@@ -58,18 +60,20 @@ export default function Header() {
             />
           </button>
           <Link href="/browse" className="flex flex-col hover:opacity-80 transition-all duration-150 ease-out active:scale-95">
-            <span className="font-black text-lg sm:text-xl md:text-3xl">AuditSwarm</span>
-            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">A Workflow Library & Game</span>
+            <span className="font-black text-lg sm:text-xl md:text-3xl">{site.name}</span>
+            <span className="text-xs sm:text-sm md:text-base text-gray-500 hidden sm:block">{site.tagline}</span>
           </Link>
         </div>
 
         <nav className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
-          <Link href="/leaderboard">
-            <Button variant="outline" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
-              <Trophy className="h-5 w-5 md:h-6 md:w-6" />
-              <span className="hidden sm:inline">Leaderboard</span>
-            </Button>
-          </Link>
+          {site.theme === 'allstars' && (
+            <Link href="/leaderboard">
+              <Button variant="outline" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6">
+                <Trophy className="h-5 w-5 md:h-6 md:w-6" />
+                <span className="hidden sm:inline">Leaderboard</span>
+              </Button>
+            </Link>
+          )}
 
           <Button variant="default" size="lg" className="gap-2 text-base md:text-lg px-3 sm:px-4 md:px-6" onClick={handleAddClick}>
             <Plus className="h-5 w-5 md:h-6 md:w-6" />
@@ -94,7 +98,7 @@ export default function Header() {
 
           {isAuthenticated ? (
             <Link href={`/profile/${user?.username || user?.id}`} className="hover:opacity-80 transition-all duration-150 ease-out active:scale-90">
-              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600">
+              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600">
                 {user?.image ? (
                   <Image
                     src={user.image}

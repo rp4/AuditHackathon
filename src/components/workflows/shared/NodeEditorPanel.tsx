@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, X, Loader2, Save, CheckCircle2, Circle, ArrowRight } from 'lucide-react'
+import { ArrowLeft, X, Loader2, Save, ArrowRight } from 'lucide-react'
 import { MarkdownField } from './MarkdownField'
 import type { Node } from 'reactflow'
 
@@ -63,7 +63,7 @@ export function NodeEditorPanel({
             onChange={(e) => onUpdateField(node.id, 'label', e.target.value)}
             placeholder="Step name"
             disabled={readOnly}
-            className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -76,7 +76,7 @@ export function NodeEditorPanel({
             placeholder="Brief description of this step"
             rows={3}
             disabled={readOnly}
-            className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 resize-none bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 resize-none bg-white disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -95,18 +95,9 @@ export function NodeEditorPanel({
           <>
             <div className={`border-t border-stone-200 pt-4${
               stepResult.highlight
-                ? ' ring-2 ring-amber-400 ring-offset-2 rounded-lg p-3 bg-amber-50/50 animate-pulse-once'
+                ? ' ring-2 ring-brand-400 ring-offset-2 rounded-lg p-3 bg-brand-50/50 animate-pulse-once'
                 : ''
             }`}>
-              <div className="flex items-center gap-2 mb-4">
-                {stepResult.completed ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : (
-                  <Circle className="h-4 w-4 text-stone-300" />
-                )}
-                <span className="text-sm font-semibold text-stone-700">Your Result</span>
-              </div>
-
               <MarkdownField
                 label="Result"
                 value={stepResult.result}
@@ -136,7 +127,7 @@ export function NodeEditorPanel({
                 <button
                   onClick={stepResult.onApproveAndContinue}
                   disabled={stepResult.saving}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {stepResult.saving ? (
                     <>

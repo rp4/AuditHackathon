@@ -34,7 +34,7 @@ export default function ContactPage() {
 
             <section>
               <h2 className="text-3xl font-bold mb-4">Contact Information</h2>
-              <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+              <div className="bg-brand-50 p-6 rounded-lg border border-brand-200">
                 <p className="text-gray-700"><strong>Name:</strong> Rich Penfil</p>
                 <p className="text-gray-700 mt-2"><strong>Email:</strong> <a href="mailto:Rich@audittoolbox.com" className="text-indigo-600 hover:underline">Rich@audittoolbox.com</a></p>
                 <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>

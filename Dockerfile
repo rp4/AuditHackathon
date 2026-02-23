@@ -28,12 +28,12 @@ RUN npx prisma generate
 # Build-time placeholders (runtime env vars in Cloud Run override these)
 ARG GCS_BUCKET_NAME=placeholder
 ARG GCP_PROJECT_ID=placeholder
-ARG NEXTAUTH_URL=http://localhost:3000
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
 ENV GCP_PROJECT_ID=${GCP_PROJECT_ID}
-ENV NEXTAUTH_URL=${NEXTAUTH_URL}
+# NEXTAUTH_URL is intentionally NOT set so NextAuth auto-detects from the
+# request Host header, enabling multi-domain auth (auditswarm + auditallstars)
 
 # Build Next.js
 RUN npm run build

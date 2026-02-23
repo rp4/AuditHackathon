@@ -157,7 +157,7 @@ export default function BrowsePage() {
               variant={selectionMode ? "default" : "outline"}
               onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
               size="lg"
-              className={`gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg ${selectionMode ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+              className={`gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg ${selectionMode ? 'bg-brand-500 hover:bg-brand-600' : ''}`}
             >
               {selectionMode ? <X className="h-5 w-5" /> : <CheckSquare className="h-5 w-5" />}
               <span className="hidden sm:inline">{selectionMode ? 'Cancel' : 'Select'}</span>
@@ -251,7 +251,7 @@ export default function BrowsePage() {
           <div className="mb-6">
             <h2 className="text-2xl font-bold">
               {isLoading ? (
-                'Loading swarms...'
+                'Loading workflows...'
               ) : (
                 `${total} workflow ${total === 1 ? 'template' : 'templates'} found`
               )}
@@ -265,16 +265,16 @@ export default function BrowsePage() {
 
           {/* Selection bar when in selection mode */}
           {selectionMode && swarms.length > 0 && (
-            <div className="flex items-center justify-between mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center justify-between mb-4 p-3 bg-brand-50 border border-brand-200 rounded-lg">
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-amber-800">
+                <span className="text-sm font-medium text-brand-800">
                   {selectedSwarmIds.size} of {swarms.length} selected
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={selectAll}
-                  className="text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                  className="text-brand-700 hover:text-brand-800 hover:bg-brand-100"
                 >
                   Select All
                 </Button>
@@ -283,7 +283,7 @@ export default function BrowsePage() {
                     variant="ghost"
                     size="sm"
                     onClick={clearSelection}
-                    className="text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                    className="text-brand-700 hover:text-brand-800 hover:bg-brand-100"
                   >
                     Clear Selection
                   </Button>
@@ -349,7 +349,7 @@ export default function BrowsePage() {
               </Button>
               <Button
                 onClick={downloadSelectedWorkflows}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                className="bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white"
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download {selectedSwarmIds.size} Workflow{selectedSwarmIds.size > 1 ? 's' : ''}

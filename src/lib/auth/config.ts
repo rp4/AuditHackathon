@@ -87,12 +87,32 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
 
+  // Multi-domain note: Both auditswarm.com and auditallstars.com share this auth config.
+  // NEXTAUTH_URL should be set to the primary domain. LinkedIn OAuth must have both
+  // callback URLs registered: auditswarm.com/api/auth/callback/linkedin and
+  // auditallstars.com/api/auth/callback/linkedin
+
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
   },
 
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Allow relative URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      // Allow redirects to our known domains (multi-tenant)
+      try {
+        const { hostname } = new URL(url)
+        if (hostname === 'localhost' || hostname.endsWith('.localhost') ||
+            hostname === 'auditswarm.com' || hostname === 'www.auditswarm.com' ||
+            hostname === 'auditallstars.com' || hostname === 'www.auditallstars.com') {
+          return url
+        }
+      } catch {}
+      return baseUrl
+    },
+
     async signIn({ user }) {
       // Check if this is a soft-deleted user trying to sign back in
       if (user?.id) {

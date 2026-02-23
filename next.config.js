@@ -52,7 +52,7 @@ const nextConfig = {
           { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://storage.googleapis.com https://media.licdn.com https://*.licdn.com blob:; font-src 'self' data:; connect-src 'self' https://storage.googleapis.com https://vercel.live https://data.auditswarm.com https://cdn.jsdelivr.net https://unpkg.com; frame-src 'self' https://vercel.live; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://storage.googleapis.com https://media.licdn.com https://*.licdn.com blob:; font-src 'self' data:; connect-src 'self' https://storage.googleapis.com https://vercel.live https://data.auditswarm.com https://data.auditallstars.com https://cdn.jsdelivr.net https://unpkg.com; frame-src 'self' https://vercel.live; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
           },
         ],
       },

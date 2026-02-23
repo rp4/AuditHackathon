@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useSiteConfig } from '@/lib/site/SiteContext'
 
 const DotLottieReact = dynamic(
   () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
@@ -29,6 +30,8 @@ export function LoadingSpinner({
   fullPage = false,
   className,
 }: LoadingSpinnerProps) {
+  const site = useSiteConfig()
+  const lottieSrc = site.theme === 'allstars' ? '/basketball.lottie' : '/Loading.lottie'
   const wrapperClass = fullPage
     ? 'min-h-screen flex items-center justify-center'
     : 'flex items-center justify-center py-20'
@@ -42,7 +45,7 @@ export function LoadingSpinner({
   return (
     <div className={cn(wrapperClass, className)}>
       <DotLottieReact
-        src="/Loading.lottie"
+        src={lottieSrc}
         loop
         autoplay
         style={{

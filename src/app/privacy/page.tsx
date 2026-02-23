@@ -165,7 +165,7 @@ export default function PrivacyPage() {
             <p className="text-gray-700 leading-relaxed mb-4">
               If you have any questions about this Privacy Policy or our data practices, please contact us:
             </p>
-            <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+            <div className="bg-brand-50 p-6 rounded-lg border border-brand-200">
               <p className="text-gray-700"><strong>Email:</strong> Rich@audittoolbox.com</p>
               <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>
             </div>

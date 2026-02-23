@@ -33,6 +33,22 @@
   --color-white: white;
   --color-black: black;
   --color-transparent: transparent;
+
+  /* Brand colors: theme-aware via data-theme attribute */
+  /* Default = amber (AuditSwarm bee theme) */
+  --color-brand-50: var(--brand-50, oklch(0.987 0.022 95.277));
+  --color-brand-100: var(--brand-100, oklch(0.962 0.044 92.114));
+  --color-brand-200: var(--brand-200, oklch(0.924 0.082 90.976));
+  --color-brand-300: var(--brand-300, oklch(0.879 0.119 88.27));
+  --color-brand-400: var(--brand-400, oklch(0.837 0.157 84.429));
+  --color-brand-500: var(--brand-500, oklch(0.769 0.188 70.08));
+  --color-brand-600: var(--brand-600, oklch(0.666 0.179 58.318));
+  --color-brand-700: var(--brand-700, oklch(0.555 0.163 48.998));
+  --color-brand-800: var(--brand-800, oklch(0.473 0.137 46.201));
+  --color-brand-900: var(--brand-900, oklch(0.398 0.114 45.879));
+  /* Brand gradient end color (orange for swarm, navy for allstars) */
+  --color-brand-end-500: var(--brand-end-500, oklch(0.705 0.213 47.604));
+  --color-brand-end-600: var(--brand-end-600, oklch(0.646 0.222 41.116));
 }
 
 @layer base {
@@ -79,6 +95,45 @@
     --border: 30 15% 18%;
     --input: 30 15% 18%;
     --ring: 45 96% 56%;
+  }
+
+  /* AuditAllStars theme: 1970s ABA Basketball Red/White/Blue */
+  [data-theme="allstars"] {
+    --background: 0 0% 96%;
+    --foreground: 230 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 30% 12%;
+    --primary: 352 83% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 100% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 10% 94%;
+    --muted-foreground: 230 15% 40%;
+    --accent: 224 100% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 224 30% 82%;
+    --input: 224 30% 82%;
+    --ring: 352 83% 44%;
+    --radius: 0.5rem;
+
+    /* Brand colors: red palette for AllStars */
+    --brand-50: oklch(0.971 0.013 17.38);
+    --brand-100: oklch(0.936 0.032 17.717);
+    --brand-200: oklch(0.885 0.062 18.334);
+    --brand-300: oklch(0.808 0.114 19.571);
+    --brand-400: oklch(0.704 0.191 22.216);
+    --brand-500: oklch(0.557 0.228 16.439);
+    --brand-600: oklch(0.467 0.207 14.003);
+    --brand-700: oklch(0.396 0.178 13.577);
+    --brand-800: oklch(0.348 0.149 14.561);
+    --brand-900: oklch(0.316 0.121 16.823);
+    /* Gradient end: navy blue for AllStars */
+    --brand-end-500: oklch(0.335 0.121 255.508);
+    --brand-end-600: oklch(0.282 0.109 256.891);
   }
 
   * {

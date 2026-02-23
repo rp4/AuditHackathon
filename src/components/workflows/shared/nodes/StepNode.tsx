@@ -31,7 +31,7 @@ export const StepNode = memo((props: NodeProps<StepNodeData>) => {
         'relative min-w-[280px] max-w-[320px] rounded-lg border-2 bg-white shadow-lg transition-all hover:shadow-xl',
         'cursor-pointer group',
         isSelected
-          ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-amber-200/50'
+          ? 'border-brand-500 ring-2 ring-brand-500/30 shadow-brand-200/50'
           : data.completed
             ? 'border-green-500 ring-2 ring-green-500/30'
             : 'border-gray-300'

@@ -1,7 +1,9 @@
 import { cache } from 'react'
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getSwarmBySlug } from '@/lib/db/swarms'
+import { getSiteConfig } from '@/lib/site/config'
 import SwarmDetailClient from './SwarmDetailClient'
 
 const getSwarmBySlugCached = cache(getSwarmBySlug)
@@ -17,14 +19,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!swarm) {
     return {
-      title: 'Swarm Not Found',
+      title: 'Workflow Not Found',
       description: 'The requested workflow could not be found.',
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (host.includes('allstar') ? 'https://auditallstars.com' : 'https://AuditSwarm.com')
   const title = `${swarm.name} - Audit Workflow`
-  const description = swarm.description?.slice(0, 160) || `${swarm.name} audit workflow template on AuditSwarm`
+  const description = swarm.description?.slice(0, 160) || `${swarm.name} audit workflow template on ${site.name}`
   const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(swarm.name)}&description=${encodeURIComponent(description)}&author=${encodeURIComponent(swarm.user.name || 'Anonymous')}`
 
   return {
@@ -69,8 +74,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // JSON-LD structured data for the swarm
-function SwarmJsonLd({ swarm }: { swarm: NonNullable<Awaited<ReturnType<typeof getSwarmBySlug>>> }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
+async function SwarmJsonLd({ swarm }: { swarm: NonNullable<Awaited<ReturnType<typeof getSwarmBySlug>>> }) {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (host.includes('allstar') ? 'https://auditallstars.com' : 'https://AuditSwarm.com')
 
   const structuredData = {
     '@context': 'https://schema.org',

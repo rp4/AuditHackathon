@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Copy, Check, Download, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 import { WORKFLOW_GENERATION_PROMPT } from "@/lib/constants/prompts"
+import { useSiteConfig } from "@/lib/site/SiteContext"
 
 interface HowToDialogProps {
   open: boolean
@@ -23,13 +24,14 @@ interface HowToDialogProps {
 
 function StepNumber({ n }: { n: number }) {
   return (
-    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-100 text-amber-700 text-xs font-bold shrink-0">
+    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-brand-100 text-brand-700 text-xs font-bold shrink-0">
       {n}
     </span>
   )
 }
 
 export function HowToDialog({ open, onOpenChange }: HowToDialogProps) {
+  const site = useSiteConfig()
   const [copied, setCopied] = useState(false)
 
   const handleCopyPrompt = async () => {
@@ -55,13 +57,13 @@ export function HowToDialog({ open, onOpenChange }: HowToDialogProps) {
 
         <Tabs defaultValue="copilot" className="flex-1 min-h-0">
           <TabsList className="w-full">
-            <TabsTrigger value="copilot" className="text-xs sm:text-sm flex-1 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="copilot" className="text-xs sm:text-sm flex-1 data-[state=active]:bg-brand-500 data-[state=active]:text-white">
               Copilot & ChatGPT
             </TabsTrigger>
-            <TabsTrigger value="claude" className="text-xs sm:text-sm flex-1 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="claude" className="text-xs sm:text-sm flex-1 data-[state=active]:bg-brand-500 data-[state=active]:text-white">
               Claude
             </TabsTrigger>
-            <TabsTrigger value="gemini" className="text-xs sm:text-sm flex-1 data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="gemini" className="text-xs sm:text-sm flex-1 data-[state=active]:bg-brand-500 data-[state=active]:text-white">
               Gemini & Others
             </TabsTrigger>
           </TabsList>
@@ -152,7 +154,7 @@ export function HowToDialog({ open, onOpenChange }: HowToDialogProps) {
           >
             <Badge
               variant="outline"
-              className="border-amber-300 bg-amber-50 text-amber-700"
+              className="border-brand-300 bg-brand-50 text-brand-700"
             >
               Recommended
             </Badge>
@@ -267,7 +269,7 @@ export function HowToDialog({ open, onOpenChange }: HowToDialogProps) {
             <div className="flex gap-3">
               <StepNumber n={4} />
               <div>
-                <p className="font-semibold text-sm">Import to AuditSwarm</p>
+                <p className="font-semibold text-sm">Import to {site.name}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Go to the Create page &rarr; click &ldquo;Import&rdquo;
                   &rarr; paste the JSON. The workflow renders on the canvas.

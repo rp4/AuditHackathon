@@ -156,7 +156,7 @@ export default function AdminImportPage() {
         <CardHeader>
           <CardTitle className="text-3xl font-bold">Import Workflows</CardTitle>
           <CardDescription>
-            Import workflow templates from a JSON file exported from AuditSwarm or other compatible sources.
+            Import workflow templates from a JSON file or other compatible sources.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -221,7 +221,7 @@ export default function AdminImportPage() {
                         <p className="text-xs text-muted-foreground mt-1">
                           {workflow.diagramJson?.nodes?.length || 0} nodes, {workflow.diagramJson?.edges?.length || 0} edges
                           {willAutoLayout && (
-                            <span className="ml-2 text-amber-600">(auto-layout will apply)</span>
+                            <span className="ml-2 text-brand-600">(auto-layout will apply)</span>
                           )}
                         </p>
                       </div>

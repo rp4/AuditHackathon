@@ -108,7 +108,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Swarms</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Workflows</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Swarms/User</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg Workflows/User</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -149,9 +149,9 @@ export default function AdminDashboard() {
       {/* Main Content Tabs */}
       <Tabs defaultValue="swarms" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="swarms">Top Swarms</TabsTrigger>
+          <TabsTrigger value="swarms">Top Workflows</TabsTrigger>
           <TabsTrigger value="users">Recent Users</TabsTrigger>
-          <TabsTrigger value="featured">Featured Swarms</TabsTrigger>
+          <TabsTrigger value="featured">Featured Workflows</TabsTrigger>
           <TabsTrigger value="copilot">Copilot Usage</TabsTrigger>
         </TabsList>
 
@@ -162,9 +162,9 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="h-5 w-5" />
-                  Most Viewed Swarms
+                  Most Viewed Workflows
                 </CardTitle>
-                <CardDescription>Swarms with the most views</CardDescription>
+                <CardDescription>Workflows with the most views</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -202,9 +202,9 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Heart className="h-5 w-5" />
-                  Most Favorited Swarms
+                  Most Favorited Workflows
                 </CardTitle>
-                <CardDescription>Swarms with the most favorites</CardDescription>
+                <CardDescription>Workflows with the most favorites</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -263,7 +263,7 @@ export default function AdminDashboard() {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </p>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="secondary">{user._count.swarms} swarms</Badge>
+                        <Badge variant="secondary">{user._count.swarms} workflows</Badge>
                         <Badge variant="secondary">{user._count.favorites} favorites</Badge>
                       </div>
                     </div>

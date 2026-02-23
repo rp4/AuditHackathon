@@ -136,15 +136,15 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   }
 
   const handleDelete = () => {
-    if (!confirm('Are you sure you want to delete this swarm?')) return
+    if (!confirm('Are you sure you want to delete this workflow?')) return
 
     deleteSwarm.mutate(undefined, {
       onSuccess: () => {
-        toast.success('Swarm deleted successfully')
+        toast.success('Workflow deleted successfully')
         router.push('/browse')
       },
       onError: () => {
-        toast.error('Failed to delete swarm')
+        toast.error('Failed to delete workflow')
       },
     })
   }
@@ -456,11 +456,11 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
       },
       {
         onSuccess: (data) => {
-          toast.success('Swarm updated successfully!')
+          toast.success('Workflow updated successfully!')
           router.push(`/swarms/${data.slug}`)
         },
         onError: (error: any) => {
-          toast.error(error.message || 'Failed to update swarm')
+          toast.error(error.message || 'Failed to update workflow')
         },
       }
     )
@@ -484,11 +484,11 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
           <h1 className="text-2xl font-bold text-stone-800">Access Denied</h1>
-          <p className="text-stone-500">You need to be signed in and own this swarm to edit it</p>
+          <p className="text-stone-500">You need to be signed in and own this workflow to edit it</p>
           <Link href={`/swarms/${resolvedParams.slug}`}>
-            <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+            <Button className="bg-brand-500 hover:bg-brand-600 text-white">
               <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to Swarm
+              Back to Workflow
             </Button>
           </Link>
         </div>
@@ -505,11 +505,11 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
           <h1 className="text-2xl font-bold text-stone-800">Not Authorized</h1>
-          <p className="text-stone-500">You don&apos;t have permission to edit this swarm</p>
+          <p className="text-stone-500">You don&apos;t have permission to edit this workflow</p>
           <Link href={`/swarms/${resolvedParams.slug}`}>
-            <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+            <Button className="bg-brand-500 hover:bg-brand-600 text-white">
               <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to Swarm
+              Back to Workflow
             </Button>
           </Link>
         </div>
@@ -618,7 +618,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Delete swarm</p>
+            <p>Delete workflow</p>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -649,8 +649,9 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const enrichedNodes = useMemo(
     () => workflowNodes.map(node => {
       const result = stepResults.get(node.id)
-      if (result?.completed) {
-        return { ...node, data: { ...node.data, completed: true } }
+      const completed = result?.completed || false
+      if (completed !== !!node.data.completed) {
+        return { ...node, data: { ...node.data, completed } }
       }
       return node
     }),
@@ -672,11 +673,11 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
           <div className="flex items-center gap-3">
             <Input
               id="name"
-              placeholder="Swarm name"
+              placeholder="Workflow name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               disabled={updateSwarm.isPending}
-              className={`text-lg font-semibold h-9 bg-transparent border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 ${
+              className={`text-lg font-semibold h-9 bg-transparent border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:ring-brand-500/20 ${
                 errors.name ? 'border-red-500' : ''
               }`}
             />
@@ -688,7 +689,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             disabled={updateSwarm.isPending}
             rows={2}
-            className={`text-sm bg-transparent border-stone-200 text-stone-700 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 resize-none ${
+            className={`text-sm bg-transparent border-stone-200 text-stone-700 placeholder:text-stone-400 focus:border-brand-500 focus:ring-brand-500/20 resize-none ${
               errors.description ? 'border-red-500' : ''
             }`}
           />
@@ -719,7 +720,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             onClick={handleSubmit}
             disabled={updateSwarm.isPending || !formData.name || !formData.description}
             size="sm"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md"
+            className="bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white shadow-md"
           >
             {updateSwarm.isPending ? (
               <>

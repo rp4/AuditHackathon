@@ -15,6 +15,7 @@ import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import type { GeminiModel, AgentId, FileAttachment } from '@/lib/copilot/types'
+import { useSiteConfig } from '@/lib/site/SiteContext'
 
 function LoadingDots({ size = 32 }: { size?: number }) {
   const dotSize = Math.round(size / 5)
@@ -54,6 +55,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ user, compact = false, onExpandRequest, onWorkflowGenerated, copilotOptions }: ChatInterfaceProps) {
   const router = useRouter()
+  const site = useSiteConfig()
   const { openPanel, referrerPath, clearReferrer } = useCopilotPanelStore()
   const [sidebarOpen, setSidebarOpen] = useState(!compact)
   const [model, setModel] = useState<GeminiModel>('gemini-3-flash-preview')
@@ -72,14 +74,10 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
       if (!user) {
         e.preventDefault()
         e.stopPropagation()
-        if (process.env.NODE_ENV === 'production') {
-          signIn('linkedin', { callbackUrl: '/copilot' })
-        } else {
-          signIn(undefined, { callbackUrl: '/copilot' })
-        }
+        router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`${window.location.origin}/copilot`)}`)
       }
     },
-    [user]
+    [user, router]
   )
 
   useEffect(() => {
@@ -351,15 +349,6 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                 <Maximize2 className="w-4 h-4 text-gray-500" />
               </button>
             )}
-            {compact && (
-              <button
-                onClick={() => useCopilotPanelStore.getState().closePanel()}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                title="Close panel"
-              >
-                <PanelLeftClose className="w-4 h-4 text-gray-500" />
-              </button>
-            )}
           </div>
         </header>
 
@@ -373,7 +362,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                 </h2>
                 <div className="flex flex-col gap-2 mt-3">
                   {[
-                    { icon: Sparkles, label: 'Create a workflow', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800' },
+                    { icon: Sparkles, label: 'Create a workflow', color: 'text-brand-600 dark:text-brand-400', bg: 'bg-brand-50 dark:bg-brand-900/30 border-brand-200 dark:border-brand-800' },
                     { icon: FileText, label: 'Edit step instructions', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' },
                     { icon: Play, label: 'Run a step', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800' },
                   ].map((action) => (
@@ -499,10 +488,10 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
             </button>
             <Image src="/copilot.png" alt="Copilot" width={28} height={28} />
             <h1 className="font-semibold text-gray-900 dark:text-white">
-              {agentId === 'copilot' ? 'AuditSwarm Copilot' : (
+              {agentId === 'copilot' ? `${site.name} Copilot` : (
                 <>
                   <span className="mr-1.5">{getAgentOption(agentId)?.icon}</span>
-                  {getAgentOption(agentId)?.name || 'AuditSwarm Copilot'}
+                  {getAgentOption(agentId)?.name || `${site.name} Copilot`}
                 </>
               )}
             </h1>
@@ -514,8 +503,14 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="flex items-center gap-2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {user?.name?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />}
+              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600">
+                {user?.image ? (
+                  <Image src={user.image} alt={user?.name || 'Profile'} fill className="object-cover" sizes="32px" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-white font-semibold text-sm">
+                    {user?.name?.charAt(0).toUpperCase() || <UserIcon className="w-4 h-4" />}
+                  </div>
+                )}
               </div>
             </button>
 
@@ -523,8 +518,14 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
               <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                      {user?.name?.charAt(0).toUpperCase() || <UserIcon className="w-5 h-5" />}
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600">
+                      {user?.image ? (
+                        <Image src={user.image} alt={user?.name || 'Profile'} fill className="object-cover" sizes="40px" />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-white font-semibold">
+                          {user?.name?.charAt(0).toUpperCase() || <UserIcon className="w-5 h-5" />}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 dark:text-white truncate">
@@ -620,15 +621,15 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                 {/* Suggestion cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(agentId === 'copilot' ? [
-                    { icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', title: 'Create a workflow', subtitle: 'Generate from scratch' },
+                    { icon: Sparkles, color: 'text-brand-500', bg: 'bg-brand-50 dark:bg-brand-900/20', title: 'Create a workflow', subtitle: 'Generate from scratch' },
                     { icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'Complete an audit', subtitle: 'Practice your skills' },
                     { icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', title: 'Explore the Bluth data', subtitle: 'Browse available work' },
                   ] : agentId === 'judge' ? [
                     { icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'Here are my findings from the Bluth audit', subtitle: 'Submit your work' },
                     { icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', title: 'Show me my issue discovery progress', subtitle: 'Track your score' },
-                    { icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', title: 'How does the scoring work?', subtitle: 'Understand the criteria' },
+                    { icon: Sparkles, color: 'text-brand-500', bg: 'bg-brand-50 dark:bg-brand-900/20', title: 'How does the scoring work?', subtitle: 'Understand the criteria' },
                   ] : [
-                    { icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', title: 'Hello, I have a few questions for you', subtitle: 'Start the interview' },
+                    { icon: Sparkles, color: 'text-brand-500', bg: 'bg-brand-50 dark:bg-brand-900/20', title: 'Hello, I have a few questions for you', subtitle: 'Start the interview' },
                     { icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'Walk me through your daily responsibilities', subtitle: 'Understand their role' },
                     { icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', title: 'Have you noticed anything unusual recently?', subtitle: 'Ask about red flags' },
                   ]).map((card, index) => (

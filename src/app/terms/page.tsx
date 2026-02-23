@@ -114,7 +114,7 @@ export default function TermsPage() {
               <p className="text-gray-700 leading-relaxed mb-4">
                 For questions about these terms, please contact us:
               </p>
-              <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+              <div className="bg-brand-50 p-6 rounded-lg border border-brand-200">
                 <p className="text-gray-700"><strong>Email:</strong> <a href="mailto:Rich@audittoolbox.com" className="text-indigo-600 hover:underline">Rich@audittoolbox.com</a></p>
                 <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>
               </div>

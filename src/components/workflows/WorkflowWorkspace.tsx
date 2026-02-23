@@ -13,7 +13,7 @@ const WorkflowDesigner = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-full flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     ),
   }

@@ -22,12 +22,12 @@ export default function LeaderboardPage() {
   const entries: LeaderboardEntry[] = data?.entries || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-brand-50/50 to-white">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-3">
-            <Trophy className="h-8 w-8 text-amber-500" />
+            <Trophy className="h-8 w-8 text-brand-500" />
             <h1 className="text-3xl md:text-4xl font-black">Leaderboard</h1>
           </div>
           <p className="text-gray-500">
@@ -76,7 +76,7 @@ export default function LeaderboardPage() {
                   key={entry.id}
                   className={`grid grid-cols-[3rem_1fr_6rem_6rem] md:grid-cols-[4rem_1fr_8rem_8rem] items-center px-4 py-3 border-b last:border-b-0 transition-colors ${
                     isCurrentUser
-                      ? 'bg-amber-50 border-amber-200'
+                      ? 'bg-brand-50 border-brand-200'
                       : 'hover:bg-gray-50'
                   }`}
                 >
@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
 
                   {/* Player */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 shrink-0">
+                    <div className="relative h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 shrink-0">
                       {entry.image ? (
                         <Image
                           src={entry.image}
@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
                       <div className="font-medium text-sm truncate">
                         {entry.name || 'Anonymous'}
                         {isCurrentUser && (
-                          <span className="ml-1 text-xs text-amber-600 font-normal">
+                          <span className="ml-1 text-xs text-brand-600 font-normal">
                             (you)
                           </span>
                         )}

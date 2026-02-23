@@ -41,7 +41,7 @@ export default function FeaturedSwarmsManager() {
   const fetchSwarms = async () => {
     try {
       const response = await fetch('/api/admin/featured')
-      if (!response.ok) throw new Error('Failed to fetch swarms')
+      if (!response.ok) throw new Error('Failed to fetch workflows')
       const data = await response.json()
 
       setFeatured(data.featured)
@@ -52,7 +52,7 @@ export default function FeaturedSwarmsManager() {
       setSelectedIds(featuredIds)
     } catch (error) {
       console.error('Error fetching swarms:', error)
-      toast.error('Failed to load swarms')
+      toast.error('Failed to load workflows')
     } finally {
       setLoading(false)
     }
@@ -66,7 +66,7 @@ export default function FeaturedSwarmsManager() {
     } else {
       // Limit to 3 featured swarms
       if (newSelected.size >= 3) {
-        toast.error('You can only feature up to 3 swarms at a time')
+        toast.error('You can only feature up to 3 workflows at a time')
         return
       }
       newSelected.add(swarmId)
@@ -85,18 +85,18 @@ export default function FeaturedSwarmsManager() {
         body: JSON.stringify({ swarmIds: Array.from(selectedIds) })
       })
 
-      if (!response.ok) throw new Error('Failed to update featured swarms')
+      if (!response.ok) throw new Error('Failed to update featured workflows')
 
       const data = await response.json()
       setFeatured(data.featured)
 
-      toast.success('Featured swarms updated successfully')
+      toast.success('Featured workflows updated successfully')
 
       // Refresh the available swarms list
       fetchSwarms()
     } catch (error) {
       console.error('Error updating featured swarms:', error)
-      toast.error('Failed to update featured swarms')
+      toast.error('Failed to update featured workflows')
     } finally {
       setSaving(false)
     }
@@ -122,15 +122,15 @@ export default function FeaturedSwarmsManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            Currently Featured Swarms
+            Currently Featured Workflows
           </CardTitle>
           <CardDescription>
-            These swarms are displayed on the homepage. You can feature up to 3 swarms.
+            These workflows are displayed on the homepage. You can feature up to 3 workflows.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {featured.length === 0 ? (
-            <p className="text-muted-foreground">No swarms are currently featured</p>
+            <p className="text-muted-foreground">No workflows are currently featured</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-3">
               {featured.map((swarm) => (
@@ -166,15 +166,15 @@ export default function FeaturedSwarmsManager() {
       {/* Swarm Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Featured Swarms</CardTitle>
+          <CardTitle>Select Featured Workflows</CardTitle>
           <CardDescription>
-            Choose up to 3 swarms to feature on the homepage
+            Choose up to 3 workflows to feature on the homepage
           </CardDescription>
           <div className="pt-4">
             <div className="relative">
               <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search swarms..."
+                placeholder="Search workflows..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8"
@@ -228,11 +228,11 @@ export default function FeaturedSwarmsManager() {
 
           <div className="mt-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {selectedIds.size} of 3 swarms selected
+              {selectedIds.size} of 3 workflows selected
             </p>
             <Button onClick={handleSave} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Featured Swarms
+              Save Featured Workflows
             </Button>
           </div>
         </CardContent>

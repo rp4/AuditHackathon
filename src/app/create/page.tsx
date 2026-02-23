@@ -435,7 +435,7 @@ export default function UploadPage() {
               <Button
                 onClick={handlePasteJSON}
                 disabled={!pastedJson.trim()}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-black"
+                className="w-full bg-brand-500 hover:bg-brand-600 text-black"
               >
                 <ClipboardPaste className="mr-2 h-4 w-4" />
                 Import Pasted JSON
@@ -472,11 +472,11 @@ export default function UploadPage() {
         <div className="flex-1 min-w-0 space-y-2">
           <Input
             id="name"
-            placeholder="Swarm name"
+            placeholder="Workflow name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={loading}
-            className="text-lg font-semibold h-9 bg-transparent border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20"
+            className="text-lg font-semibold h-9 bg-transparent border-stone-200 text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:ring-brand-500/20"
           />
           <Textarea
             id="description"
@@ -485,7 +485,7 @@ export default function UploadPage() {
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             disabled={loading}
             rows={2}
-            className="text-sm bg-transparent border-stone-200 text-stone-700 placeholder:text-stone-400 focus:border-amber-500 focus:ring-amber-500/20 resize-none"
+            className="text-sm bg-transparent border-stone-200 text-stone-700 placeholder:text-stone-400 focus:border-brand-500 focus:ring-brand-500/20 resize-none"
           />
         </div>
 
@@ -510,7 +510,7 @@ export default function UploadPage() {
             onClick={handleSubmit}
             disabled={loading || !formData.name || !formData.description || !selectedCategoryId}
             size="sm"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md"
+            className="bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white shadow-md"
           >
             {loading ? (
               <>

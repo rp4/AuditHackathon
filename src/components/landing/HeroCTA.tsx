@@ -10,7 +10,7 @@ export function HeroCTA() {
       <Link href="/browse">
         <Button
           size="lg"
-          className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-amber-500 hover:bg-amber-600 text-black border-0 shadow-md"
+          className="min-w-[200px] sm:min-w-[240px] h-12 sm:h-14 text-base sm:text-lg font-semibold bg-brand-500 hover:bg-brand-600 text-black border-0 shadow-md"
         >
           Browse Templates
           <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />

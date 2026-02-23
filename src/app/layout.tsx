@@ -1,7 +1,9 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { headers } from "next/headers"
 import "./globals.css"
 import { RootLayoutClient } from "./layout.client"
+import { getSiteConfig } from "@/lib/site/config"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,83 +11,92 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
-export const metadata: Metadata = {
-  title: {
-    default: "AuditSwarm - Workflow Sharing Platform for Auditors",
-    template: "%s | AuditSwarm"
-  },
-  icons: {
-    icon: '/queen.png',
-    apple: '/queen.png',
-  },
-  description: "AuditSwarm is a platform for internal auditors to discover, share, and collaborate on AI-powered audit workflows. Each workflow is a context map of well-designed prompts and context engineering patterns.",
-  keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "AI agents", "AuditSwarm", "internal audit", "context engineering", "prompt engineering", "audit software", "audit technology"],
-  authors: [{ name: "Rich Penfil" }],
-  creator: "AuditSwarm",
-  publisher: "AuditSwarm",
-  category: "Business & Professional Services",
-  classification: "Business/Technology",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'),
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: '/',
-    title: 'AuditSwarm - Workflow Sharing Platform for Internal Auditors',
-    description: 'A platform for internal auditors to discover and share AI-powered audit workflows built with well-designed prompts and context engineering.',
-    siteName: 'AuditSwarm',
-    images: [{
-      url: '/api/og',
-      width: 1200,
-      height: 630,
-      alt: 'AuditSwarm - Professional Audit Workflow Platform',
-    }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'AuditSwarm - Workflow Sharing Platform for Internal Auditors',
-    description: 'A platform for internal auditors to discover and share AI-powered audit workflows built with context engineering.',
-    images: ['/api/og'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (host.includes('allstar') ? 'https://auditallstars.com' : 'https://AuditSwarm.com')
+
+  return {
+    title: {
+      default: `${site.name} - Workflow Sharing Platform for Auditors`,
+      template: `%s | ${site.name}`
+    },
+    icons: {
+      icon: site.favicon,
+      apple: site.favicon,
+    },
+    description: site.description,
+    keywords: ["audit workflows", "audit automation", "OpenAI", "Claude", "Gemini", "LangChain", "Copilot", "audit", "AI agents", site.name, "internal audit", "context engineering", "prompt engineering", "audit software", "audit technology"],
+    authors: [{ name: "Rich Penfil" }],
+    creator: site.name,
+    publisher: site.name,
+    category: "Business & Professional Services",
+    classification: "Business/Technology",
+    metadataBase: new URL(baseUrl),
+    openGraph: {
+      type: 'website',
+      locale: 'en_US',
+      url: '/',
+      title: `${site.name} - Workflow Sharing Platform for Internal Auditors`,
+      description: site.description,
+      siteName: site.name,
+      images: [{
+        url: '/api/og',
+        width: 1200,
+        height: 630,
+        alt: `${site.name} - Professional Audit Workflow Platform`,
+      }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${site.name} - Workflow Sharing Platform for Internal Auditors`,
+      description: site.description,
+      images: ['/api/og'],
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-  other: {
-    'rating': 'General',
-    'distribution': 'Global',
-    'revisit-after': '7 days',
-    'target': 'all',
-    'audience': 'Internal Auditors, Audit Professionals',
-    'page-topic': 'Business Software, Audit Technology, Professional Services',
-    'page-type': 'Professional Services Portal',
-    'company': 'AuditSwarm',
-    'industry': 'Professional Services, Accounting, Audit',
-  },
-  verification: {
-    // Add when available
-    // google: 'your-google-verification-code',
-    // yandex: 'your-yandex-verification-code',
-  },
+    other: {
+      'rating': 'General',
+      'distribution': 'Global',
+      'revisit-after': '7 days',
+      'target': 'all',
+      'audience': 'Internal Auditors, Audit Professionals',
+      'page-topic': 'Business Software, Audit Technology, Professional Services',
+      'page-type': 'Professional Services Portal',
+      'company': site.name,
+      'industry': 'Professional Services, Accounting, Audit',
+    },
+    verification: {
+      // Add when available
+      // google: 'your-google-verification-code',
+    },
+  }
 }
 
 // Organization JSON-LD structured data
-function OrganizationJsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
+async function OrganizationJsonLd() {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (host.includes('allstar') ? 'https://auditallstars.com' : 'https://AuditSwarm.com')
 
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'AuditSwarm',
+    name: site.name,
     url: baseUrl,
-    logo: `${baseUrl}/queen.png`,
-    description: 'A platform for internal auditors to discover and share AI-powered audit workflows built with context engineering.',
+    logo: `${baseUrl}${site.logo}`,
+    description: site.description,
     founder: {
       '@type': 'Person',
       name: 'Rich Penfil',
@@ -107,13 +118,16 @@ function OrganizationJsonLd() {
 }
 
 // WebSite JSON-LD for search features
-function WebSiteJsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://AuditSwarm.com'
+async function WebSiteJsonLd() {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (host.includes('allstar') ? 'https://auditallstars.com' : 'https://AuditSwarm.com')
 
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'AuditSwarm',
+    name: site.name,
     url: baseUrl,
     description: 'Professional workflow sharing platform for auditors',
     potentialAction: {

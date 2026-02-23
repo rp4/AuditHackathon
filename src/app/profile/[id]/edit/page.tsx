@@ -206,7 +206,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                       className="h-20 w-20 rounded-full object-cover border-4 border-white shadow-md"
                     />
                   ) : (
-                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-2xl font-bold text-white border-4 border-white shadow-md">
+                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-brand-400 to-brand-500 flex items-center justify-center text-2xl font-bold text-white border-4 border-white shadow-md">
                       {(formData.name || formData.email).charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -348,7 +348,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           name="linkedin_visibility"
                           checked={formData.linkedin_visible}
                           onChange={() => setFormData({ ...formData, linkedin_visible: true })}
-                          className="h-4 w-4 text-amber-600 focus:ring-amber-500"
+                          className="h-4 w-4 text-brand-600 focus:ring-brand-500"
                         />
                         <span className="text-sm">Public</span>
                       </label>
@@ -358,7 +358,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           name="linkedin_visibility"
                           checked={!formData.linkedin_visible}
                           onChange={() => setFormData({ ...formData, linkedin_visible: false })}
-                          className="h-4 w-4 text-amber-600 focus:ring-amber-500"
+                          className="h-4 w-4 text-brand-600 focus:ring-brand-500"
                         />
                         <span className="text-sm">Private</span>
                       </label>
@@ -402,11 +402,11 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                         Delete Account?
                       </AlertDialogTitle>
                       <AlertDialogDescription className="space-y-4 pt-2">
-                        <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
-                          <p className="text-sm font-bold text-amber-900 mb-2">
+                        <div className="bg-brand-50 border-2 border-brand-300 rounded-lg p-4">
+                          <p className="text-sm font-bold text-brand-900 mb-2">
                             ⚠️ Your account will be deactivated
                           </p>
-                          <p className="text-sm font-medium text-amber-900">
+                          <p className="text-sm font-medium text-brand-900">
                             You can reactivate your account anytime by signing in again with LinkedIn.
                           </p>
                         </div>
@@ -418,7 +418,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                           <ul className="space-y-2 text-sm text-gray-900">
                             <li className="flex items-start gap-2">
                               <span className="text-red-600 font-bold mt-0.5">•</span>
-                              <span className="font-medium">All swarms you've created</span>
+                              <span className="font-medium">All workflows you've created</span>
                             </li>
                             <li className="flex items-start gap-2">
                               <span className="text-red-600 font-bold mt-0.5">•</span>

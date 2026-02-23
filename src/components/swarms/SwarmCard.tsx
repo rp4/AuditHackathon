@@ -56,10 +56,10 @@ function SwarmCardComponent({ swarm, showAuthor = true, selectionMode = false, i
   }
 
   const cardContent = (
-    <Card className={`h-full hover:shadow-xl transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer relative ${isSelected ? 'ring-2 ring-amber-500 bg-amber-50/50' : ''}`}>
+    <Card className={`h-full hover:shadow-xl transition-all duration-150 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer relative ${isSelected ? 'ring-2 ring-brand-500 bg-brand-50/50' : ''}`}>
       {/* Selection checkbox */}
       {selectionMode && (
-        <div className={`absolute top-3 right-3 z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-amber-500 border-amber-500' : 'bg-white border-stone-300 hover:border-amber-400'}`}>
+        <div className={`absolute top-3 right-3 z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-brand-500 border-brand-500' : 'bg-white border-stone-300 hover:border-brand-400'}`}>
           {isSelected && <Check className="h-4 w-4 text-white" />}
         </div>
       )}

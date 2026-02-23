@@ -14,7 +14,9 @@ import { toast } from 'sonner'
 function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/'
+  const rawCallback = searchParams.get('callbackUrl') || '/'
+  // Ensure callbackUrl is absolute so multi-domain auth redirects correctly
+  const callbackUrl = rawCallback.startsWith('http') ? rawCallback : `${window.location.origin}${rawCallback}`
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

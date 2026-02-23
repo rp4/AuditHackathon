@@ -5,7 +5,6 @@ export const metadata: Metadata = {
   description: 'Create and share your audit workflow templates with the professional audit community. Design visual workflows using our intuitive canvas editor.',
   keywords: ['create workflow', 'audit workflow builder', 'workflow designer', 'audit template creator'],
   openGraph: {
-    title: 'Create Workflow | AuditSwarm',
     description: 'Create and share your audit workflow templates with the professional audit community.',
     type: 'website',
   },
