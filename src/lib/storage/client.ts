@@ -41,7 +41,7 @@ export function getBucket() {
 /** @deprecated Use getBucket() instead */
 export const bucket = new Proxy({} as ReturnType<Storage['bucket']>, {
   get(_, prop) {
-    return (getBucket() as Record<string | symbol, unknown>)[prop]
+    return (getBucket() as unknown as Record<string | symbol, unknown>)[prop]
   },
 })
 
