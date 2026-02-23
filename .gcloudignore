@@ -14,6 +14,7 @@ npm-debug.log
 # Ignore documentation (but keep essential files)
 *.md
 !README.md
+!src/lib/copilot/adk/skills/*.md
 
 # Ignore test files
 coverage/

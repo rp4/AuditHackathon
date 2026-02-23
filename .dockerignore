@@ -9,6 +9,7 @@ README.md
 .env*.local
 .vscode
 *.md
+!src/lib/copilot/adk/skills/*.md
 supabase
 bluth
 .claude
