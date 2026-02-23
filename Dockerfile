@@ -25,13 +25,12 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Accept build arguments
-ARG GCS_BUCKET_NAME
-ARG GCP_PROJECT_ID
-ARG NEXTAUTH_URL
+# Build-time placeholders (runtime env vars in Cloud Run override these)
+ARG GCS_BUCKET_NAME=placeholder
+ARG GCP_PROJECT_ID=placeholder
+ARG NEXTAUTH_URL=http://localhost:3000
 
-# Set build-time environment variables
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 ENV GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
 ENV GCP_PROJECT_ID=${GCP_PROJECT_ID}
 ENV NEXTAUTH_URL=${NEXTAUTH_URL}
