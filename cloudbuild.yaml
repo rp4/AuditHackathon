@@ -11,7 +11,7 @@ steps:
       - 'build'
       - '--cache-from=gcr.io/$PROJECT_ID/openauditswarms:latest'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/openauditswarms:$SHORT_SHA'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
       - '-t'
       - 'gcr.io/$PROJECT_ID/openauditswarms:latest'
       - '.'
@@ -28,7 +28,7 @@ steps:
       - 'deploy'
       - 'openauditswarms'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/openauditswarms:$SHORT_SHA'
+      - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -58,7 +58,10 @@ steps:
 
 # Store images in Container Registry
 images:
-  - 'gcr.io/$PROJECT_ID/openauditswarms:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/openauditswarms:$_TAG'
   - 'gcr.io/$PROJECT_ID/openauditswarms:latest'
 
 timeout: 900s
+
+substitutions:
+  _TAG: 'latest'
