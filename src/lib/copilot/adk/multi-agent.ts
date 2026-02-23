@@ -174,6 +174,10 @@ export class MultiAgentOrchestrator {
     this._lastResponse = await chat.sendMessage({ message: messageParts })
     this.trackOrchestratorResponse(this._lastResponse)
 
+    // Track consecutive failures per tool name — stop after 3
+    const consecutiveFailures = new Map<string, number>()
+    const MAX_TOOL_FAILURES = 3
+
     while (true) {
       const response = this._lastResponse
       const candidate = response.candidates?.[0]
@@ -194,6 +198,27 @@ export class MultiAgentOrchestrator {
           const toolName = fc.name || ''
           const toolArgs = (fc.args as Record<string, unknown>) || {}
 
+          // Check if this tool has hit its failure limit
+          const failures = consecutiveFailures.get(toolName) || 0
+          if (failures >= MAX_TOOL_FAILURES) {
+            yield {
+              type: 'text',
+              content: `\n\nSorry, the tool \`${toolName}\` failed ${MAX_TOOL_FAILURES} times in a row. Skipping further attempts.\n\n`,
+            }
+            // Tell Gemini the tool is unavailable so it stops retrying
+            const nextResponse = await chat.sendMessage({
+              message: {
+                functionResponse: {
+                  name: toolName,
+                  response: { error: `Tool "${toolName}" disabled after ${MAX_TOOL_FAILURES} consecutive failures.` },
+                },
+              },
+            })
+            this.trackOrchestratorResponse(nextResponse)
+            this._lastResponse = nextResponse
+            break
+          }
+
           if (toolName === 'delegate_to') {
             // === DELEGATION PATH ===
             yield* this.handleDelegation(
@@ -205,6 +230,14 @@ export class MultiAgentOrchestrator {
           } else {
             // === SWARM TOOL PATH ===
             yield* this.handleSwarmToolCall(chat, toolName, toolArgs)
+          }
+
+          // Track success/failure from the last tool result
+          const lastResult = this._lastToolSuccess
+          if (lastResult === false) {
+            consecutiveFailures.set(toolName, failures + 1)
+          } else {
+            consecutiveFailures.set(toolName, 0)
           }
 
           // Break to re-enter while loop — _lastResponse is updated by the handler
@@ -243,6 +276,7 @@ export class MultiAgentOrchestrator {
 
     // Call Swarm tool via Prisma
     const result = await this.swarmRouter.callTool(toolName, toolArgs)
+    this._lastToolSuccess = result.success
 
     const resultStr = result.success
       ? JSON.stringify(result.result, null, 2)
@@ -352,6 +386,9 @@ export class MultiAgentOrchestrator {
         error instanceof Error ? error.message : 'Delegation failed'
     }
 
+    // Track delegation success/failure
+    this._lastToolSuccess = !delegationError
+
     // Yield delegation completion
     yield {
       type: 'tool_result',
@@ -388,6 +425,7 @@ export class MultiAgentOrchestrator {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _lastResponse: any = null
+  private _lastToolSuccess: boolean | null = null
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private trackOrchestratorResponse(response: any): void {

@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
     request.method !== 'HEAD' &&
     request.method !== 'OPTIONS'
   ) {
-    // Verify Origin header matches the request host
     const origin = request.headers.get('origin')
     const host = request.headers.get('host')
 
@@ -35,18 +34,16 @@ export async function middleware(request: NextRequest) {
     request.headers.get('x-forwarded-for')?.split(',')[0] ??
     '127.0.0.1'
 
-  // Try to get user ID from NextAuth session cookie for better rate limiting
   const sessionToken = request.cookies.get('next-auth.session-token')?.value ||
                       request.cookies.get('__Secure-next-auth.session-token')?.value
   const identifier = sessionToken ? `session:${sessionToken.slice(0, 16)}` : `ip:${ip}`
 
   // Get appropriate rate limiter for this path
-  const { limiter, config } = getLimiterForPath(pathname)
+  const { limiter, config } = getLimiterForPath(pathname, request.method)
 
   // Check rate limit
   const result = await checkRateLimit(identifier, limiter, config)
 
-  // Add rate limit headers
   const response = result.success
     ? NextResponse.next()
     : NextResponse.json(
@@ -59,48 +56,10 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-RateLimit-Remaining', result.remaining.toString())
   response.headers.set('X-RateLimit-Reset', new Date(result.reset).toISOString())
 
-  // Enhanced security headers
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
-  response.headers.set('X-DNS-Prefetch-Control', 'off')
-  response.headers.set('X-Download-Options', 'noopen')
-  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
-
-  // Content Security Policy
-  const cspHeader = `
-    default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live;
-    style-src 'self' 'unsafe-inline';
-    img-src 'self' data: https://storage.googleapis.com https://media.licdn.com https://*.licdn.com blob:;
-    font-src 'self' data:;
-    connect-src 'self' https://storage.googleapis.com https://vercel.live https://data.auditswarm.com;
-    frame-src 'self' https://vercel.live;
-    media-src 'self';
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-    upgrade-insecure-requests;
-  `.replace(/\s{2,}/g, ' ').trim()
-
-  response.headers.set('Content-Security-Policy', cspHeader)
-
   return response
 }
 
+// Only run middleware on API routes — security headers are handled by next.config.js headers()
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4)$).*)',
-  ],
+  matcher: ['/api/:path*'],
 }

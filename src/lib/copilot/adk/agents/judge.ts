@@ -2,11 +2,18 @@
  * Judge Agent — LLM-as-a-Judge for Audit Scoring
  *
  * Evaluates the user's submitted audit findings against known issues
- * stored in the database. Tracks individual issue discoveries per user
- * and supports incremental scoring via report submissions.
+ * stored in the database. Uses a 2-phase architecture:
+ *
+ * 1. User-facing Judge agent — collects findings, presents results.
+ *    Has NO access to the issues list (prevents answer-key leakage).
+ *
+ * 2. Isolated matching agent — created on-the-fly inside the tool router.
+ *    Has the full issues list but NO user conversation history.
+ *    Matches findings to issues and returns structured JSON.
  */
 
 import { ADKAgent } from '../client'
+import { loadSkillWithVars } from '../skill-loader'
 import { prisma } from '@/lib/prisma/client'
 import {
   getAllIssues,
@@ -45,25 +52,19 @@ const SAVE_AUDIT_SCORE_DECLARATION: FunctionDeclaration = {
   },
 }
 
-const SUBMIT_AUDIT_REPORT_DECLARATION: FunctionDeclaration = {
-  name: 'submit_audit_report',
+const EXTRACT_AND_EVALUATE_DECLARATION: FunctionDeclaration = {
+  name: 'extract_and_evaluate',
   description:
-    "Submit the user's audit findings for evaluation. Evaluates the report against the known issues database, credits newly discovered issues, and saves the report. Call this when the user submits their findings for scoring.",
+    "Submit the user's audit findings for server-side evaluation against the known issues database. The matching is performed entirely server-side — you do NOT need to identify issue codes yourself. Just pass the user's full report text.",
   parametersJsonSchema: {
     type: 'object',
     properties: {
       reportContent: {
         type: 'string',
-        description: "The full text of the user's submitted audit report/findings",
-      },
-      matchedIssueCodes: {
-        type: 'array',
-        items: { type: 'string' },
-        description:
-          'Array of issue codes (e.g. ["AM-001", "SEC-004", "HR-001"]) that the user\'s report references. Only include codes for issues that the user has clearly identified.',
+        description: "The full text of the user's submitted audit report/findings. Include everything the user wrote.",
       },
     },
-    required: ['reportContent', 'matchedIssueCodes'],
+    required: ['reportContent'],
   },
 }
 
@@ -78,11 +79,97 @@ const GET_USER_ISSUE_STATUS_DECLARATION: FunctionDeclaration = {
 }
 
 // ============================================
+// Isolated Matching Agent
+// ============================================
+
+/**
+ * Create an isolated LLM agent to match user findings against the issues database.
+ * This agent has its own context — it never sees the user's conversation history.
+ */
+async function matchFindings(
+  reportContent: string,
+  model: string,
+  userContext?: { userId: string; userEmail: string }
+): Promise<{ matchedIssueCodes: string[]; reasoning: string[] }> {
+  const allIssues = await getAllIssues({ isActive: true })
+
+  const issuesByCategory: Record<string, typeof allIssues> = {}
+  for (const issue of allIssues) {
+    if (!issuesByCategory[issue.category]) issuesByCategory[issue.category] = []
+    issuesByCategory[issue.category].push(issue)
+  }
+
+  let issuesSection = ''
+  for (const [category, issues] of Object.entries(issuesByCategory)) {
+    issuesSection += `\n### ${category} (${issues.length} findings)\n`
+    for (const issue of issues) {
+      issuesSection += `- ${issue.issueCode}: ${issue.title} (${issue.severity}) — ${issue.description}\n`
+    }
+  }
+
+  const systemInstruction = `You are an audit finding matcher. Your ONLY job is to compare user-submitted audit findings against a known list of issues and return structured JSON.
+
+## Known Issues (${allIssues.length} total)
+${issuesSection}
+
+## Instructions
+1. Read the user's submitted report carefully
+2. For each finding in the report, determine if it matches any known issue
+3. Be generous in matching — if the user identified the core problem, even with different wording, give credit
+4. Return ONLY valid JSON in this exact format:
+
+\`\`\`json
+{
+  "matchedIssueCodes": ["AM-001", "SEC-004"],
+  "reasoning": ["AM-001: User identified ghost employees through duplicate bank accounts", "SEC-004: User found terminated employees with active access"]
+}
+\`\`\`
+
+If no issues match, return:
+\`\`\`json
+{
+  "matchedIssueCodes": [],
+  "reasoning": ["No findings matched known issues"]
+}
+\`\`\`
+
+Return ONLY the JSON block. No other text.`
+
+  const isolatedAgent = new ADKAgent({
+    model: 'gemini-2.0-flash',
+    systemInstruction,
+    functionDeclarations: [],
+    toolRouter: async () => ({ success: false, error: 'No tools available' }),
+    userContext,
+  })
+
+  const response = await isolatedAgent.sendMessage(reportContent)
+  await isolatedAgent.close()
+
+  try {
+    const jsonMatch = response.text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('No JSON found in matcher response')
+    }
+    const parsed = JSON.parse(jsonMatch[0])
+    return {
+      matchedIssueCodes: Array.isArray(parsed.matchedIssueCodes) ? parsed.matchedIssueCodes : [],
+      reasoning: Array.isArray(parsed.reasoning) ? parsed.reasoning : [],
+    }
+  } catch (parseError) {
+    console.error('Failed to parse matcher response:', parseError, response.text)
+    return { matchedIssueCodes: [], reasoning: ['Failed to parse matching results'] }
+  }
+}
+
+// ============================================
 // Tool Router
 // ============================================
 
 async function judgeToolRouter(
   userId: string,
+  model: string,
+  userContext: { userId: string; userEmail: string },
   name: string,
   args: Record<string, unknown>
 ): Promise<{ success: boolean; result?: unknown; error?: string }> {
@@ -104,9 +191,15 @@ async function judgeToolRouter(
     }
   }
 
-  if (name === 'submit_audit_report') {
+  if (name === 'extract_and_evaluate') {
     const reportContent = args.reportContent as string
-    const matchedIssueCodes = args.matchedIssueCodes as string[]
+
+    // Use isolated LLM to match findings (separate context, no user conversation)
+    const { matchedIssueCodes, reasoning } = await matchFindings(
+      reportContent,
+      model,
+      userContext
+    )
 
     // Create the report record
     const report = await createReport({
@@ -131,6 +224,26 @@ async function judgeToolRouter(
       where: { isActive: true },
     })
 
+    // Get category breakdown for the scorecard
+    const allIssuesByCategory = await prisma.auditIssue.groupBy({
+      by: ['category'],
+      where: { isActive: true },
+      _count: true,
+    })
+    const discoveries = await prisma.issueDiscovery.findMany({
+      where: { userId },
+      include: { issue: { select: { category: true } } },
+    })
+    const categoryBreakdown: Record<string, { found: number; total: number }> = {}
+    for (const g of allIssuesByCategory) {
+      categoryBreakdown[g.category] = { found: 0, total: g._count }
+    }
+    for (const d of discoveries) {
+      if (categoryBreakdown[d.issue.category]) {
+        categoryBreakdown[d.issue.category].found++
+      }
+    }
+
     return {
       success: true,
       result: {
@@ -141,6 +254,9 @@ async function judgeToolRouter(
         alreadyFoundCount: alreadyFound.length,
         totalDiscovered,
         totalIssues,
+        percentage: Math.round((totalDiscovered / Math.max(totalIssues, 1)) * 100),
+        categoryBreakdown,
+        reasoning,
         message:
           newlyFound.length > 0
             ? `${newlyFound.length} new issue(s) credited! You have now found ${totalDiscovered} of ${totalIssues} total issues.`
@@ -206,80 +322,25 @@ async function judgeToolRouter(
 // ============================================
 
 async function getJudgeSystemInstruction(userId: string): Promise<string> {
-  // Load all active issues from database
-  const allIssues = await getAllIssues({ isActive: true })
-
-  // Load user's already-found issues
   const foundCodes = await getDiscoveredIssueCodes(userId)
 
-  // Group issues by category for the prompt
-  const issuesByCategory: Record<string, typeof allIssues> = {}
-  for (const issue of allIssues) {
-    if (!issuesByCategory[issue.category]) issuesByCategory[issue.category] = []
-    issuesByCategory[issue.category].push(issue)
+  let foundSummary: string
+  if (foundCodes.size === 0) {
+    foundSummary = 'No issues discovered yet.'
+  } else {
+    const foundIssues = await prisma.auditIssue.findMany({
+      where: { issueCode: { in: Array.from(foundCodes) }, isActive: true },
+      select: { issueCode: true, title: true, category: true },
+      orderBy: [{ category: 'asc' }, { issueCode: 'asc' }],
+    })
+    foundSummary = foundIssues
+      .map(i => `- ${i.issueCode}: ${i.title} (${i.category})`)
+      .join('\n')
   }
 
-  // Build the issues list section
-  let issuesSection = ''
-  for (const [category, issues] of Object.entries(issuesByCategory)) {
-    issuesSection += `\n### ${category} (${issues.length} findings)\n`
-    for (const issue of issues) {
-      const alreadyFound = foundCodes.has(issue.issueCode) ? ' [ALREADY FOUND]' : ''
-      issuesSection += `- ${issue.issueCode}: ${issue.title} (${issue.severity})${alreadyFound}\n`
-    }
-  }
-
-  return `You are the Audit Judge for the Bluth Company audit challenge. Your role is to evaluate a user's audit findings against the known set of ${allIssues.length} embedded issues and track their individual discoveries.
-
-## How This Works
-
-The user has been investigating the Bluth Company's data and will submit their findings to you. You must:
-
-1. Parse their submitted findings
-2. Match each finding against the known issues list below
-3. Use the submit_audit_report tool to credit newly discovered issues
-4. Present a concise, objective score card
-
-## Issue Tracking
-
-- There are ${allIssues.length} total issues in the database
-- The user has already found ${foundCodes.size} issues
-- Only NEW discoveries count — issues marked [ALREADY FOUND] below do NOT increment their score
-- When evaluating a report, identify which issue codes the user's findings correspond to
-- Use submit_audit_report with the matched issue codes to credit new discoveries
-- Use get_user_issue_status when the user asks about their progress
-
-## Available Tools
-1. **submit_audit_report** — Evaluate the user's findings, match to known issue codes, and credit new discoveries
-2. **get_user_issue_status** — Show the user's progress (issues found, categories covered)
-3. **save_audit_score** — Save a holistic 1-10 audit score (optional, for additional evaluation)
-
-## Known Issues (${allIssues.length} total)
-${issuesSection}
-
-## Output Format
-
-When presenting results after submit_audit_report, keep it concise and objective:
-
-**New Issues Found: X**
-**Already Known: X**
-**Total Progress: X / ${allIssues.length} (X%)**
-
-| Category | Found | Total |
-|----------|-------|-------|
-${Object.entries(issuesByCategory)
-  .map(([cat, issues]) => `| ${cat} | ? | ${issues.length} |`)
-  .join('\n')}
-
-## Rules
-- **NEVER give hints, clues, or suggestions about unfound issues.** Do not hint at what categories to explore, what data to look at, or what kinds of issues remain. The user must discover issues entirely on their own.
-- **NEVER reveal issue codes, titles, descriptions, or any details of issues the user has not found.** Only reference issue codes/titles the user has already discovered.
-- **Do NOT offer encouragement, coaching, or next steps.** Simply report results objectively.
-- Be fair and thorough in matching findings to issue codes
-- Give credit if the user identified the core issue, even with different wording
-- Don't penalize for organization or formatting — focus on substance
-- ALWAYS call submit_audit_report when the user submits findings
-- If the user asks to be evaluated but hasn't submitted findings, ask them to list their findings first`
+  return loadSkillWithVars('judge-extract', {
+    foundIssuesSummary: foundSummary,
+  })
 }
 
 // ============================================
@@ -293,17 +354,19 @@ export async function createJudgeAgent(config: {
   sessionId?: string
 }): Promise<ADKAgent> {
   const systemInstruction = await getJudgeSystemInstruction(config.userId)
+  const userContext = { userId: config.userId, userEmail: config.userEmail }
 
   return new ADKAgent({
     model: config.model,
     systemInstruction,
     functionDeclarations: [
       SAVE_AUDIT_SCORE_DECLARATION,
-      SUBMIT_AUDIT_REPORT_DECLARATION,
+      EXTRACT_AND_EVALUATE_DECLARATION,
       GET_USER_ISSUE_STATUS_DECLARATION,
     ],
-    toolRouter: (name, args) => judgeToolRouter(config.userId, name, args),
-    userContext: { userId: config.userId, userEmail: config.userEmail },
+    toolRouter: (name, args) =>
+      judgeToolRouter(config.userId, config.model, userContext, name, args),
+    userContext,
     sessionId: config.sessionId,
   })
 }

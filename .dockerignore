@@ -10,3 +10,8 @@ README.md
 .vscode
 *.md
 supabase
+bluth
+.claude
+*.log
+.turbo
+coverage

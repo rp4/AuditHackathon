@@ -111,6 +111,10 @@ export class ADKAgent {
       let response = await chat.sendMessage({ message: messageParts })
       this.trackResponse(response)
 
+      // Track consecutive failures per tool name — stop after 3
+      const consecutiveFailures = new Map<string, number>()
+      const MAX_TOOL_FAILURES = 3
+
       while (true) {
         const candidate = response.candidates?.[0]
         if (!candidate?.content?.parts) break
@@ -146,20 +150,47 @@ export class ADKAgent {
           if (part.functionCall) {
             const fc = part.functionCall
             const toolCallId = crypto.randomUUID()
+            const toolName = fc.name || ''
+            const toolArgs = (fc.args as Record<string, unknown>) || {}
+
+            // Check if this tool has hit its failure limit
+            const failures = consecutiveFailures.get(toolName) || 0
+            if (failures >= MAX_TOOL_FAILURES) {
+              yield {
+                type: 'text',
+                content: `\n\nSorry, the tool \`${toolName}\` failed ${MAX_TOOL_FAILURES} times in a row. Skipping further attempts.\n\n`,
+              }
+              // Tell Gemini the tool is unavailable so it stops retrying
+              response = await chat.sendMessage({
+                message: {
+                  functionResponse: {
+                    name: fc.name,
+                    response: { error: `Tool "${toolName}" disabled after ${MAX_TOOL_FAILURES} consecutive failures.` },
+                  },
+                },
+              })
+              this.trackResponse(response)
+              break
+            }
 
             yield {
               type: 'tool_call',
               toolCall: {
                 id: toolCallId,
                 name: fc.name || 'unknown',
-                arguments: (fc.args as Record<string, unknown>) || {},
+                arguments: toolArgs,
                 status: 'running',
               },
             }
 
-            const toolName = fc.name || ''
-            const toolArgs = (fc.args as Record<string, unknown>) || {}
             const result = await this.config.toolRouter(toolName, toolArgs)
+
+            // Track success/failure
+            if (result.success) {
+              consecutiveFailures.set(toolName, 0)
+            } else {
+              consecutiveFailures.set(toolName, failures + 1)
+            }
 
             const resultStr = result.success
               ? JSON.stringify(result.result, null, 2)
@@ -170,7 +201,7 @@ export class ADKAgent {
               toolCall: {
                 id: toolCallId,
                 name: fc.name || 'unknown',
-                arguments: (fc.args as Record<string, unknown>) || {},
+                arguments: toolArgs,
                 result: resultStr,
                 status: result.success ? 'completed' : 'error',
               },

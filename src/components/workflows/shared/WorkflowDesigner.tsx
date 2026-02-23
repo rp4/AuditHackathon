@@ -163,14 +163,16 @@ function WorkflowDesignerInner({
             variant={BackgroundVariant.Dots}
             size={readOnly ? 1 : 1.5}
           />
-          <Controls />
-          <MiniMap
-            nodeColor="#6366f1"
-            nodeStrokeWidth={3}
-            zoomable
-            pannable
-            position="bottom-right"
-          />
+          {!readOnly && <Controls />}
+          {!readOnly && (
+            <MiniMap
+              nodeColor="#6366f1"
+              nodeStrokeWidth={3}
+              zoomable
+              pannable
+              position="bottom-right"
+            />
+          )}
 
           {/* Top-left: Add Step button (only in edit mode) */}
           {!readOnly && (

@@ -1,31 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { z } from 'zod'
 import { authOptions } from '@/lib/auth/config'
 import { createMultiAgentOrchestrator } from '@/lib/copilot/adk/multi-agent'
 import { createCharacterAgent, isValidCharacter } from '@/lib/copilot/adk/agents/characters'
 import { createJudgeAgent } from '@/lib/copilot/adk/agents/judge'
 import { isValidModel } from '@/lib/copilot/gemini/models'
 import { checkUserCanSpend } from '@/lib/copilot/services/usage-tracking'
-import type { FileAttachment, GeminiModel, AgentId } from '@/lib/copilot/types'
+import type { GeminiModel, AgentId } from '@/lib/copilot/types'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-interface HistoryMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
-
-interface ChatRequest {
-  message: string
-  attachments?: FileAttachment[]
-  model?: GeminiModel
-  sessionId?: string
-  history?: HistoryMessage[]
-  agentId?: AgentId
-  canvasMode?: boolean
-  runMode?: { swarmId: string; swarmSlug: string }
-}
+const chatRequestSchema = z.object({
+  message: z.string().max(50000).optional(),
+  attachments: z.array(z.object({
+    data: z.string().max(10_000_000),
+    mimeType: z.string(),
+    name: z.string().optional(),
+  })).max(5).optional(),
+  model: z.string().optional(),
+  sessionId: z.string().max(100).optional(),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(50000),
+  })).max(100).optional(),
+  agentId: z.string().max(50).optional(),
+  canvasMode: z.boolean().optional(),
+  runMode: z.object({
+    swarmId: z.string().max(100).regex(/^[a-zA-Z0-9_-]+$/),
+    swarmSlug: z.string().max(200).regex(/^[a-z0-9-]+$/),
+  }).optional(),
+})
 
 /**
  * POST /api/copilot/chat
@@ -48,7 +54,8 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id
     const userEmail = session.user.email || ''
 
-    const body: ChatRequest = await request.json()
+    const raw = await request.json()
+    const body = chatRequestSchema.parse(raw)
     const { message, attachments, model = 'gemini-3-flash-preview', sessionId, history = [], agentId = 'copilot', canvasMode, runMode } = body
 
     if (!message && (!attachments || attachments.length === 0)) {
@@ -128,6 +135,12 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.issues },
+        { status: 400 }
+      )
+    }
     console.error('Chat API error:', error)
     return NextResponse.json(
       {

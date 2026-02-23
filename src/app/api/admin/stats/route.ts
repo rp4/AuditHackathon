@@ -13,17 +13,21 @@ export async function GET(request: NextRequest) {
 
     // Calculate date range
     let dateFilter = {}
+    let filterDate: Date | null = null
     const now = new Date()
 
     switch (timeframe) {
       case '7d':
         dateFilter = { gte: new Date(now.setDate(now.getDate() - 7)) }
+        filterDate = new Date(now)
         break
       case '30d':
         dateFilter = { gte: new Date(now.setDate(now.getDate() - 30)) }
+        filterDate = new Date(now)
         break
       case '90d':
         dateFilter = { gte: new Date(now.setDate(now.getDate() - 90)) }
+        filterDate = new Date(now)
         break
       case 'all':
       default:
@@ -55,19 +59,23 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Active users (users who created swarms or interacted in timeframe)
-      prisma.user.count({
-        where: {
-          isDeleted: false,
-          OR: [
-            { swarms: { some: { createdAt: dateFilter } } },
-            { favorites: { some: { createdAt: dateFilter } } },
-            { ratings: { some: { createdAt: dateFilter } } },
-            { downloads: { some: { createdAt: dateFilter } } },
-            { comments: { some: { createdAt: dateFilter } } }
-          ]
-        }
-      }),
+      // Active users — single query with UNION instead of 5 nested subqueries
+      (async () => {
+        const dateClause = filterDate ? `AND t."createdAt" >= $1` : ''
+        const params = filterDate ? [filterDate] : []
+        const tables = ['swarms', 'favorites', 'ratings', 'downloads', 'comments']
+        const unions = tables
+          .map(t => `SELECT DISTINCT t."userId" FROM ${t} t WHERE 1=1 ${dateClause}`)
+          .join(' UNION ')
+        const sql = `
+          SELECT COUNT(DISTINCT a."userId")::int AS count
+          FROM (${unions}) a
+          JOIN users u ON u.id = a."userId"
+          WHERE u."isDeleted" = false
+        `
+        const rows = await prisma.$queryRawUnsafe<{ count: number }[]>(sql, ...params)
+        return rows[0]?.count ?? 0
+      })(),
 
       // Total swarms
       prisma.swarm.count({
@@ -176,37 +184,42 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to get growth data for charts
+// Helper function to get growth data for charts — single SQL query instead of N
 async function getGrowthData(model: 'user' | 'swarm', timeframe: string) {
-  const now = new Date()
-  const data = []
-
   const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : timeframe === '90d' ? 90 : 365
 
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days)
+  startDate.setHours(0, 0, 0, 0)
+
+  const table = model === 'user' ? 'users' : 'swarms'
+
+  const rows = await prisma.$queryRawUnsafe<{ date: string; count: bigint }[]>(
+    `SELECT DATE("createdAt") AS date, COUNT(*)::bigint AS count
+     FROM ${table}
+     WHERE "isDeleted" = false AND "createdAt" >= $1
+     GROUP BY DATE("createdAt")
+     ORDER BY date ASC`,
+    startDate
+  )
+
+  // Build a map of date → count from the query results
+  const countByDate = new Map<string, number>()
+  for (const row of rows) {
+    // Postgres DATE comes back as a Date or string depending on driver
+    const key = typeof row.date === 'string'
+      ? row.date.slice(0, 10)
+      : new Date(row.date).toISOString().slice(0, 10)
+    countByDate.set(key, Number(row.count))
+  }
+
+  // Fill in every day in the range (including zero-count days)
+  const data = []
   for (let i = days - 1; i >= 0; i--) {
-    const start = new Date(now)
-    start.setDate(start.getDate() - i)
-    start.setHours(0, 0, 0, 0)
-
-    const end = new Date(start)
-    end.setDate(end.getDate() + 1)
-
-    const whereClause = {
-      isDeleted: false,
-      createdAt: {
-        gte: start,
-        lt: end
-      }
-    }
-
-    const count = model === 'user'
-      ? await prisma.user.count({ where: whereClause })
-      : await prisma.swarm.count({ where: whereClause })
-
-    data.push({
-      date: start.toISOString().split('T')[0],
-      count
-    })
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = d.toISOString().slice(0, 10)
+    data.push({ date: key, count: countByDate.get(key) ?? 0 })
   }
 
   return data

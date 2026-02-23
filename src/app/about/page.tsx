@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import type { Metadata } from "next"
 
+export const dynamic = 'force-static'
+
 export const metadata: Metadata = {
   title: "About Us | AuditSwarm",
   description: "Learn about AuditSwarm.",

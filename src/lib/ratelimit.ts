@@ -201,10 +201,7 @@ export async function checkRateLimit(
     }
   }
 
-  // Fall back to in-memory limiter (development only)
-  console.warn(
-    '⚠️  Using in-memory rate limiter. Configure Upstash Redis for production!'
-  )
+  // In-memory rate limiting is per-instance, which is acceptable at this scale.
   return fallbackLimiter.limit(
     identifier,
     config.maxRequests,
@@ -215,7 +212,7 @@ export async function checkRateLimit(
 /**
  * Helper to get the appropriate limiter for a path
  */
-export function getLimiterForPath(pathname: string): {
+export function getLimiterForPath(pathname: string, method?: string): {
   limiter: Ratelimit | null
   config: { maxRequests: number; windowMs: number }
 } {
@@ -231,10 +228,7 @@ export function getLimiterForPath(pathname: string): {
     return { limiter: uploadLimiter, config: RATE_LIMITS.UPLOAD }
   }
 
-  if (
-    pathname.startsWith('/api/agents') &&
-    (pathname.includes('POST') || pathname.includes('PUT') || pathname.includes('DELETE'))
-  ) {
+  if (method && method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
     return { limiter: mutationLimiter, config: RATE_LIMITS.MUTATION }
   }
 

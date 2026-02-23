@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma/client'
 import { Prisma } from '@prisma/client'
+import { leaderboardCache } from '@/lib/cache'
 
 // ============================================
 // AuditIssue queries (admin + judge)
@@ -145,6 +146,9 @@ export async function markIssuesFound(
       })),
       skipDuplicates: true,
     })
+
+    // Invalidate leaderboard cache since rankings may have changed
+    leaderboardCache.invalidatePattern(/^leaderboard:/)
   }
 
   return {
@@ -210,30 +214,35 @@ interface LeaderboardEntry {
   image: string | null
   username: string | null
   issuesFound: number
-  reportsSubmitted: number
+  workflowsCreated: number
 }
 
 export async function getLeaderboard(limit = 50, offset = 0) {
-  const [entries, totalIssues] = await Promise.all([
-    prisma.$queryRaw<LeaderboardEntry[]>`
-      SELECT
-        u.id,
-        u.name,
-        u.image,
-        u.username,
-        COUNT(DISTINCT d."issueId")::int AS "issuesFound",
-        COUNT(DISTINCT r.id)::int AS "reportsSubmitted"
-      FROM users u
-      LEFT JOIN issue_discoveries d ON u.id = d."userId"
-      LEFT JOIN audit_reports r ON u.id = r."userId"
-      WHERE u."isDeleted" = false
-      GROUP BY u.id, u.name, u.image, u.username
-      HAVING COUNT(DISTINCT d."issueId") > 0
-      ORDER BY "issuesFound" DESC, "reportsSubmitted" ASC
-      LIMIT ${limit} OFFSET ${offset}
-    `,
-    prisma.auditIssue.count({ where: { isActive: true } }),
-  ])
+  return leaderboardCache.get(
+    `leaderboard:${limit}:${offset}`,
+    async () => {
+      const [entries, totalIssues] = await Promise.all([
+        prisma.$queryRaw<LeaderboardEntry[]>`
+          SELECT
+            u.id,
+            u.name,
+            u.image,
+            u.username,
+            COUNT(DISTINCT d."issueId")::int AS "issuesFound",
+            COUNT(DISTINCT s.id)::int AS "workflowsCreated"
+          FROM users u
+          LEFT JOIN issue_discoveries d ON u.id = d."userId"
+          LEFT JOIN swarms s ON u.id = s."userId"
+          WHERE u."isDeleted" = false
+          GROUP BY u.id, u.name, u.image, u.username
+          HAVING COUNT(DISTINCT d."issueId") > 0
+          ORDER BY "issuesFound" DESC, "workflowsCreated" DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `,
+        prisma.auditIssue.count({ where: { isActive: true } }),
+      ])
 
-  return { entries, totalIssues }
+      return { entries, totalIssues }
+    }
+  )
 }

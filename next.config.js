@@ -35,6 +35,30 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
 
+  // Security headers (moved from middleware to apply to all routes efficiently)
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
+          { key: 'X-DNS-Prefetch-Control', value: 'off' },
+          { key: 'X-Download-Options', value: 'noopen' },
+          { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://storage.googleapis.com https://media.licdn.com https://*.licdn.com blob:; font-src 'self' data:; connect-src 'self' https://storage.googleapis.com https://vercel.live https://data.auditswarm.com https://cdn.jsdelivr.net https://unpkg.com; frame-src 'self' https://vercel.live; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
+          },
+        ],
+      },
+    ]
+  },
+
   // SECURITY: Block dev credentials in production
   async redirects() {
     const isProduction = process.env.NODE_ENV === 'production'

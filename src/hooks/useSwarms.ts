@@ -36,6 +36,8 @@ export function useSwarms(filters: SwarmFilters = {}) {
       if (!res.ok) throw new Error('Failed to fetch swarms')
       return res.json()
     },
+    staleTime: 60 * 1000, // 1 minute — avoid refetching on every filter change
+    placeholderData: (prev: any) => prev, // keep previous data while fetching (no flash)
   })
 }
 

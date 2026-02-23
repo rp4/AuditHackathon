@@ -65,38 +65,39 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Soft delete fields
-  deletedAt     DateTime? // When the user was deleted
-  isDeleted     Boolean   @default(false) // Flag for soft deletion
+  deletedAt DateTime? // When the user was deleted
+  isDeleted Boolean   @default(false) // Flag for soft deletion
 
   // Admin field
-  is_admin      Boolean   @default(false)
+  is_admin Boolean @default(false)
 
   // Profile fields
-  bio           String?   @db.Text
-  linkedin_url  String?
+  bio              String? @db.Text
+  linkedin_url     String?
   linkedin_visible Boolean @default(false) // Whether to show LinkedIn on public profile
-  website       String?
-  company       String?
-  role          String?
+  website          String?
+  company          String?
+  role             String?
 
   // Relations
-  accounts        Account[]
-  sessions        Session[]
-  swarms          Swarm[]
-  favorites       Favorite[]
-  ratings         Rating[]
-  downloads       Download[]
-  comments        Comment[]
-  apiUsage        ApiUsage[]
-  spendingLimit   UserSpendingLimit?
-  copilotSessions CopilotSession[]
-  stepResults     StepResult[]
+  accounts         Account[]
+  sessions         Session[]
+  swarms           Swarm[]
+  favorites        Favorite[]
+  ratings          Rating[]
+  downloads        Download[]
+  comments         Comment[]
+  apiUsage         ApiUsage[]
+  spendingLimit    UserSpendingLimit?
+  copilotSessions  CopilotSession[]
+  stepResults      StepResult[]
   auditScores      AuditScore[]
   issueDiscoveries IssueDiscovery[]
   auditReports     AuditReport[]
 
   @@index([email])
   @@index([username])
+  @@index([isDeleted, createdAt])
   @@map("users")
 }
 
@@ -116,59 +117,65 @@ model Category {
 
 // Swarms (workflow templates - formerly tools)
 model Swarm {
-  id               String   @id @default(cuid())
-  name             String
-  slug             String   @unique
-  description      String   @db.Text
+  id          String @id @default(cuid())
+  name        String
+  slug        String @unique
+  description String @db.Text
 
   // Workflow fields (replacing documentation)
-  workflowNodes    String?  @db.Text  // JSON array of React Flow nodes
-  workflowEdges    String?  @db.Text  // JSON array of React Flow edges
-  workflowMetadata String?  @db.Text  // JSON object {phase, standard, framework}
-  workflowVersion  String   @default("1.0")
+  workflowNodes    String? @db.Text // JSON array of React Flow nodes
+  workflowEdges    String? @db.Text // JSON array of React Flow edges
+  workflowMetadata String? @db.Text // JSON object {phase, standard, framework}
+  workflowVersion  String  @default("1.0")
 
   // Media
-  image_url        String?
+  image_url String?
 
   // Metadata
-  userId           String
-  categoryId       String?
+  userId     String
+  categoryId String?
 
   // Status
-  is_public        Boolean  @default(true)
-  is_featured      Boolean  @default(false)
+  is_public   Boolean @default(true)
+  is_featured Boolean @default(false)
 
   // Soft delete fields
-  deletedAt        DateTime? // When the swarm was deleted
-  isDeleted        Boolean  @default(false) // Flag for soft deletion
+  deletedAt DateTime? // When the swarm was deleted
+  isDeleted Boolean   @default(false) // Flag for soft deletion
 
   // Stats (denormalized for performance)
-  views_count      Int      @default(0)
-  downloads_count  Int      @default(0)
-  favorites_count  Int      @default(0)
-  rating_avg       Float    @default(0)
-  rating_count     Int      @default(0)
+  views_count     Int   @default(0)
+  downloads_count Int   @default(0)
+  favorites_count Int   @default(0)
+  rating_avg      Float @default(0)
+  rating_count    Int   @default(0)
 
   // Timestamps
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  publishedAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
 
   // Relations
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category         Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  favorites        Favorite[]
-  ratings          Rating[]
-  downloads        Download[]
-  comments         Comment[]
-  versions         SwarmVersion[]
-  stepResults      StepResult[]
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  favorites   Favorite[]
+  ratings     Rating[]
+  downloads   Download[]
+  comments    Comment[]
+  versions    SwarmVersion[]
+  stepResults StepResult[]
 
   @@index([slug])
   @@index([userId])
   @@index([categoryId])
   @@index([is_public, publishedAt])
   @@index([rating_avg, rating_count])
+  // Composite indexes for common filtered queries
+  @@index([userId, isDeleted])
+  @@index([categoryId, is_public, isDeleted])
+  @@index([isDeleted, publishedAt])
+  @@index([isDeleted, views_count])
+  @@index([isDeleted, rating_avg])
   @@map("swarms")
 }
 
@@ -232,10 +239,10 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  swarm    Swarm     @relation(fields: [swarmId], references: [id], onDelete: Cascade)
-  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies  Comment[] @relation("CommentReplies")
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  swarm   Swarm     @relation(fields: [swarmId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
 
   @@index([userId])
   @@index([swarmId])
@@ -250,7 +257,7 @@ model SwarmVersion {
   swarmId       String
   version       String
   changelog     String?  @db.Text
-  configuration Json     // Full workflow snapshot
+  configuration Json // Full workflow snapshot
   createdAt     DateTime @default(now())
 
   swarm Swarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
@@ -308,7 +315,7 @@ model CopilotSession {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages CopilotMessage[]
 
   @@index([userId])
@@ -320,10 +327,10 @@ model CopilotSession {
 model CopilotMessage {
   id          String   @id @default(cuid())
   sessionId   String
-  role        String   // 'user' | 'assistant' | 'system'
+  role        String // 'user' | 'assistant' | 'system'
   content     String   @db.Text
-  attachments String?  @db.Text  // JSON array of file attachments
-  toolCalls   String?  @db.Text  // JSON array of tool call records
+  attachments String?  @db.Text // JSON array of file attachments
+  toolCalls   String?  @db.Text // JSON array of tool call records
   createdAt   DateTime @default(now())
 
   session CopilotSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -335,12 +342,12 @@ model CopilotMessage {
 
 // Audit challenge scores — persisted for leaderboard
 model AuditScore {
-  id          String   @id @default(cuid())
-  userId      String
-  sessionId   String?
-  score       Float    // 1-10 overall
-  details     String   @db.Text  // JSON: category breakdown, missed findings, etc.
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String?
+  score     Float // 1-10 overall
+  details   String   @db.Text // JSON: category breakdown, missed findings, etc.
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -388,7 +395,7 @@ model AuditReport {
   sessionId     String?
   createdAt     DateTime @default(now())
 
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   discoveries IssueDiscovery[]
 
   @@index([userId])
@@ -420,8 +427,8 @@ model StepResult {
   id          String    @id @default(cuid())
   userId      String
   swarmId     String
-  nodeId      String    // Matches React Flow node ID
-  result      String?   @db.Text  // AI-generated result content
+  nodeId      String // Matches React Flow node ID
+  result      String?   @db.Text // AI-generated result content
   completed   Boolean   @default(false)
   completedAt DateTime?
   createdAt   DateTime  @default(now())

@@ -58,6 +58,13 @@ export async function GET(request: NextRequest) {
 
     const result = await getSwarms(filters)
 
+    // Allow CDN/browser caching for public, unauthenticated browse queries
+    if (!session && !userIdOrUsername && !searchParams.get('search')) {
+      return NextResponse.json(result, {
+        headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=15' },
+      })
+    }
+
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error fetching swarms:', error)

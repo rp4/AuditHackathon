@@ -19,6 +19,10 @@ const skillCache = new Map<string, string>()
  * Returns the file content as a string.
  */
 export function loadSkill(name: string): string {
+  if (!/^[a-z0-9-]+$/.test(name)) {
+    throw new Error(`Invalid skill name: ${name}`)
+  }
+
   const cached = skillCache.get(name)
   if (cached) return cached
 
@@ -38,7 +42,8 @@ export function loadSkillWithVars(
 ): string {
   let content = loadSkill(name)
   for (const [key, value] of Object.entries(vars)) {
-    content = content.replaceAll(`{{${key}}}`, value)
+    const sanitized = value.replace(/\{\{/g, '').replace(/\}\}/g, '')
+    content = content.replaceAll(`{{${key}}}`, sanitized)
   }
   return content
 }

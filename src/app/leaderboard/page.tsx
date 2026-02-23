@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Trophy, FileText, Target } from 'lucide-react'
+import { Trophy, Workflow, Target } from 'lucide-react'
 import { useLeaderboard } from '@/hooks/useLeaderboard'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -12,7 +12,7 @@ interface LeaderboardEntry {
   image: string | null
   username: string | null
   issuesFound: number
-  reportsSubmitted: number
+  workflowsCreated: number
 }
 
 export default function LeaderboardPage() {
@@ -61,9 +61,9 @@ export default function LeaderboardPage() {
             {/* Header Row */}
             <div className="grid grid-cols-[3rem_1fr_6rem_6rem] md:grid-cols-[4rem_1fr_8rem_8rem] items-center px-4 py-3 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
               <div className="text-center">#</div>
-              <div>Player</div>
+              <div>Auditor</div>
               <div className="text-center">Found</div>
-              <div className="text-center">Reports</div>
+              <div className="text-center">Workflows</div>
             </div>
 
             {/* Rows */}
@@ -134,11 +134,11 @@ export default function LeaderboardPage() {
                     </span>
                   </div>
 
-                  {/* Reports */}
+                  {/* Workflows Created */}
                   <div className="text-center flex items-center justify-center gap-1">
-                    <FileText className="h-3.5 w-3.5 text-gray-400" />
+                    <Workflow className="h-3.5 w-3.5 text-gray-400" />
                     <span className="text-sm text-gray-600">
-                      {entry.reportsSubmitted}
+                      {entry.workflowsCreated}
                     </span>
                   </div>
 

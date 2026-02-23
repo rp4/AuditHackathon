@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Users, Package, TrendingUp, Eye, Heart, Clock } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import FeaturedSwarmsManager from './FeaturedSwarmsManager'
+import CopilotUsageAdmin from './CopilotUsageAdmin'
 
 interface Stats {
   overview: {
@@ -151,6 +152,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="swarms">Top Swarms</TabsTrigger>
           <TabsTrigger value="users">Recent Users</TabsTrigger>
           <TabsTrigger value="featured">Featured Swarms</TabsTrigger>
+          <TabsTrigger value="copilot">Copilot Usage</TabsTrigger>
         </TabsList>
 
         <TabsContent value="swarms" className="space-y-4">
@@ -274,6 +276,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="featured" className="space-y-4">
           <FeaturedSwarmsManager />
+        </TabsContent>
+
+        <TabsContent value="copilot" className="space-y-4">
+          <CopilotUsageAdmin />
         </TabsContent>
       </Tabs>
     </div>

@@ -12,15 +12,29 @@ import { useSessionStore } from '@/lib/copilot/stores/sessionStore'
 import { useCopilotPanelStore } from '@/lib/copilot/stores/panelStore'
 import { getAgentOption } from '@/lib/copilot/adk/agents/registry'
 import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle, Maximize2, Minimize2, Sparkles, FileText, Search, Play } from 'lucide-react'
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-
-const DotLottieReact = dynamic(
-  () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
-  { ssr: false }
-)
 import type { GeminiModel, AgentId, FileAttachment } from '@/lib/copilot/types'
+
+function LoadingDots({ size = 32 }: { size?: number }) {
+  const dotSize = Math.round(size / 5)
+  return (
+    <div className="flex items-center gap-1" style={{ width: size, height: size, justifyContent: 'center' }}>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"
+          style={{
+            width: dotSize,
+            height: dotSize,
+            animationDelay: `${i * 0.15}s`,
+            animationDuration: '0.8s',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 interface User {
   id: string
@@ -48,6 +62,9 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const processedToolCalls = useRef<Set<string>>(new Set())
+  // Messages created before this timestamp are from localStorage persistence —
+  // we skip navigation for those. Messages created after are from live streaming.
+  const mountedAt = useRef(Date.now())
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -108,7 +125,9 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Detect tool call completions (create_workflow, save_step_result)
+  // Detect tool call completions (create_workflow, save_step_result, etc.)
+  // Navigate only for tool calls from live streaming, not from localStorage persistence.
+  // We compare the message's createdAt against the component mount time to distinguish.
   useEffect(() => {
     for (const msg of messages) {
       if (msg.role !== 'assistant' || !msg.toolCalls) continue
@@ -117,10 +136,29 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
         if (tc.status !== 'completed') continue
         if (processedToolCalls.current.has(tc.id)) continue
 
+        processedToolCalls.current.add(tc.id)
+
+        // Messages created before this component mounted are from persistence — skip.
+        const createdAt = msg.createdAt instanceof Date ? msg.createdAt.getTime() : new Date(msg.createdAt).getTime()
+        const isLive = createdAt >= mountedAt.current
+
+        // DEBUG: remove after fixing navigation
+        if (tc.name === 'create_workflow' || tc.name === 'save_step_result' || tc.name === 'update_workflow' || tc.name === 'get_step_context') {
+          console.log(`[copilot-nav] ${tc.name}`, {
+            isLive,
+            createdAt,
+            mountedAt: mountedAt.current,
+            diff: createdAt - mountedAt.current,
+            hasResult: !!tc.result,
+            resultPreview: tc.result?.slice(0, 200),
+            canvasMode: copilotOptions?.canvasMode,
+          })
+        }
+
+        if (!isLive) continue
+
         // Handle create_workflow
         if (tc.name === 'create_workflow') {
-          processedToolCalls.current.add(tc.id)
-
           // Canvas mode: pass data to onWorkflowGenerated callback
           if (copilotOptions?.canvasMode && onWorkflowGenerated) {
             try {
@@ -138,15 +176,17 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
             } catch {
               // Result might not be JSON — ignore
             }
-          } else if (!copilotOptions?.canvasMode && tc.arguments) {
+          } else if (!copilotOptions?.canvasMode && tc.result) {
             // Non-canvas mode: save draft to localStorage and navigate to /create
             try {
-              const args = tc.arguments as Record<string, unknown>
-              const nodes = (args.nodes as unknown[]) || []
-              const edges = (args.edges as unknown[]) || []
-              const name = (args.name as string) || ''
-              const description = (args.description as string) || ''
-              const categorySlug = args.categorySlug as string | undefined
+              const resultData = JSON.parse(tc.result)
+              const nodes = (resultData.nodes as unknown[]) || []
+              const edges = (resultData.edges as unknown[]) || []
+              const name = (resultData.name as string) || ''
+              const description = (resultData.description as string) || ''
+              const categorySlug = resultData.categorySlug as string | undefined
+
+              console.log('[copilot-nav] create_workflow draft', { nodesCount: nodes.length, name, description })
 
               if (nodes.length > 0) {
                 const draft = {
@@ -156,20 +196,18 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                   categorySlug,
                 }
                 localStorage.setItem('draft-swarm-workflow', JSON.stringify(draft))
-                // Navigate to /create and open the copilot panel as sidebar
+                console.log('[copilot-nav] navigating to /create')
                 router.push('/create')
                 openPanel()
               }
-            } catch {
-              // ignore parse errors
+            } catch (err) {
+              console.error('[copilot-nav] create_workflow parse error', err)
             }
           }
         }
 
         // Handle save_step_result → navigate to edit page for user review
         if (tc.name === 'save_step_result') {
-          processedToolCalls.current.add(tc.id)
-
           try {
             const resultData = tc.result ? JSON.parse(tc.result) : null
             if (resultData?.pendingReview) {
@@ -190,8 +228,6 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
 
         // Handle update_workflow → navigate to the workflow's edit page
         if (tc.name === 'update_workflow') {
-          processedToolCalls.current.add(tc.id)
-
           try {
             const resultData = tc.result ? JSON.parse(tc.result) : null
             if (resultData?.slug) {
@@ -205,8 +241,6 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
 
         // Handle get_step_context → navigate to the workflow's edit page with node selected
         if (tc.name === 'get_step_context') {
-          processedToolCalls.current.add(tc.id)
-
           try {
             const resultData = tc.result ? JSON.parse(tc.result) : null
             if (resultData?.swarmSlug && resultData?.step?.nodeId) {
@@ -352,12 +386,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
 
               {isLoading && (
                 <div className="flex items-center gap-2">
-                  <DotLottieReact
-                    src="/Loading.lottie"
-                    loop
-                    autoplay
-                    style={{ width: 32, height: 32 }}
-                  />
+                  <LoadingDots size={32} />
                   <button
                     onClick={stopGeneration}
                     className="p-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
@@ -614,12 +643,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
 
               {isLoading && (
                 <div className="flex items-center gap-3">
-                  <DotLottieReact
-                    src="/Loading.lottie"
-                    loop
-                    autoplay
-                    style={{ width: 40, height: 40 }}
-                  />
+                  <LoadingDots size={40} />
                   <button
                     onClick={stopGeneration}
                     className="p-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"

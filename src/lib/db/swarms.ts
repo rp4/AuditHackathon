@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma/client'
 import type { Prisma } from '@prisma/client'
+import { swarmsCache } from '@/lib/cache'
+import { invalidateCategoriesCache } from '@/lib/db/categories'
 
 /**
  * Database utilities for Swarm operations
@@ -19,9 +21,23 @@ export type SwarmFilters = {
 }
 
 /**
- * Get swarms with filtering, sorting, and pagination
+ * Get swarms with filtering, sorting, and pagination.
+ * Public, unauthenticated, first-page queries are cached for 30 s.
  */
 export async function getSwarms(filters: SwarmFilters & { currentUserId?: string } = {}) {
+  const { search, categoryId, categoryIds, userId, isFeatured, isPublic = true, offset = 0, limit = 20, sortBy = 'recent', currentUserId } = filters
+
+  const isCacheable = !currentUserId && !userId && !search && isPublic === true && offset === 0
+
+  if (isCacheable) {
+    const cacheKey = `swarms:public:${sortBy}:${categoryId || categoryIds?.join(',') || 'all'}:${isFeatured ?? 'any'}`
+    return swarmsCache.get(cacheKey, () => executeGetSwarms(filters))
+  }
+
+  return executeGetSwarms(filters)
+}
+
+async function executeGetSwarms(filters: SwarmFilters & { currentUserId?: string }) {
   const {
     search,
     categoryId,
@@ -73,7 +89,6 @@ export async function getSwarms(filters: SwarmFilters & { currentUserId?: string
           select: {
             id: true,
             name: true,
-            email: true,
             image: true,
           },
         },
@@ -122,7 +137,6 @@ export async function getSwarmBySlug(slug: string) {
         select: {
           id: true,
           name: true,
-          email: true,
           image: true,
           bio: true,
           linkedin_url: true,
@@ -172,7 +186,7 @@ export async function createSwarm(data: {
   categoryId?: string
   is_public?: boolean
 }) {
-  return prisma.swarm.create({
+  const swarm = await prisma.swarm.create({
     data: {
       ...data,
       publishedAt: data.is_public ? new Date() : null,
@@ -182,13 +196,17 @@ export async function createSwarm(data: {
         select: {
           id: true,
           name: true,
-          email: true,
           image: true,
         },
       },
       category: true,
     },
   })
+
+  swarmsCache.invalidatePattern(/^swarms:/)
+  invalidateCategoriesCache()
+
+  return swarm
 }
 
 /**
@@ -216,7 +234,7 @@ export async function updateSwarm(
     }
   }
 
-  return prisma.swarm.update({
+  const swarm = await prisma.swarm.update({
     where: { id },
     data: finalUpdateData,
     include: {
@@ -224,13 +242,16 @@ export async function updateSwarm(
         select: {
           id: true,
           name: true,
-          email: true,
           image: true,
         },
       },
       category: true,
     },
   })
+
+  swarmsCache.invalidatePattern(/^swarms:/)
+
+  return swarm
 }
 
 /**

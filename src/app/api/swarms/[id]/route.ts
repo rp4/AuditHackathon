@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
-import { getSwarmBySlug, updateSwarm, deleteSwarm, incrementSwarmViews } from '@/lib/db/swarms'
+import { getSwarmBySlug, updateSwarm, deleteSwarm } from '@/lib/db/swarms'
+import { viewCountBatcher } from '@/lib/cache'
 import { isFavorited } from '@/lib/db/favorites'
 import { isAdmin } from '@/lib/auth/admin'
 import { logger } from '@/lib/utils/logger'
@@ -25,8 +26,8 @@ export async function GET(
       )
     }
 
-    // Increment view count asynchronously
-    incrementSwarmViews(swarm.id).catch((error) => logger.serverError(error, { swarmId: swarm.id }))
+    // Buffer view count — flushed to DB every 30s
+    viewCountBatcher.increment(swarm.id)
 
     // Check if the current user has favorited this swarm
     let userFavorited = false

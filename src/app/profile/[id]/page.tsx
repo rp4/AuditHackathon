@@ -1,16 +1,40 @@
 'use client'
 
-import { use } from 'react'
+import { use, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Upload, LogOut, Edit } from 'lucide-react'
+import { Upload, LogOut, Edit, AlertTriangle } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserSwarms, useUserProfile, useFavorites } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
 import { signOut } from 'next-auth/react'
+
+function formatCost(cost: number): string {
+  if (cost < 0.01) return `$${cost.toFixed(6)}`
+  if (cost < 1) return `$${cost.toFixed(4)}`
+  return `$${cost.toFixed(2)}`
+}
+
+function getBudgetColor(ratio: number): string {
+  if (ratio >= 1) return 'bg-red-500'
+  if (ratio >= 0.8) return 'bg-yellow-500'
+  return 'bg-green-500'
+}
+
+function getBudgetTextColor(ratio: number): string {
+  if (ratio >= 1) return 'text-red-600 dark:text-red-400'
+  if (ratio >= 0.8) return 'text-yellow-600 dark:text-yellow-400'
+  return 'text-green-600 dark:text-green-400'
+}
+
+interface UsageCurrentMonth {
+  spend: number
+  limit: number | null
+  remaining: number | null
+}
 
 export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -25,6 +49,16 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
     currentUser.id === profile.id ||
     (profile.username && currentUser.username === profile.username)
   )
+
+  // Fetch copilot usage for own profile
+  const [usageData, setUsageData] = useState<UsageCurrentMonth | null>(null)
+  useEffect(() => {
+    if (!isOwnProfile) return
+    fetch('/api/copilot/usage')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data?.currentMonth) setUsageData(data.currentMonth) })
+      .catch(() => {})
+  }, [isOwnProfile])
 
   // Mark all favorites as favorited since they're in the favorites list
   const favorites = (favoritesData?.favorites || []).map((swarm: any) => ({
@@ -136,6 +170,55 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             </div>
           </CardContent>
         </Card>
+
+        {/* Copilot Usage Progress */}
+        {isOwnProfile && usageData && (() => {
+          const hasLimit = usageData.limit !== null && usageData.limit !== undefined
+          const budgetRatio = hasLimit ? usageData.spend / usageData.limit! : 0
+          return (
+            <Card className="mb-8 shadow-sm">
+              <CardContent className="pt-6 pb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Copilot Usage This Month</h2>
+                  <Link href="/copilot/usage" className="text-xs text-primary hover:underline">
+                    View details
+                  </Link>
+                </div>
+                {hasLimit ? (
+                  <>
+                    <div className="w-full h-3 bg-muted rounded-full overflow-hidden mb-2">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${getBudgetColor(budgetRatio)}`}
+                        style={{ width: `${Math.min(100, budgetRatio * 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium ${getBudgetTextColor(budgetRatio)}`}>
+                        {budgetRatio >= 1 ? (
+                          <span className="flex items-center gap-1">
+                            <AlertTriangle className="w-4 h-4" />
+                            Limit reached
+                          </span>
+                        ) : (
+                          `${Math.round(budgetRatio * 100)}% used`
+                        )}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {formatCost(usageData.spend)} / {formatCost(usageData.limit!)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold">{formatCost(usageData.spend)}</span>
+                    <span className="text-sm text-muted-foreground">this month</span>
+                    <span className="ml-auto text-sm text-muted-foreground">No limit set</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )
+        })()}
 
         {/* Tabs Section */}
         <Tabs defaultValue="created" className="w-full">

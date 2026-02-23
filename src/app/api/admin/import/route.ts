@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
+import { requireAdminApi } from '@/lib/auth/admin'
 import { prisma } from '@/lib/prisma/client'
 import { z } from 'zod'
 import { processImportedWorkflow } from '@/lib/utils/workflowImport'
@@ -56,14 +57,10 @@ function generateSlug(name: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const authError = await requireAdminApi()
+    if (authError) return authError
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const session = await getServerSession(authOptions)
 
     const body = await request.json()
 
