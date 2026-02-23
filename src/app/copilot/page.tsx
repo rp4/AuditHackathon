@@ -1,32 +1,25 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { ChatInterface } from '@/components/copilot/ChatInterface'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 export default function CopilotFullscreenPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
 
-  useEffect(() => {
-    if (status !== 'loading' && !session?.user) {
-      router.replace('/browse')
-    }
-  }, [session, status, router])
-
-  if (status === 'loading' || !session?.user) {
+  if (status === 'loading') {
     return <LoadingSpinner fullPage />
   }
 
-  const user = {
-    id: session.user.id,
-    email: session.user.email || '',
-    name: session.user.name || '',
-    image: session.user.image,
-    isAdmin: session.user.isAdmin,
-  }
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email || '',
+        name: session.user.name || '',
+        image: session.user.image,
+        isAdmin: session.user.isAdmin,
+      }
+    : null
 
   return <ChatInterface user={user} />
 }

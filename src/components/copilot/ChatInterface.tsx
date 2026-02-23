@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { signOut } from 'next-auth/react'
+import { signIn, signOut } from 'next-auth/react'
 import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { ChatHistory } from './ChatHistory'
@@ -65,6 +65,22 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
   // Messages created before this timestamp are from localStorage persistence —
   // we skip navigation for those. Messages created after are from live streaming.
   const mountedAt = useRef(Date.now())
+
+  // Auth gate: intercept all interactions when user is not signed in
+  const handleAuthGate = useCallback(
+    (e: React.MouseEvent | React.FocusEvent) => {
+      if (!user) {
+        e.preventDefault()
+        e.stopPropagation()
+        if (process.env.NODE_ENV === 'production') {
+          signIn('linkedin', { callbackUrl: '/copilot' })
+        } else {
+          signIn(undefined, { callbackUrl: '/copilot' })
+        }
+      }
+    },
+    [user]
+  )
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -309,7 +325,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
   // Compact mode: no sidebar, simplified header
   if (compact) {
     return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900" onClickCapture={handleAuthGate} onFocusCapture={handleAuthGate}>
         {/* Compact Header */}
         <header className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
@@ -420,7 +436,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
 
   // Full mode (original layout)
   return (
-    <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen flex bg-gray-50 dark:bg-gray-900" onClickCapture={handleAuthGate} onFocusCapture={handleAuthGate}>
       {/* Sidebar */}
       <aside
         className={`${
