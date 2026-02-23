@@ -234,6 +234,7 @@ export async function getLeaderboard(limit = 50, offset = 0) {
           LEFT JOIN issue_discoveries d ON u.id = d."userId"
           LEFT JOIN swarms s ON u.id = s."userId"
           WHERE u."isDeleted" = false
+            AND u.name != 'Dev User'
           GROUP BY u.id, u.name, u.image, u.username
           HAVING COUNT(DISTINCT d."issueId") > 0
           ORDER BY "issuesFound" DESC, "workflowsCreated" DESC

@@ -39,7 +39,7 @@ steps:
       - '--update-secrets'
       - 'DATABASE_URL=database-url:latest,NEXTAUTH_SECRET=nextauth-secret:latest,LINKEDIN_CLIENT_ID=linkedin-client-id:latest,LINKEDIN_CLIENT_SECRET=linkedin-client-secret:latest,GOOGLE_API_KEY=google-api-key:latest'
       - '--set-env-vars'
-      - 'NODE_ENV=production,GCP_PROJECT_ID=toolbox-478717,GCS_BUCKET_NAME=toolbox-478717-storage'
+      - 'NODE_ENV=production,GCP_PROJECT_ID=toolbox-478717,GCS_BUCKET_NAME=toolbox-478717-storage,AUTH_TRUST_HOST=true'
       - '--min-instances'
       - '1'
       - '--max-instances'

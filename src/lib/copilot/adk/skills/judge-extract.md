@@ -35,9 +35,16 @@ When presenting results after extract_and_evaluate returns, format as:
 **Already Known: X**
 **Total Progress: X / Y (Z%)**
 
-| Category | Found | Total |
-|----------|-------|-------|
+If new issues were found, list them:
+
+| # | Issue | Reasoning |
+|---|-------|-----------|
+| 1 | Issue title | Why it matched |
 | ... | ... | ... |
+
+**Do NOT show a category breakdown table** — revealing how many issues exist per category gives hints about undiscovered findings.
+
+End with a link to the leaderboard: [View the Leaderboard](/leaderboard)
 
 ### User's Previously Discovered Issues
 

@@ -1,0 +1,16 @@
+ID,reportNumber,employee_ID,submissionDate,approvalDate,paymentDate,status,totalAmount,currency_code,approvedBy,costCenter_ID,project_ID,description,receiptsAttached
+er001,EXP-2024-001,emp004,2024-02-15,2024-02-20,2024-02-25,Paid,4500.00,USD,Lucille Bluth,cc-magic,,GOB magic show travel and supplies,false
+er002,EXP-2024-002,emp005,2024-03-01,2024-03-05,2024-03-10,Paid,8200.00,USD,Michael Bluth,cc-mktg,,Charity gala expenses - Save the Wetlands,true
+er003,EXP-2024-003,emp006,2024-03-15,2024-03-20,2024-03-25,Paid,1200.00,USD,Lindsay Bluth Funke,cc-mktg,,Acting class expenses - Method One,false
+er004,EXP-2024-004,emp002,2024-04-01,2024-04-01,2024-04-05,Paid,15600.00,USD,George Bluth Sr,cc-exec,,Spa and wellness retreat - Balboa,false
+er005,EXP-2024-005,emp004,2024-04-15,2024-04-20,2024-04-25,Paid,3200.00,USD,Lucille Bluth,cc-magic,,Sword of Destiny prop repairs,true
+er006,EXP-2024-006,emp003,2024-05-01,2024-05-05,2024-05-10,Paid,2100.00,USD,George Bluth Sr,cc-const,proj001,Sudden Valley site visit expenses,true
+er007,EXP-2024-007,emp008,2024-05-15,2024-05-20,2024-05-25,Paid,6800.00,USD,Lindsay Bluth Funke,cc-mktg,,Studio entertainment expenses - Tantamount,false
+er008,EXP-2024-008,emp001,2024-06-01,2024-06-01,2024-06-05,Paid,12500.00,USD,George Bluth Sr,cc-exec,,Mexico business trip - Cornballer,false
+er009,EXP-2024-009,emp004,2024-06-15,2024-06-20,2024-06-25,Paid,5400.00,USD,Lucille Bluth,cc-magic,,Alliance of Magicians conference,true
+er010,EXP-2024-010,emp009,2024-07-01,2024-07-05,2024-07-10,Paid,890.00,USD,Lucille Bluth,cc-carto,,Map and cartography supplies,true
+er011,EXP-2024-011,emp002,2024-07-15,2024-07-15,2024-07-20,Paid,22000.00,USD,George Bluth Sr,cc-exec,,Yacht party hosting expenses,false
+er012,EXP-2024-012,emp004,2024-08-01,2024-08-05,2024-08-10,Paid,2800.00,USD,Michael Bluth,cc-magic,,Bee handling equipment and training,true
+er013,EXP-2024-013,emp005,2024-08-15,2024-08-20,2024-08-25,Paid,4500.00,USD,Michael Bluth,cc-mktg,,HOOP charity auction expenses,true
+er014,EXP-2024-014,emp006,2024-09-01,2024-09-05,2024-09-10,Paid,3200.00,USD,Lindsay Bluth Funke,cc-mktg,,Blue Man Group audition travel,false
+er015,EXP-2024-015,emp001,2024-09-15,2024-09-15,2024-09-20,Paid,8900.00,USD,George Bluth Sr,cc-iraq,proj003,Iraq site visit - classified,false

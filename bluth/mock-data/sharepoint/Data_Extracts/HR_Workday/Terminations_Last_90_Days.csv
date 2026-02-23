@@ -1,0 +1,6 @@
+EmployeeID,Name,Department,JobTitle,HireDate,TerminationDate,TerminationType,TerminationReason,LastManager,LastWorkday,FinalPayDate,AccessRemovalDate,ExitInterviewCompleted
+E013,Bob Loblaw,Legal,Associate General Counsel,2006-03-01,2007-08-31,Voluntary,Resigned - Started competing law blog,E012,2007-08-31,2007-09-15,,FALSE
+E025,Rita Leeds,Research,Special Projects,2006-01-01,2006-06-30,Involuntary,Program Terminated - MRF,E003,2006-06-30,2006-07-15,2006-07-01,FALSE
+E026,Marta Estrella,Sales,Sales Associate,2004-03-01,2024-11-15,Voluntary,Personal Reasons,E004,2024-11-15,2024-11-30,,FALSE
+E027,Rebel Alley,Marketing,Social Media Manager,2020-01-15,2024-10-31,Voluntary,Moved to streaming career,E005,2024-10-31,2024-11-15,,TRUE
+E028,Stan Sitwell,Consulting,Strategic Advisor,2018-06-01,2024-09-30,Mutual,Conflict of interest - competitor,E003,2024-09-30,2024-10-15,,FALSE

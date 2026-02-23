@@ -2,15 +2,24 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import type { Metadata } from "next"
+import { headers } from "next/headers"
+import { getSiteConfig } from "@/lib/site/config"
 
-export const dynamic = 'force-static'
-
-export const metadata: Metadata = {
-  title: "Privacy Policy | AuditSwarm",
-  description: "Privacy Policy for AuditSwarm - how we collect, use, and protect your data.",
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  return {
+    title: `Privacy Policy | ${site.name}`,
+    description: `Privacy Policy for ${site.name} - how we collect, use, and protect your data.`,
+  }
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
@@ -29,7 +38,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-3xl font-bold mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              Welcome to AuditSwarm ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+              Welcome to {site.name} ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
             </p>
           </section>
 
@@ -167,7 +176,7 @@ export default function PrivacyPage() {
             </p>
             <div className="bg-brand-50 p-6 rounded-lg border border-brand-200">
               <p className="text-gray-700"><strong>Email:</strong> Rich@audittoolbox.com</p>
-              <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>
+              <p className="text-gray-700 mt-2"><strong>Platform:</strong> {site.name}</p>
             </div>
           </section>
           </div>

@@ -73,16 +73,17 @@ When all steps in the workflow are marked as completed:
    - A one-sentence summary of the finding
    - Which workflow step it came from
 3. Present the compiled issues list to the user in a markdown table
-4. Recommend that the user **switch to the Judge agent** (via the agent selector dropdown) and submit these findings for scoring. Example message:
+4. Ask the user: **"Would you like me to submit these findings to the Judge for scoring?"**
+5. If the user confirms, call **submit_to_judge** with the full compiled findings report as the `reportContent` parameter. Include all issue titles, severities, summaries, and evidence from the step results.
+6. When the tool returns, present the results to the user:
 
-   "You've completed all steps! Here are the audit issues discovered during this workflow:
+   **New Issues Found: X**
+   **Already Known: X**
+   **Total Progress: X / Y (Z%)**
 
-   | # | Issue | Severity | Summary | Source Step |
-   |---|-------|----------|---------|-------------|
-   | 1 | Ghost employee detected | High | Duplicate bank accounts found for ... | Payroll Review |
-   | ... | ... | ... | ... | ... |
+   If new issues were found, list them with the reasoning for each match. **Do NOT show a category breakdown table** — it reveals too much about undiscovered issues.
 
-   **Next step:** Switch to the **Judge** agent using the agent selector at the top of the chat, then paste or describe these findings. The Judge will evaluate them against the known issues database and credit your discoveries on the leaderboard."
+   End with: [View the Leaderboard](/leaderboard)
 
 ### Important Rules
 - Always use swarmId "{{swarmId}}" for all workflow operations

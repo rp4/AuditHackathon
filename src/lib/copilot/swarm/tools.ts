@@ -214,4 +214,20 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
       required: ['swarmId'],
     },
   },
+  {
+    name: 'submit_to_judge',
+    description:
+      'Submit compiled audit findings from the completed workflow to the Judge for evaluation and scoring against the known issues database. Call this AFTER all workflow steps are completed and you have compiled the findings into a report. The user must confirm before you call this tool.',
+    parametersJsonSchema: {
+      type: 'object',
+      properties: {
+        reportContent: {
+          type: 'string',
+          description:
+            'The full compiled audit findings report from the completed workflow. Include all issues discovered across all steps with their titles, severities, and summaries.',
+        },
+      },
+      required: ['reportContent'],
+    },
+  },
 ]

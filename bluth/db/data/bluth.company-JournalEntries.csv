@@ -1,0 +1,72 @@
+ID,documentNumber,postingDate,documentDate,companyCode_ID,glAccount_ID,costCenter_ID,amount,currency_code,debitCredit,description,reference,vendor_ID,customer_ID,employee_ID,project_ID,reversalFlag,reversedEntry,postedBy,approvedBy,sourceSystem
+je001,JE-2024-0001,2024-01-15,2024-01-15,cc01,gl001,cc-exec,1250000.00,USD,D,Opening cash balance 2024,,,,,,false,,SYSTEM,SYSTEM,SAP
+je002,JE-2024-0002,2024-01-15,2024-01-15,cc01,gl023,cc-exec,1250000.00,USD,C,Opening balance offset,,,,,,false,,SYSTEM,SYSTEM,SAP
+je003,JE-2024-0003,2024-01-20,2024-01-20,cc01,gl037,cc-legal,45000.00,USD,D,Legal fees - Zuckerkorn January,ZL-2024-001,v002,,,,,false,,L.BLUTH,G.BLUTH,SAP
+je004,JE-2024-0004,2024-01-20,2024-01-20,cc01,gl001,cc-legal,45000.00,USD,C,Payment to Zuckerkorn,ZL-2024-001,v002,,,,,false,,L.BLUTH,G.BLUTH,SAP
+je005,JE-2024-0005,2024-01-25,2024-01-25,cc01,gl041,cc-exec,13000.00,USD,D,Balboa Towers rent - January - PERSONAL USE,BT-2024-001,v010,,,,,false,,G.BLUTH,G.BLUTH,SAP
+je006,JE-2024-0006,2024-01-25,2024-01-25,cc01,gl001,cc-exec,13000.00,USD,C,Rent payment,BT-2024-001,v010,,,,,false,,G.BLUTH,G.BLUTH,SAP
+je007,JE-2024-0007,2024-02-01,2024-02-01,cc01,gl027,cc-banana,850.00,USD,C,Banana Stand daily cash revenue - UNDERSTATED,BS-CASH-0201,,cust004,,emp004,,false,,GOB,NONE,MANUAL
+je008,JE-2024-0008,2024-02-01,2024-02-01,cc01,gl001,cc-banana,850.00,USD,D,Cash deposit from Banana Stand,BS-CASH-0201,,cust004,,emp004,,false,,GOB,NONE,MANUAL
+je009,JE-2024-0009,2024-02-02,2024-02-02,cc01,gl027,cc-banana,920.00,USD,C,Banana Stand daily cash revenue,BS-CASH-0202,,cust004,,emp004,,false,,GOB,NONE,MANUAL
+je010,JE-2024-0010,2024-02-02,2024-02-02,cc01,gl001,cc-banana,920.00,USD,D,Cash deposit from Banana Stand,BS-CASH-0202,,cust004,,emp004,,false,,GOB,NONE,MANUAL
+je011,JE-2024-0011,2024-02-15,2024-02-15,cc01,gl039,cc-const,250000.00,USD,D,Sitwell land swap consulting - RELATED PARTY,SW-2024-001,v001,,,emp003,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je012,JE-2024-0012,2024-02-15,2024-02-15,cc01,gl001,cc-const,250000.00,USD,C,Payment to Sitwell,SW-2024-001,v001,,,emp003,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je013,JE-2024-0013,2024-02-20,2024-02-20,cc01,gl037,cc-legal,67500.00,USD,D,Legal fees - SEC deposition prep,ZL-2024-002,v002,,,,,false,,L.BLUTH,L.BLUTH,SAP
+je014,JE-2024-0014,2024-02-20,2024-02-20,cc01,gl001,cc-legal,67500.00,USD,C,Payment to Zuckerkorn,ZL-2024-002,v002,,,,,false,,L.BLUTH,L.BLUTH,SAP
+je015,JE-2024-0015,2024-03-01,2024-03-01,cc02,gl033,cc-mexico,45000.00,USD,D,Cornballer production costs,CMM-2024-001,v005,,,,proj004,false,,G.BLUTH,G.BLUTH,SAP
+je016,JE-2024-0016,2024-03-01,2024-03-01,cc02,gl001,cc-mexico,45000.00,USD,C,Payment to Cornballer Mexico,CMM-2024-001,v005,,,,proj004,false,,G.BLUTH,G.BLUTH,SAP
+je017,JE-2024-0017,2024-03-05,2024-03-05,cc01,gl029,cc-banana,15000.00,USD,C,Cornballer sales - ILLEGAL US SALE,CB-US-001,,cust010,,,proj004,false,,G.BLUTH,G.BLUTH,MANUAL
+je018,JE-2024-0018,2024-03-05,2024-03-05,cc01,gl001,cc-banana,15000.00,USD,D,Cash from Cornballer sales,CB-US-001,,cust010,,,proj004,false,,G.BLUTH,G.BLUTH,MANUAL
+je019,JE-2024-0019,2024-03-10,2024-03-10,cc03,gl031,cc-iraq,750000.00,USD,D,Iraq model home construction,SHC-2024-001,v013,,,,proj003,false,,G.BLUTH,G.BLUTH,SAP
+je020,JE-2024-0020,2024-03-10,2024-03-10,cc03,gl001,cc-iraq,750000.00,USD,C,Payment to Saddam Construction,SHC-2024-001,v013,,,,proj003,false,,G.BLUTH,G.BLUTH,SAP
+je021,JE-2024-0021,2024-03-15,2024-03-15,cc01,gl043,cc-magic,15000.00,USD,D,Alliance of Magicians dues,AOM-2024-001,v006,,,emp004,,false,,GOB,L.BLUTH,SAP
+je022,JE-2024-0022,2024-03-15,2024-03-15,cc01,gl001,cc-magic,15000.00,USD,C,Payment to Alliance of Magicians,AOM-2024-001,v006,,,emp004,,false,,GOB,L.BLUTH,SAP
+je023,JE-2024-0023,2024-03-20,2024-03-20,cc01,gl037,cc-legal,125000.00,USD,D,Emergency legal - escape incident,ZL-2024-003,v002,,,,,false,,L.BLUTH,L.BLUTH,SAP
+je024,JE-2024-0024,2024-03-20,2024-03-20,cc01,gl001,cc-legal,125000.00,USD,C,Payment to Zuckerkorn emergency,ZL-2024-003,v002,,,,,false,,L.BLUTH,L.BLUTH,SAP
+je025,JE-2024-0025,2024-04-01,2024-04-01,cc01,gl039,cc-magic,5000.00,USD,D,Special supplies - SUSPICIOUS,FMN-2024-001,v009,,,emp004,,false,,GOB,GOB,MANUAL
+je026,JE-2024-0026,2024-04-01,2024-04-01,cc01,gl001,cc-magic,5000.00,USD,C,Cash payment - special supplies,FMN-2024-001,v009,,,emp004,,false,,GOB,GOB,MANUAL
+je027,JE-2024-0027,2024-04-15,2024-04-15,cc01,gl042,cc-exec,35000.00,USD,D,Yacht maintenance Q2,YSI-2024-001,v011,,,emp002,,false,,L.BLUTH,L.BLUTH,SAP
+je028,JE-2024-0028,2024-04-15,2024-04-15,cc01,gl001,cc-exec,35000.00,USD,C,Yacht services payment,YSI-2024-001,v011,,,emp002,,false,,L.BLUTH,L.BLUTH,SAP
+je029,JE-2024-0029,2024-05-01,2024-05-01,cc01,gl043,cc-magic,8500.00,USD,D,Bee colony for magic - WHY BEES?,BEES-2024-001,v008,,,emp004,,false,,GOB,L.BLUTH,SAP
+je030,JE-2024-0030,2024-05-01,2024-05-01,cc01,gl001,cc-magic,8500.00,USD,C,Payment for bees,BEES-2024-001,v008,,,emp004,,false,,GOB,L.BLUTH,SAP
+je031,JE-2024-0031,2024-05-10,2024-05-10,cc01,gl012,cc-magic,78000.00,USD,D,Segway fleet purchase,SEG-2024-001,v007,,,emp004,,false,,GOB,M.BLUTH,SAP
+je032,JE-2024-0032,2024-05-10,2024-05-10,cc01,gl001,cc-magic,78000.00,USD,C,Payment for Segways,SEG-2024-001,v007,,,emp004,,false,,GOB,M.BLUTH,SAP
+je033,JE-2024-0033,2024-06-01,2024-06-01,cc01,gl043,cc-magic,25000.00,USD,D,Sword of Destiny rental,AOM-2024-002,v006,,,emp004,,false,,GOB,GOB,SAP
+je034,JE-2024-0034,2024-06-01,2024-06-01,cc01,gl001,cc-magic,25000.00,USD,C,Payment for illusion rental,AOM-2024-002,v006,,,emp004,,false,,GOB,GOB,SAP
+je035,JE-2024-0035,2024-06-15,2024-06-15,cc03,gl031,cc-iraq,850000.00,USD,D,Iraq construction Phase 2,SHC-2024-002,v013,,,,proj003,false,,G.BLUTH,G.BLUTH,SAP
+je036,JE-2024-0036,2024-06-15,2024-06-15,cc03,gl015,cc-iraq,850000.00,USD,C,Accounts Payable - Iraq,SHC-2024-002,v013,,,,proj003,false,,G.BLUTH,G.BLUTH,SAP
+je037,JE-2024-0037,2024-07-01,2024-07-01,cc01,gl010,cc-const,500000.00,USD,D,Sudden Valley cost capitalization,SV-CAP-001,,,,,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je038,JE-2024-0038,2024-07-01,2024-07-01,cc01,gl001,cc-const,500000.00,USD,C,Construction payment,SV-CAP-001,,,,,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je039,JE-2024-0039,2024-07-15,2024-07-15,cc01,gl002,cc-banana,250000.00,USD,D,CASH IN BANANA STAND LINING - UNDISCLOSED,BS-HIDDEN-001,,,,,,,false,,G.BLUTH,NONE,MANUAL
+je040,JE-2024-0040,2024-07-15,2024-07-15,cc01,gl023,cc-banana,250000.00,USD,C,Historical undisclosed cash,BS-HIDDEN-001,,,,,,,false,,G.BLUTH,NONE,MANUAL
+je041,JE-2024-0041,2024-08-01,2024-08-01,cc01,gl027,cc-banana,0.00,USD,C,Banana Stand FIRE - total loss,BS-FIRE-001,,,,emp004,,false,,M.BLUTH,M.BLUTH,SAP
+je042,JE-2024-0042,2024-08-01,2024-08-01,cc01,gl054,cc-banana,275000.00,USD,C,Fire insurance claim proceeds,BS-INS-001,,,,,,,false,,M.BLUTH,M.BLUTH,SAP
+je043,JE-2024-0043,2024-08-01,2024-08-01,cc01,gl001,cc-banana,275000.00,USD,D,Insurance payment received,BS-INS-001,,,,,,,false,,M.BLUTH,M.BLUTH,SAP
+je044,JE-2024-0044,2024-08-10,2024-08-10,cc01,gl042,cc-mktg,2500.00,USD,D,Entertainment - Hot Cops - INAPPROPRIATE,HC-2024-001,v022,,,emp005,,false,,L.FUNKE,L.FUNKE,MANUAL
+je045,JE-2024-0045,2024-08-10,2024-08-10,cc01,gl001,cc-mktg,2500.00,USD,C,Cash payment entertainment,HC-2024-001,v022,,,emp005,,false,,L.FUNKE,L.FUNKE,MANUAL
+je046,JE-2024-0046,2024-08-15,2024-08-15,cc01,gl039,cc-magic,7500.00,USD,D,Additional special supplies,FMN-2024-002,v009,,,emp004,,false,,GOB,GOB,MANUAL
+je047,JE-2024-0047,2024-08-15,2024-08-15,cc01,gl001,cc-magic,7500.00,USD,C,Cash payment supplies,FMN-2024-002,v009,,,emp004,,false,,GOB,GOB,MANUAL
+je048,JE-2024-0048,2024-09-01,2024-09-01,cc01,gl048,cc-mktg,35000.00,USD,D,Video production - GWLSE,SC-2024-001,v024,,,emp005,,false,,L.FUNKE,L.FUNKE,SAP
+je049,JE-2024-0049,2024-09-01,2024-09-01,cc01,gl001,cc-mktg,35000.00,USD,C,Payment for video production,SC-2024-001,v024,,,emp005,,false,,L.FUNKE,L.FUNKE,SAP
+je050,JE-2024-0050,2024-09-15,2024-09-15,cc01,gl034,cc-exec,55000.00,USD,D,Mrs Featherbottom salary - DUPLICATE TOBIAS,PAY-MF-001,,,,emp018,,false,,L.BLUTH,L.BLUTH,SAP
+je051,JE-2024-0051,2024-09-15,2024-09-15,cc01,gl001,cc-exec,55000.00,USD,C,Payroll payment - Featherbottom,PAY-MF-001,,,,emp018,,false,,L.BLUTH,L.BLUTH,SAP
+je052,JE-2024-0052,2024-09-20,2024-09-20,cc01,gl034,cc-magic,45000.00,USD,D,Franklin Bluth salary - PUPPET PAYROLL FRAUD,PAY-FRANK-001,,,,emp020,,false,,GOB,GOB,SAP
+je053,JE-2024-0053,2024-09-20,2024-09-20,cc01,gl001,cc-magic,45000.00,USD,C,Payroll payment - Franklin,PAY-FRANK-001,,,,emp020,,false,,GOB,GOB,SAP
+je054,JE-2024-0054,2024-10-01,2024-10-01,cc01,gl036,cc-exec,150000.00,USD,D,Executive bonus - pre-approval UNUSUAL,BONUS-EXEC-001,,,,emp001,,false,,G.BLUTH,G.BLUTH,MANUAL
+je055,JE-2024-0055,2024-10-01,2024-10-01,cc01,gl001,cc-exec,150000.00,USD,C,Bonus payment to George Sr,BONUS-EXEC-001,,,,emp001,,false,,G.BLUTH,G.BLUTH,MANUAL
+je056,JE-2024-0056,2024-10-15,2024-10-15,cc01,gl036,cc-exec,125000.00,USD,D,Executive bonus - Lucille,BONUS-EXEC-002,,,,emp002,,false,,G.BLUTH,G.BLUTH,MANUAL
+je057,JE-2024-0057,2024-10-15,2024-10-15,cc01,gl001,cc-exec,125000.00,USD,C,Bonus payment to Lucille,BONUS-EXEC-002,,,,emp002,,false,,G.BLUTH,G.BLUTH,MANUAL
+je058,JE-2024-0058,2024-11-01,2024-11-01,cc03,gl031,cc-iraq,450000.00,USD,D,Classified construction services,CM-2024-001,v021,,,,proj003,false,,G.BLUTH,G.BLUTH,SAP
+je059,JE-2024-0059,2024-11-01,2024-11-01,cc03,gl015,cc-iraq,450000.00,USD,C,Accounts Payable - classified,CM-2024-001,v021,,,,proj003,false,,G.BLUTH,G.BLUTH,SAP
+je060,JE-2024-0060,2024-11-15,2024-11-15,cc01,gl039,cc-exec,125000.00,USD,D,Austero consulting - RELATED PARTY,AU-2024-001,v020,,,emp003,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je061,JE-2024-0061,2024-11-15,2024-11-15,cc01,gl001,cc-exec,125000.00,USD,C,Payment to Austero,AU-2024-001,v020,,,emp003,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je062,JE-2024-0062,2024-12-01,2024-12-01,cc01,gl021,cc-legal,500000.00,USD,D,SEC penalty accrual,SEC-PEN-001,,,,,,,false,,SYSTEM,W.JARVIS,SAP
+je063,JE-2024-0063,2024-12-01,2024-12-01,cc01,gl021,cc-legal,500000.00,USD,C,SEC penalty liability,SEC-PEN-001,,,,,,,false,,SYSTEM,W.JARVIS,SAP
+je064,JE-2024-0064,2024-12-15,2024-12-15,cc01,gl007,cc-const,500000.00,USD,D,Note receivable from Sitwell - RELATED PARTY,NOTE-SW-001,v001,cust002,,,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je065,JE-2024-0065,2024-12-15,2024-12-15,cc01,gl001,cc-const,500000.00,USD,C,Cash lent to Sitwell,NOTE-SW-001,v001,cust002,,,proj001,false,,M.BLUTH,M.BLUTH,SAP
+je066,JE-2024-0066,2024-12-20,2024-12-20,cc01,gl027,cc-banana,25000.00,USD,C,December banana stand revenue,BS-DEC-001,,cust004,,emp007,,false,,GM.BLUTH,M.BLUTH,SAP
+je067,JE-2024-0067,2024-12-20,2024-12-20,cc01,gl001,cc-banana,25000.00,USD,D,Cash from banana stand,BS-DEC-001,,cust004,,emp007,,false,,GM.BLUTH,M.BLUTH,SAP
+je068,JE-2024-0068,2024-12-28,2024-12-28,cc01,gl020,cc-exec,2000000.00,USD,D,Debt refinancing,DEBT-REF-001,,,,,,,false,,M.BLUTH,M.BLUTH,SAP
+je069,JE-2024-0069,2024-12-28,2024-12-28,cc01,gl001,cc-exec,2000000.00,USD,C,New loan proceeds,DEBT-REF-001,,,,,,,false,,M.BLUTH,M.BLUTH,SAP
+je070,JE-2024-0070,2024-12-31,2024-12-31,cc01,gl050,cc-exec,420000.00,USD,D,Year-end depreciation,YE-DEP-001,,,,,,,false,,SYSTEM,SYSTEM,SAP
+je071,JE-2024-0071,2024-12-31,2024-12-31,cc01,gl014,cc-exec,420000.00,USD,C,Accumulated depreciation credit,YE-DEP-001,,,,,,,false,,SYSTEM,SYSTEM,SAP

@@ -12,10 +12,10 @@ import { useUserSwarms, useUserProfile, useFavorites } from '@/hooks/useSwarms'
 import { SwarmCard } from '@/components/swarms/SwarmCard'
 import { signOut } from 'next-auth/react'
 
-function formatCost(cost: number): string {
-  if (cost < 0.01) return `$${cost.toFixed(6)}`
-  if (cost < 1) return `$${cost.toFixed(4)}`
-  return `$${cost.toFixed(2)}`
+function formatTokens(tokens: number): string {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`
+  if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(1)}K`
+  return tokens.toLocaleString()
 }
 
 function getBudgetColor(ratio: number): string {
@@ -32,6 +32,7 @@ function getBudgetTextColor(ratio: number): string {
 
 interface UsageCurrentMonth {
   spend: number
+  totalTokens: number
   limit: number | null
   remaining: number | null
 }
@@ -204,15 +205,14 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                         )}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {formatCost(usageData.spend)} / {formatCost(usageData.limit!)}
+                        {formatTokens(usageData.totalTokens)} tokens used
                       </span>
                     </div>
                   </>
                 ) : (
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{formatCost(usageData.spend)}</span>
-                    <span className="text-sm text-muted-foreground">this month</span>
-                    <span className="ml-auto text-sm text-muted-foreground">No limit set</span>
+                    <span className="text-2xl font-bold">{formatTokens(usageData.totalTokens)}</span>
+                    <span className="text-sm text-muted-foreground">tokens this month</span>
                   </div>
                 )}
               </CardContent>
@@ -228,7 +228,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
               className="flex items-center justify-center gap-2 rounded-lg py-3 data-[state=active]:bg-brand-100 data-[state=active]:text-brand-700"
             >
               <Upload className="h-4 w-4" />
-              Created Swarms ({swarms.length})
+              Created Workflows ({swarms.length})
             </TabsTrigger>
             {isOwnProfile && (
               <TabsTrigger
@@ -248,12 +248,12 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                Favorited Swarms ({favorites.length})
+                Favorited Workflows ({favorites.length})
               </TabsTrigger>
             )}
           </TabsList>
 
-          {/* Created Swarms Tab */}
+          {/* Created Workflows Tab */}
           <TabsContent value="created">
             {loadingSwarms ? (
               <LoadingSpinner />
@@ -284,7 +284,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             )}
           </TabsContent>
 
-          {/* Favorited Swarms Tab */}
+          {/* Favorited Workflows Tab */}
           {isOwnProfile && (
             <TabsContent value="favorites">
               {loadingFavorites ? (

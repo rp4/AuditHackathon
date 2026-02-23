@@ -2,15 +2,24 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import type { Metadata } from "next"
+import { headers } from "next/headers"
+import { getSiteConfig } from "@/lib/site/config"
 
-export const dynamic = 'force-static'
-
-export const metadata: Metadata = {
-  title: "About Us | AuditSwarm",
-  description: "Learn about AuditSwarm.",
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  return {
+    title: `About Us | ${site.name}`,
+    description: `Learn about ${site.name}.`,
+  }
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
@@ -26,25 +35,9 @@ export default function AboutPage() {
 
           <div className="prose prose-lg max-w-none space-y-8">
             <section>
-              <h2 className="text-3xl font-bold mb-4">The Journey Through All Three Lines</h2>
+              <h2 className="text-3xl font-bold mb-4">Built at the DTCC Hackathon</h2>
               <p className="text-gray-700 leading-relaxed">
-                Hi, I'm Rich Penfil. My career has taken me on a journey that few data scientists get to experience—working across all three lines of defense. This has given me a perspective that fundamentally changed how I think about audit and risk.
-              </p>
-              <p className="text-gray-700 leading-relaxed mt-4">
-                I started in the <strong>first line of defense</strong> as a data scientist, embedded in the business. I built models, automated processes, and learned firsthand how operational teams think about risk (spoiler: they often don't, until something breaks). It was exciting, fast-paced work, but I couldn't shake the feeling that there was a bigger picture I wasn't seeing.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-3xl font-bold mb-4">Finding My Way to the Best Line</h2>
-              <p className="text-gray-700 leading-relaxed">
-                So I moved to the <strong>second line of defense</strong>, still as a data scientist, but now with a risk management lens. I got to see how controls were designed, how policies were written, and how the organization tried to prevent bad things from happening. Good work, important work. But something was still missing.
-              </p>
-              <p className="text-gray-700 leading-relaxed mt-4">
-                Then I found internal audit. The <strong>third line of defense</strong>. The best line. (I'll die on this hill.)
-              </p>
-              <p className="text-gray-700 leading-relaxed mt-4">
-                Why is it the best? Because internal audit is where you get the complete picture. You're not just building controls or managing risks, you're independently evaluating whether any of it actually works. You're the last line of defense before something truly goes wrong. And when you're working in a department with over 1,500 internal auditors, you realize just how critical and complex this work really is.
+                This project was created for the <a href="https://communications.dtcc.com/dtcc-hackathon-registration-18146.html" target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline font-semibold">DTCC Hackathon</a> -a challenge to reimagine what's possible when technology meets internal audit. We saw it as the perfect opportunity to build something auditors have needed for a long time: a shared platform for workflows powered by AI agents that actually understand audit work.
               </p>
             </section>
 
@@ -54,7 +47,20 @@ export default function AboutPage() {
                 This platform is built to help auditors create, share, and discover workflow templates that actually make sense for audit work. No more reinventing the wheel on every engagement. No more starting from scratch when someone in another department already solved that exact problem.
               </p>
               <p className="text-gray-700 leading-relaxed mt-4">
-                We're building a community where auditors help auditors. Because at the end of the day, we're all on the same team—the third line.
+                We're building a community where auditors help auditors. Because at the end of the day, we're all on the same team -the third line.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-3xl font-bold mb-4">A Call to Action</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Do not stand on the sidelines. Do not walk. <strong>Run.</strong> Run to be the change in internal audit.
+              </p>
+              <p className="text-gray-700 leading-relaxed mt-4">
+                We are in a pivotal moment -not just for our industry, but for the world at large. AI is reshaping every profession it touches, and audit has a once-in-a-generation opportunity to shape that future rather than be shaped by it. The playbook is being rewritten right now, and the auditors who lean in -who build, share, and experiment -are the ones who will define what this profession looks like for decades to come.
+              </p>
+              <p className="text-gray-700 leading-relaxed mt-4">
+                <strong>Do not leave anything in the tank these next 12 months.</strong> The tools are here. The community is forming. The window is open. Every day you wait is a day someone else is getting better. So get in the game, put in the work, and let's build something that matters. The only question left is whether you're going to be part of it -or wish you had been.
               </p>
             </section>
           </div>

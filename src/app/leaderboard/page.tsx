@@ -22,12 +22,12 @@ export default function LeaderboardPage() {
   const entries: LeaderboardEntry[] = data?.entries || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-50/50 to-white">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-3">
-            <Trophy className="h-8 w-8 text-brand-500" />
+            <Trophy className="h-8 w-8 text-yellow-400" />
             <h1 className="text-3xl md:text-4xl font-black">Leaderboard</h1>
           </div>
           <p className="text-gray-500">

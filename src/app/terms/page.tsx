@@ -2,15 +2,24 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import type { Metadata } from "next"
+import { headers } from "next/headers"
+import { getSiteConfig } from "@/lib/site/config"
 
-export const dynamic = 'force-static'
-
-export const metadata: Metadata = {
-  title: "Terms of Service | AuditSwarm",
-  description: "Terms of Service for AuditSwarm.",
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+  return {
+    title: `Terms of Service | ${site.name}`,
+    description: `Terms of Service for ${site.name}.`,
+  }
 }
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+  const site = getSiteConfig(host)
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
@@ -29,14 +38,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-3xl font-bold mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 leading-relaxed">
-                By accessing or using AuditSwarm, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the service.
+                By accessing or using {site.name}, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the service.
               </p>
             </section>
 
             <section>
               <h2 className="text-3xl font-bold mb-4">2. Description of Service</h2>
               <p className="text-gray-700 leading-relaxed">
-                AuditSwarm is a workflow template marketplace for auditors. Users can create, share, and download visual workflow diagrams. The service is provided "as is" for professional use in audit and compliance contexts.
+                {site.name} is a workflow template marketplace for auditors. Users can create, share, and download visual workflow diagrams. The service is provided "as is" for professional use in audit and compliance contexts.
               </p>
             </section>
 
@@ -50,7 +59,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-3xl font-bold mb-4">4. User Content</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                You retain ownership of workflow templates and content you create on AuditSwarm. By sharing content publicly, you grant other users the right to view, download, and use your workflows for their audit processes.
+                You retain ownership of workflow templates and content you create on {site.name}. By sharing content publicly, you grant other users the right to view, download, and use your workflows for their audit processes.
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">You agree not to upload content that:</p>
               <ul className="list-disc pl-6 space-y-2 text-gray-700">
@@ -64,7 +73,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-3xl font-bold mb-4">5. Acceptable Use</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                You agree to use AuditSwarm only for lawful purposes and in accordance with these terms. You agree not to:
+                You agree to use {site.name} only for lawful purposes and in accordance with these terms. You agree not to:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-gray-700">
                 <li>Attempt to gain unauthorized access to the service or its systems</li>
@@ -77,28 +86,28 @@ export default function TermsPage() {
             <section>
               <h2 className="text-3xl font-bold mb-4">6. Intellectual Property</h2>
               <p className="text-gray-700 leading-relaxed">
-                The AuditSwarm platform, including its design, features, and code, is owned by AuditSwarm and protected by intellectual property laws. Workflow templates created by users remain the property of their respective creators.
+                The {site.name} platform, including its design, features, and code, is owned by {site.name} and protected by intellectual property laws. Workflow templates created by users remain the property of their respective creators.
               </p>
             </section>
 
             <section>
               <h2 className="text-3xl font-bold mb-4">7. Disclaimer of Warranties</h2>
               <p className="text-gray-700 leading-relaxed">
-                AuditSwarm is provided "as is" without warranties of any kind. We do not guarantee that the service will be uninterrupted, secure, or error-free. Workflow templates are community-contributed and should be reviewed before use in production audit processes.
+                {site.name} is provided "as is" without warranties of any kind. We do not guarantee that the service will be uninterrupted, secure, or error-free. Workflow templates are community-contributed and should be reviewed before use in production audit processes.
               </p>
             </section>
 
             <section>
               <h2 className="text-3xl font-bold mb-4">8. Limitation of Liability</h2>
               <p className="text-gray-700 leading-relaxed">
-                To the maximum extent permitted by law, AuditSwarm shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.
+                To the maximum extent permitted by law, {site.name} shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.
               </p>
             </section>
 
             <section>
               <h2 className="text-3xl font-bold mb-4">9. Termination</h2>
               <p className="text-gray-700 leading-relaxed">
-                We reserve the right to suspend or terminate your access to AuditSwarm at any time for violations of these terms or for any other reason at our discretion.
+                We reserve the right to suspend or terminate your access to {site.name} at any time for violations of these terms or for any other reason at our discretion.
               </p>
             </section>
 
@@ -116,7 +125,7 @@ export default function TermsPage() {
               </p>
               <div className="bg-brand-50 p-6 rounded-lg border border-brand-200">
                 <p className="text-gray-700"><strong>Email:</strong> <a href="mailto:Rich@audittoolbox.com" className="text-indigo-600 hover:underline">Rich@audittoolbox.com</a></p>
-                <p className="text-gray-700 mt-2"><strong>Platform:</strong> AuditSwarm</p>
+                <p className="text-gray-700 mt-2"><strong>Platform:</strong> {site.name}</p>
               </div>
             </section>
           </div>

@@ -1,0 +1,24 @@
+EmployeeID,Name,JobTitle,Department,ManagerID,ManagerName,Level,DirectReports,CostCenter
+E001,George Bluth Sr,Founder and CEO (Incarcerated),Executive,,Board of Directors,1,5,CC001
+E002,Lucille Bluth,Executive Chairwoman,Executive,E001,George Bluth Sr,2,3,CC001
+E003,Michael Bluth,President and COO,Executive,E001,George Bluth Sr,2,6,CC001
+E004,GOB Bluth,VP of Sales and Magic,Sales,E003,Michael Bluth,3,4,CC002
+E005,Lindsay Bluth Funke,VP of Charitable Affairs,Marketing,E003,Michael Bluth,3,3,CC003
+E006,Tobias Funke,Consultant - Analrapist,Marketing,E005,Lindsay Bluth Funke,4,0,CC003
+E007,George Michael Bluth,Software Developer - Fakeblock,Technology,E003,Michael Bluth,4,1,CC004
+E008,Maeby Funke,Studio Executive Liaison,Entertainment,E005,Lindsay Bluth Funke,4,0,CC003
+E009,Buster Bluth,VP of Cartography,Research,E002,Lucille Bluth,3,0,CC005
+E010,Oscar Bluth,Consultant - Organic Farming,Operations,E001,George Bluth Sr,3,0,CC006
+E011,Annyong Bluth,Foreign Exchange Intern,Finance,E002,Lucille Bluth,4,0,CC007
+E012,Barry Zuckerkorn,General Counsel,Legal,E001,George Bluth Sr,2,1,CC008
+E014,Kitty Sanchez,Executive Assistant to CEO,Executive,E001,George Bluth Sr,3,0,CC001
+E015,Gene Parmesan,Corporate Investigator,Security,E003,Michael Bluth,4,0,CC009
+E016,Carl Weathers,Acting Coach and Consultant,Consulting,E004,GOB Bluth,4,0,CC002
+E017,Lupe Garcia,Housekeeper,Facilities,E002,Lucille Bluth,4,0,CC010
+E018,Mrs Featherbottom,British Housekeeper,Facilities,E002,Lucille Bluth,4,0,CC010
+E019,Steve Holt,Construction Supervisor,Construction,E004,GOB Bluth,4,0,CC011
+E020,Franklin Bluth,Ventriloquist Performer,Entertainment,E004,GOB Bluth,4,0,CC002
+E021,J Walter Weatherman,Safety Training Consultant,Training,E001,George Bluth Sr,3,0,CC012
+E022,Wayne Jarvis,Outside Counsel - SEC Defense,Legal,E012,Barry Zuckerkorn,3,0,CC008
+E023,Tony Wonder,Magic Consultant,Entertainment,E004,GOB Bluth,4,0,CC002
+E024,Ann Veal,Executive Intern,Intern,E007,George Michael Bluth,5,0,CC004

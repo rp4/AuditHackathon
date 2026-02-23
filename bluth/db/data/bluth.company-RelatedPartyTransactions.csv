@@ -1,0 +1,14 @@
+ID,transactionId,transactionDate,transactionType,partyType,partyName,amount,description,disclosureStatus,approvedBy,relatedEntity
+rpt001,RPT-2024-001,2024-02-15,Consulting Services,Competitor,Sitwell Enterprises,250000.00,Land swap consulting for Sudden Valley,Not Disclosed,Michael Bluth,v001
+rpt002,RPT-2024-002,2024-06-15,Consulting Services,Competitor,Sitwell Enterprises,175000.00,Real estate advisory services,Not Disclosed,Michael Bluth,v001
+rpt003,RPT-2024-003,2024-04-01,Consulting Services,Personal Friend,Austero Company,125000.00,Sudden Valley joint venture consulting,Not Disclosed,Michael Bluth,v020
+rpt004,RPT-2024-004,2024-12-15,Loan,Competitor,Sitwell Enterprises,500000.00,Note receivable - unsecured loan,Not Disclosed,Michael Bluth,cust002
+rpt005,RPT-2024-005,2024-01-25,Rent Payment,Family,Balboa Towers (Lucille),13000.00,January rent for personal residence,Not Disclosed,George Bluth Sr,v010
+rpt006,RPT-2024-006,2024-02-25,Rent Payment,Family,Balboa Towers (Lucille),13000.00,February rent for personal residence,Not Disclosed,George Bluth Sr,v010
+rpt007,RPT-2024-007,2024-03-25,Rent Payment,Family,Balboa Towers (Lucille),13000.00,March rent for personal residence,Not Disclosed,George Bluth Sr,v010
+rpt008,RPT-2024-008,2024-01-20,Salary,Family,George Bluth Sr,35416.67,Executive salary - incarcerated CEO,Disclosed,Lucille Bluth,emp001
+rpt009,RPT-2024-009,2024-01-20,Salary,Family,Lucille Bluth,27083.33,Executive salary - Chairwoman,Disclosed,George Bluth Sr,emp002
+rpt010,RPT-2024-010,2024-10-01,Bonus,Family,George Bluth Sr,150000.00,Executive bonus - self-approved,Not Disclosed,George Bluth Sr,emp001
+rpt011,RPT-2024-011,2024-10-15,Bonus,Family,Lucille Bluth,125000.00,Executive bonus - spouse approved,Not Disclosed,George Bluth Sr,emp002
+rpt012,RPT-2024-012,2024-09-15,Salary,Family,Mrs Featherbottom (Tobias),55000.00,Ghost employee - duplicate of Tobias,Not Disclosed,Lucille Bluth,emp018
+rpt013,RPT-2024-013,2024-09-20,Salary,Family,Franklin Bluth (Puppet),45000.00,Ghost employee - GOBs puppet,Not Disclosed,GOB Bluth,emp020

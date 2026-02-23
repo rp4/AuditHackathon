@@ -115,8 +115,8 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 224 30% 82%;
-    --input: 224 30% 82%;
+    --border: 224 55% 72%;
+    --input: 224 55% 72%;
     --ring: 352 83% 44%;
     --radius: 0.5rem;
 
@@ -134,6 +134,11 @@
     /* Gradient end: navy blue for AllStars */
     --brand-end-500: oklch(0.335 0.121 255.508);
     --brand-end-600: oklch(0.282 0.109 256.891);
+  }
+
+  /* Blue card shadows for AllStars */
+  [data-theme="allstars"] .text-card-foreground {
+    --tw-shadow-color: rgba(0, 40, 104, 0.18);
   }
 
   * {
@@ -326,6 +331,32 @@
 
   .markdown-content input[type="checkbox"] {
     margin-right: 0.375rem;
+  }
+}
+
+@layer components {
+  /* AllStars retro stripe accent below header */
+  .allstars-header {
+    position: relative;
+  }
+
+  .allstars-header::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(
+      90deg,
+      #c8102e 0px,
+      #c8102e 20px,
+      #ffffff 20px,
+      #ffffff 40px,
+      #002868 40px,
+      #002868 60px
+    );
+    z-index: 100;
   }
 }
 

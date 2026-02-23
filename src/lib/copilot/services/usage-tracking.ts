@@ -122,9 +122,9 @@ export async function getUsageByUser(startDate?: string, endDate?: string): Prom
 }
 
 /**
- * Get a user's total spend for the current calendar month (UTC).
+ * Get a user's total spend and token usage for the current calendar month (UTC).
  */
-export async function getCurrentMonthSpend(userId: string): Promise<number> {
+export async function getCurrentMonthSpend(userId: string): Promise<{ cost: number; totalTokens: number }> {
   const startOfMonth = new Date()
   startOfMonth.setUTCDate(1)
   startOfMonth.setUTCHours(0, 0, 0, 0)
@@ -134,10 +134,13 @@ export async function getCurrentMonthSpend(userId: string): Promise<number> {
       userId,
       createdAt: { gte: startOfMonth },
     },
-    _sum: { estimatedCost: true },
+    _sum: { estimatedCost: true, totalTokens: true },
   })
 
-  return result._sum.estimatedCost || 0
+  return {
+    cost: result._sum.estimatedCost || 0,
+    totalTokens: result._sum.totalTokens || 0,
+  }
 }
 
 /**
@@ -201,17 +204,17 @@ export async function checkUserCanSpend(userId: string): Promise<{
 }> {
   const defaultLimit = parseFloat(process.env.DEFAULT_MONTHLY_LIMIT || '5.00')
 
-  const [currentSpend, limitConfig] = await Promise.all([
+  const [currentMonth, limitConfig] = await Promise.all([
     getCurrentMonthSpend(userId),
     getUserLimit(userId),
   ])
 
   const monthlyLimit = limitConfig?.monthlyLimit ?? defaultLimit
-  const remaining = Math.max(0, monthlyLimit - currentSpend)
+  const remaining = Math.max(0, monthlyLimit - currentMonth.cost)
 
   return {
     allowed: remaining > 0,
-    currentSpend,
+    currentSpend: currentMonth.cost,
     monthlyLimit,
     remaining,
   }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Righteous } from "next/font/google"
 import { headers } from "next/headers"
 import "./globals.css"
 import { RootLayoutClient } from "./layout.client"
@@ -9,6 +9,13 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap", // Use font-display: swap for better performance
   variable: "--font-inter",
+})
+
+const righteous = Righteous({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-righteous",
 })
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -159,7 +166,7 @@ export default function RootLayout({
         <OrganizationJsonLd />
         <WebSiteJsonLd />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${righteous.variable}`}>
         <RootLayoutClient>
           {children}
         </RootLayoutClient>

@@ -31,6 +31,7 @@ import {
   getWranglerSystemInstruction,
   ANALYZER_MODEL,
   getAnalyzerSystemInstruction,
+  evaluateFindings,
 } from './agents'
 import { trackUsage, type UserContext } from '@/lib/copilot/services/usage-tracking'
 import type { GeminiModel, StreamChunk, FileAttachment } from '@/lib/copilot/types'
@@ -227,6 +228,9 @@ export class MultiAgentOrchestrator {
               content,
               history
             )
+          } else if (toolName === 'submit_to_judge') {
+            // === JUDGE EVALUATION PATH ===
+            yield* this.handleJudgeSubmission(chat, toolArgs)
           } else {
             // === SWARM TOOL PATH ===
             yield* this.handleSwarmToolCall(chat, toolName, toolArgs)
@@ -415,6 +419,73 @@ export class MultiAgentOrchestrator {
       message: {
         functionResponse: {
           name: 'delegate_to',
+          response: functionResponseData,
+        },
+      },
+    })
+    this.trackOrchestratorResponse(nextResponse)
+    this._lastResponse = nextResponse
+  }
+
+  /**
+   * Handle submit_to_judge — evaluate compiled findings against the known issues DB.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async *handleJudgeSubmission(
+    chat: any,
+    toolArgs: Record<string, unknown>
+  ): AsyncGenerator<StreamChunk> {
+    const toolCallId = crypto.randomUUID()
+    const toolName = 'submit_to_judge'
+
+    // Yield tool_call (running)
+    yield {
+      type: 'tool_call',
+      toolCall: {
+        id: toolCallId,
+        name: toolName,
+        arguments: toolArgs,
+        status: 'running',
+      },
+    }
+
+    // Call the evaluation pipeline
+    const reportContent = toolArgs.reportContent as string
+    const result = await evaluateFindings({
+      userId: this.config.userId,
+      model: this.config.model,
+      userContext: this.userContext,
+      reportContent,
+    })
+    this._lastToolSuccess = result.success
+
+    const resultStr = result.success
+      ? JSON.stringify(result.result, null, 2)
+      : `Error: ${result.error}`
+
+    // Yield tool_result
+    yield {
+      type: 'tool_result',
+      toolCall: {
+        id: toolCallId,
+        name: toolName,
+        arguments: toolArgs,
+        result: resultStr,
+        status: result.success ? 'completed' : 'error',
+      },
+    }
+
+    // Send function response back to the chat
+    const functionResponseData = result.success
+      ? typeof result.result === 'object'
+        ? (result.result as Record<string, unknown>)
+        : { output: result.result }
+      : { error: result.error }
+
+    const nextResponse = await chat.sendMessage({
+      message: {
+        functionResponse: {
+          name: toolName,
           response: functionResponseData,
         },
       },

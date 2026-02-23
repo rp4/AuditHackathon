@@ -13,8 +13,11 @@ import { getCategoryColor } from '@/lib/utils/categoryColors'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import { downloadJson } from '@/lib/utils/downloadJson'
+import { useSiteConfig } from '@/lib/site/SiteContext'
 
 export default function BrowsePage() {
+  const site = useSiteConfig()
+  const isAllStars = site.theme === 'allstars'
   const { isAuthenticated, signIn } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300)
@@ -148,7 +151,13 @@ export default function BrowsePage() {
               variant={showFilters ? "default" : "outline"}
               onClick={() => setShowFilters(!showFilters)}
               size="lg"
-              className="gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg"
+              className={`gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg ${
+                isAllStars
+                  ? showFilters
+                    ? 'bg-[#002868] hover:bg-[#001a4d] text-white border-[#002868]'
+                    : 'border-[#002868] text-[#002868] hover:bg-[#002868] hover:text-white'
+                  : ''
+              }`}
             >
               <Filter className="h-5 w-5" />
               <span className="hidden sm:inline">Filters</span>
@@ -157,7 +166,13 @@ export default function BrowsePage() {
               variant={selectionMode ? "default" : "outline"}
               onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
               size="lg"
-              className={`gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg ${selectionMode ? 'bg-brand-500 hover:bg-brand-600' : ''}`}
+              className={`gap-2 h-12 md:h-14 px-3 sm:px-4 md:px-6 text-base md:text-lg ${
+                isAllStars
+                  ? selectionMode
+                    ? 'bg-[#c8102e] hover:bg-[#a00d24] text-white border-[#c8102e]'
+                    : 'border-[#002868] text-[#002868] hover:bg-[#002868] hover:text-white'
+                  : selectionMode ? 'bg-brand-500 hover:bg-brand-600' : ''
+              }`}
             >
               {selectionMode ? <X className="h-5 w-5" /> : <CheckSquare className="h-5 w-5" />}
               <span className="hidden sm:inline">{selectionMode ? 'Cancel' : 'Select'}</span>
@@ -249,7 +264,7 @@ export default function BrowsePage() {
         <div className="container mx-auto px-4 py-8">
           {/* Results Count */}
           <div className="mb-6">
-            <h2 className="text-2xl font-bold">
+            <h2 className={`text-2xl font-bold ${isAllStars ? 'text-[#002868]' : ''}`}>
               {isLoading ? (
                 'Loading workflows...'
               ) : (
@@ -265,16 +280,20 @@ export default function BrowsePage() {
 
           {/* Selection bar when in selection mode */}
           {selectionMode && swarms.length > 0 && (
-            <div className="flex items-center justify-between mb-4 p-3 bg-brand-50 border border-brand-200 rounded-lg">
+            <div className={`flex items-center justify-between mb-4 p-3 rounded-lg border ${
+              isAllStars
+                ? 'bg-[#002868]/10 border-[#002868]/30'
+                : 'bg-brand-50 border-brand-200'
+            }`}>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-brand-800">
+                <span className={`text-sm font-medium ${isAllStars ? 'text-[#002868]' : 'text-brand-800'}`}>
                   {selectedSwarmIds.size} of {swarms.length} selected
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={selectAll}
-                  className="text-brand-700 hover:text-brand-800 hover:bg-brand-100"
+                  className={isAllStars ? 'text-[#002868] hover:text-white hover:bg-[#002868]' : 'text-brand-700 hover:text-brand-800 hover:bg-brand-100'}
                 >
                   Select All
                 </Button>
@@ -283,7 +302,7 @@ export default function BrowsePage() {
                     variant="ghost"
                     size="sm"
                     onClick={clearSelection}
-                    className="text-brand-700 hover:text-brand-800 hover:bg-brand-100"
+                    className={isAllStars ? 'text-[#002868] hover:text-white hover:bg-[#002868]' : 'text-brand-700 hover:text-brand-800 hover:bg-brand-100'}
                   >
                     Clear Selection
                   </Button>
@@ -349,7 +368,10 @@ export default function BrowsePage() {
               </Button>
               <Button
                 onClick={downloadSelectedWorkflows}
-                className="bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white"
+                className={isAllStars
+                  ? 'bg-[#c8102e] hover:bg-[#a00d24] text-white'
+                  : 'bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white'
+                }
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download {selectedSwarmIds.size} Workflow{selectedSwarmIds.size > 1 ? 's' : ''}

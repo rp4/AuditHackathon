@@ -45,3 +45,6 @@ cloud-sql-proxy
 # Prisma
 prisma/*.db
 prisma/*.db-journal
+
+# Claude Code
+.claude/

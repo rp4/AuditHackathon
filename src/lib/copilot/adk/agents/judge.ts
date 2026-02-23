@@ -163,6 +163,93 @@ Return ONLY the JSON block. No other text.`
 }
 
 // ============================================
+// Reusable Evaluation Pipeline
+// ============================================
+
+/**
+ * Core evaluation pipeline — matches user findings against the known issues DB.
+ * Used by both the judge agent's tool router and the orchestrator's submit_to_judge tool.
+ */
+export async function evaluateFindings(params: {
+  userId: string
+  model: string
+  userContext: { userId: string; userEmail: string }
+  reportContent: string
+}): Promise<{ success: boolean; result?: unknown; error?: string }> {
+  const { userId, model, userContext, reportContent } = params
+
+  // Use isolated LLM to match findings (separate context, no user conversation)
+  const { matchedIssueCodes, reasoning } = await matchFindings(
+    reportContent,
+    model,
+    userContext
+  )
+
+  // Create the report record
+  const report = await createReport({
+    userId,
+    content: reportContent,
+    totalMatched: matchedIssueCodes.length,
+  })
+
+  // Mark issues as found (idempotent)
+  const { newlyFound, alreadyFound } = await markIssuesFound(
+    userId,
+    report.id,
+    matchedIssueCodes
+  )
+
+  // Update the report with actual new count
+  await updateReport(report.id, { newIssues: newlyFound.length })
+
+  // Get updated totals
+  const totalDiscovered = await getUserDiscoveryCount(userId)
+  const totalIssues = await prisma.auditIssue.count({
+    where: { isActive: true },
+  })
+
+  // Get category breakdown for the scorecard
+  const allIssuesByCategory = await prisma.auditIssue.groupBy({
+    by: ['category'],
+    where: { isActive: true },
+    _count: true,
+  })
+  const discoveries = await prisma.issueDiscovery.findMany({
+    where: { userId },
+    include: { issue: { select: { category: true } } },
+  })
+  const categoryBreakdown: Record<string, { found: number; total: number }> = {}
+  for (const g of allIssuesByCategory) {
+    categoryBreakdown[g.category] = { found: 0, total: g._count }
+  }
+  for (const d of discoveries) {
+    if (categoryBreakdown[d.issue.category]) {
+      categoryBreakdown[d.issue.category].found++
+    }
+  }
+
+  return {
+    success: true,
+    result: {
+      reportId: report.id,
+      newlyFound,
+      alreadyFound,
+      newCount: newlyFound.length,
+      alreadyFoundCount: alreadyFound.length,
+      totalDiscovered,
+      totalIssues,
+      percentage: Math.round((totalDiscovered / Math.max(totalIssues, 1)) * 100),
+      categoryBreakdown,
+      reasoning,
+      message:
+        newlyFound.length > 0
+          ? `${newlyFound.length} new issue(s) credited! You have now found ${totalDiscovered} of ${totalIssues} total issues.`
+          : `No new issues found in this report. You have found ${totalDiscovered} of ${totalIssues} total issues.`,
+    },
+  }
+}
+
+// ============================================
 // Tool Router
 // ============================================
 
@@ -193,76 +280,7 @@ async function judgeToolRouter(
 
   if (name === 'extract_and_evaluate') {
     const reportContent = args.reportContent as string
-
-    // Use isolated LLM to match findings (separate context, no user conversation)
-    const { matchedIssueCodes, reasoning } = await matchFindings(
-      reportContent,
-      model,
-      userContext
-    )
-
-    // Create the report record
-    const report = await createReport({
-      userId,
-      content: reportContent,
-      totalMatched: matchedIssueCodes.length,
-    })
-
-    // Mark issues as found (idempotent)
-    const { newlyFound, alreadyFound } = await markIssuesFound(
-      userId,
-      report.id,
-      matchedIssueCodes
-    )
-
-    // Update the report with actual new count
-    await updateReport(report.id, { newIssues: newlyFound.length })
-
-    // Get updated totals
-    const totalDiscovered = await getUserDiscoveryCount(userId)
-    const totalIssues = await prisma.auditIssue.count({
-      where: { isActive: true },
-    })
-
-    // Get category breakdown for the scorecard
-    const allIssuesByCategory = await prisma.auditIssue.groupBy({
-      by: ['category'],
-      where: { isActive: true },
-      _count: true,
-    })
-    const discoveries = await prisma.issueDiscovery.findMany({
-      where: { userId },
-      include: { issue: { select: { category: true } } },
-    })
-    const categoryBreakdown: Record<string, { found: number; total: number }> = {}
-    for (const g of allIssuesByCategory) {
-      categoryBreakdown[g.category] = { found: 0, total: g._count }
-    }
-    for (const d of discoveries) {
-      if (categoryBreakdown[d.issue.category]) {
-        categoryBreakdown[d.issue.category].found++
-      }
-    }
-
-    return {
-      success: true,
-      result: {
-        reportId: report.id,
-        newlyFound,
-        alreadyFound,
-        newCount: newlyFound.length,
-        alreadyFoundCount: alreadyFound.length,
-        totalDiscovered,
-        totalIssues,
-        percentage: Math.round((totalDiscovered / Math.max(totalIssues, 1)) * 100),
-        categoryBreakdown,
-        reasoning,
-        message:
-          newlyFound.length > 0
-            ? `${newlyFound.length} new issue(s) credited! You have now found ${totalDiscovered} of ${totalIssues} total issues.`
-            : `No new issues found in this report. You have found ${totalDiscovered} of ${totalIssues} total issues.`,
-      },
-    }
+    return evaluateFindings({ userId, model, userContext, reportContent })
   }
 
   if (name === 'get_user_issue_status') {

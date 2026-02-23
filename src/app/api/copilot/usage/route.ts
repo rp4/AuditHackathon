@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const endDate = searchParams.get('endDate') || undefined
 
   try {
-    const [detail, currentMonthSpend, limitConfig] = await Promise.all([
+    const [detail, currentMonth, limitConfig] = await Promise.all([
       getUserDetail(userId, startDate, endDate),
       getCurrentMonthSpend(userId),
       getUserLimit(userId),
@@ -39,10 +39,11 @@ export async function GET(request: NextRequest) {
       userId,
       userEmail,
       currentMonth: {
-        spend: currentMonthSpend,
+        spend: currentMonth.cost,
+        totalTokens: currentMonth.totalTokens,
         limit: limitConfig?.monthlyLimit ?? null,
         remaining: limitConfig
-          ? Math.max(0, limitConfig.monthlyLimit - currentMonthSpend)
+          ? Math.max(0, limitConfig.monthlyLimit - currentMonth.cost)
           : null,
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),

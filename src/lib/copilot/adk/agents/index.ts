@@ -16,7 +16,7 @@ export {
   getAnalyzerSystemInstruction,
 } from './analyzer'
 
-export { createJudgeAgent } from './judge'
+export { createJudgeAgent, evaluateFindings } from './judge'
 
 export { createCharacterAgent, isValidCharacter } from './characters'
 

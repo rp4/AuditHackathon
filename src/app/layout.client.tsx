@@ -43,7 +43,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Toaster position="top-right" richColors closeButton />
-      {/* Fixed Background - theme-aware */}
+      {/* Fixed Background - theme-aware with radial fade overlay */}
       <div
         className="fixed inset-0 pointer-events-none -z-10"
         style={{

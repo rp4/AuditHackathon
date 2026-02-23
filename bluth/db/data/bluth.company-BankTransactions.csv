@@ -1,0 +1,28 @@
+ID,transactionId,statement_ID,transactionDate,valueDate,amount,debitCredit,description,reference,counterparty,matchedEntry,isReconciled,suspiciousFlag,flagReason
+bt001,BT-2024-0001,bs001,2024-01-20,2024-01-20,45000.00,D,Wire transfer - Legal fees,ZL-2024-001,Zuckerkorn Law Offices,JE-2024-0004,true,false,
+bt002,BT-2024-0002,bs001,2024-01-25,2024-01-25,13000.00,D,ACH - Rent payment,BT-2024-001,Balboa Towers Management,JE-2024-0006,true,true,Personal residence charged to company
+bt003,BT-2024-0003,bs002,2024-02-01,2024-02-01,850.00,C,Cash deposit,BS-0201,Banana Stand,JE-2024-0008,true,true,Daily takings lower than expected
+bt004,BT-2024-0004,bs002,2024-02-02,2024-02-02,920.00,C,Cash deposit,BS-0202,Banana Stand,JE-2024-0010,true,false,
+bt005,BT-2024-0005,bs002,2024-02-15,2024-02-15,250000.00,D,Wire transfer - Consulting,SW-2024-001,Sitwell Enterprises,JE-2024-0012,true,true,Related party transaction - no PO
+bt006,BT-2024-0006,bs002,2024-02-20,2024-02-20,67500.00,D,Wire transfer - Legal,ZL-2024-002,Zuckerkorn Law Offices,JE-2024-0014,true,false,
+bt007,BT-2024-0007,bs003,2024-03-01,2024-03-01,45000.00,D,Intl wire - Mexico,CMM-2024-001,Cornballer Mexico,JE-2024-0016,true,false,
+bt008,BT-2024-0008,bs003,2024-03-05,2024-03-05,15000.00,C,Cash deposit - unidentified,CB-US-001,Unknown,JE-2024-0018,false,true,Cornballer US sales - PRODUCT IS ILLEGAL
+bt009,BT-2024-0009,bs003,2024-03-10,2024-03-10,750000.00,D,Intl wire - Iraq,SHC-2024-001,Saddam Construction Ltd,JE-2024-0020,true,true,Payment to entity with suspicious name
+bt010,BT-2024-0010,bs003,2024-03-20,2024-03-20,125000.00,D,Wire transfer - Emergency legal,ZL-2024-003,Zuckerkorn Law Offices,JE-2024-0024,true,false,
+bt011,BT-2024-0011,bs004,2024-04-01,2024-04-01,5000.00,D,Cash withdrawal,FMN-001,Unknown,JE-2024-0026,false,true,Cash payment - no documentation - Forget-Me-Now
+bt012,BT-2024-0012,bs004,2024-04-15,2024-04-15,35000.00,D,Wire transfer - Yacht,YSI-2024-001,Yacht Services International,JE-2024-0028,true,true,Personal use asset maintenance
+bt013,BT-2024-0013,bs005,2024-05-01,2024-05-01,8500.00,D,Check 1234 - Bees,BEES-001,Bees Unlimited,JE-2024-0030,true,true,Bees? What business purpose?
+bt014,BT-2024-0014,bs005,2024-05-10,2024-05-10,78000.00,D,Wire transfer - Vehicles,SEG-001,Segway SoCal,JE-2024-0032,true,false,
+bt015,BT-2024-0015,bs006,2024-06-01,2024-06-01,25000.00,D,Check 1235 - Illusion rental,AOM-002,Alliance of Magicians,JE-2024-0034,true,false,
+bt016,BT-2024-0016,bs007,2024-07-15,2024-07-15,250000.00,D,Internal transfer - Special,BS-HIDDEN,Unknown,JE-2024-0039,false,true,Cash hidden in banana stand lining - MATERIAL
+bt017,BT-2024-0017,bs008,2024-08-01,2024-08-01,275000.00,C,Insurance proceeds,INS-FIRE,Pacific Insurance,JE-2024-0043,true,true,Insurance claim after fire - timing suspicious
+bt018,BT-2024-0018,bs008,2024-08-10,2024-08-10,2500.00,D,Cash withdrawal,HC-001,Unknown,JE-2024-0045,false,true,Hot Cops payment - inappropriate expense
+bt019,BT-2024-0019,bs008,2024-08-15,2024-08-15,7500.00,D,Cash withdrawal,FMN-002,Unknown,JE-2024-0047,false,true,Second Forget-Me-Now purchase
+bt020,BT-2024-0020,bs009,2024-09-01,2024-09-01,35000.00,D,Wire transfer - Video,SC-001,Skip Church Productions,JE-2024-0049,true,true,GWLSE video - inappropriate content
+bt021,BT-2024-0021,bs009,2024-09-15,2024-09-15,55000.00,D,Payroll - Featherbottom,PAY-MF,Mrs Featherbottom,JE-2024-0051,true,true,DUPLICATE EMPLOYEE - Same bank as Tobias
+bt022,BT-2024-0022,bs009,2024-09-20,2024-09-20,45000.00,D,Payroll - Franklin,PAY-FR,Franklin Bluth,JE-2024-0053,true,true,PUPPET ON PAYROLL - Same bank as GOB
+bt023,BT-2024-0023,bs010,2024-10-01,2024-10-01,150000.00,D,Bonus - Executive,BONUS-001,George Bluth Sr,JE-2024-0055,true,true,Self-approved bonus - no board approval
+bt024,BT-2024-0024,bs010,2024-10-15,2024-10-15,125000.00,D,Bonus - Executive,BONUS-002,Lucille Bluth,JE-2024-0057,true,true,Spouse-approved bonus - no board approval
+bt025,BT-2024-0025,bs011,2024-11-01,2024-11-01,450000.00,D,Intl wire - Classified,CM-001,Cloud Mir Construction,JE-2024-0059,true,true,Suspicious vendor - government contract
+bt026,BT-2024-0026,bs012,2024-12-15,2024-12-15,500000.00,D,Note to related party,NOTE-SW,Sitwell Enterprises,JE-2024-0065,true,true,Loan to competitor - related party
+bt027,BT-2024-0027,bs012,2024-12-28,2024-12-28,2000000.00,C,Loan proceeds,LOAN-NEW,First Newport Bank,JE-2024-0069,true,false,
