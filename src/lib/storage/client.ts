@@ -26,6 +26,23 @@ if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   })
 }
 
-export const bucket = storage.bucket(process.env.GCS_BUCKET_NAME!)
+let _bucket: ReturnType<Storage['bucket']> | null = null
+
+export function getBucket() {
+  if (!_bucket) {
+    if (!process.env.GCS_BUCKET_NAME) {
+      throw new Error('GCS_BUCKET_NAME environment variable is not set')
+    }
+    _bucket = storage.bucket(process.env.GCS_BUCKET_NAME)
+  }
+  return _bucket
+}
+
+/** @deprecated Use getBucket() instead */
+export const bucket = new Proxy({} as ReturnType<Storage['bucket']>, {
+  get(_, prop) {
+    return (getBucket() as Record<string | symbol, unknown>)[prop]
+  },
+})
 
 export default storage
