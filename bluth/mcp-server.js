@@ -774,7 +774,32 @@ const TABLE_MAPPING = {
   'CompanyCodes': 'bluth_company_CompanyCodes',
   'CostCenters': 'bluth_company_CostCenters',
   'GLAccounts': 'bluth_company_GLAccounts',
-  'RelatedPartyTransactions': 'bluth_company_RelatedPartyTransactions'
+  'RelatedPartyTransactions': 'bluth_company_RelatedPartyTransactions',
+  'VendorChangeLog': 'bluth_company_VendorChangeLog',
+  'DelegationOfAuthority': 'bluth_company_DelegationOfAuthority',
+  'BankReconciliations': 'bluth_company_BankReconciliations',
+  'ReconcilingItems': 'bluth_company_ReconcilingItems',
+  'SystemUsers': 'bluth_company_SystemUsers',
+  'UserAccessReviews': 'bluth_company_UserAccessReviews',
+  'EntitlementValidations': 'bluth_company_EntitlementValidations',
+  'TransactionLog': 'bluth_company_TransactionLog',
+  'SystemConfigurations': 'bluth_company_SystemConfigurations',
+  'ConfigurationChangeHistory': 'bluth_company_ConfigurationChangeHistory',
+  'ApprovalWorkflows': 'bluth_company_ApprovalWorkflows',
+  'SupplierStatements': 'bluth_company_SupplierStatements',
+  'AccrualsProvisions': 'bluth_company_AccrualsProvisions',
+  'BadDebtProvisions': 'bluth_company_BadDebtProvisions',
+  'ARConfirmations': 'bluth_company_ARConfirmations',
+  'CashConfirmations': 'bluth_company_CashConfirmations',
+  'PettyCashCounts': 'bluth_company_PettyCashCounts',
+  'VendorSoftwareInventory': 'bluth_company_VendorSoftwareInventory',
+  'VendorAIIntelligence': 'bluth_company_VendorAIIntelligence',
+  'AuditFindings': 'bluth_company_AuditFindings',
+  'AuditEngagements': 'bluth_company_AuditEngagements',
+  'RegulatoryEnforcementActions': 'bluth_company_RegulatoryEnforcementActions',
+  'BCPDocuments': 'bluth_company_BCPDocuments',
+  'BusinessImpactAnalysis': 'bluth_company_BusinessImpactAnalysis',
+  'BCPExerciseResults': 'bluth_company_BCPExerciseResults'
 };
 
 // GET /api/tables - List all tables with record counts

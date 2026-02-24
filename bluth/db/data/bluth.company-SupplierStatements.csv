@@ -1,0 +1,11 @@
+ID,statementId,vendor_ID,statementDate,statementBalance,companyBalance,difference,isReconciled,reconciledDate,reconciledBy
+ss001,SS-001,v001,2024-12-31,170000.00,125000.00,45000.00,false,,
+ss002,SS-002,v002,2024-12-31,89500.00,89500.00,0.00,true,2025-01-10,Michael Bluth
+ss003,SS-003,v004,2024-12-31,42000.00,42000.00,0.00,true,2025-01-08,Michael Bluth
+ss004,SS-004,v006,2024-12-31,18500.00,18500.00,0.00,true,2025-01-12,Lindsay Bluth
+ss005,SS-005,v007,2024-12-31,12750.00,12750.00,0.00,true,2025-01-09,Michael Bluth
+ss006,SS-006,v013,2024-12-31,950000.00,800000.00,150000.00,false,,
+ss007,SS-007,v014,2024-12-31,27800.00,27800.00,0.00,true,2025-01-11,Michael Bluth
+ss008,SS-008,v018,2024-12-31,5200.00,5200.00,0.00,true,2025-01-07,Lindsay Bluth
+ss009,SS-009,v019,2024-12-31,15000.00,15000.00,0.00,true,2025-01-14,Michael Bluth
+ss010,SS-010,v020,2024-12-31,310000.00,310000.00,0.00,true,2025-01-10,Lucille Bluth

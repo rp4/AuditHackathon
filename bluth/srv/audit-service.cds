@@ -46,7 +46,56 @@ service AuditService {
   
   // Compliance
   entity RelatedPartyTransactions as projection on company.RelatedPartyTransactions;
-  
+
+  // Vendor Master File Review
+  entity VendorChangeLog as projection on company.VendorChangeLog;
+  entity DelegationOfAuthority as projection on company.DelegationOfAuthority;
+
+  // Bank Reconciliations
+  entity BankReconciliations as projection on company.BankReconciliations;
+  entity ReconcilingItems as projection on company.ReconcilingItems;
+
+  // Access Appropriateness
+  entity SystemUsers as projection on company.SystemUsers;
+  entity UserAccessReviews as projection on company.UserAccessReviews;
+  entity EntitlementValidations as projection on company.EntitlementValidations;
+  entity TransactionLog as projection on company.TransactionLog;
+
+  // Key System Configuration
+  entity SystemConfigurations as projection on company.SystemConfigurations;
+  entity ConfigurationChangeHistory as projection on company.ConfigurationChangeHistory;
+  entity ApprovalWorkflows as projection on company.ApprovalWorkflows;
+
+  // Accounts Payable Audit
+  entity SupplierStatements as projection on company.SupplierStatements;
+  entity AccrualsProvisions as projection on company.AccrualsProvisions;
+
+  // Accounts Receivable Audit
+  entity BadDebtProvisions as projection on company.BadDebtProvisions;
+  entity ARConfirmations as projection on company.ARConfirmations;
+
+  // Cash Audit
+  entity CashConfirmations as projection on company.CashConfirmations;
+  entity PettyCashCounts as projection on company.PettyCashCounts;
+
+  // Vendor Shadow AI Detection
+  entity VendorSoftwareInventory as projection on company.VendorSoftwareInventory;
+  entity VendorAIIntelligence as projection on company.VendorAIIntelligence;
+
+  // Root Cause Analysis
+  entity AuditFindings as projection on company.AuditFindings;
+
+  // Audit Report Storytelling
+  entity AuditEngagements as projection on company.AuditEngagements;
+
+  // Regulatory Compliance
+  entity RegulatoryEnforcementActions as projection on company.RegulatoryEnforcementActions;
+
+  // Business Continuity / Disaster Recovery
+  entity BCPDocuments as projection on company.BCPDocuments;
+  entity BusinessImpactAnalysis as projection on company.BusinessImpactAnalysis;
+  entity BCPExerciseResults as projection on company.BCPExerciseResults;
+
   // ============================================================
   // AUDIT ANALYTICS FUNCTIONS
   // ============================================================
