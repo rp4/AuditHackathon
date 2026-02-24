@@ -256,11 +256,14 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
           }
         }
 
-        // Handle update_workflow → navigate to the workflow's edit page
+        // Handle update_workflow → dispatch event so the edit page can refetch, then navigate
         if (tc.name === 'update_workflow') {
           try {
             const resultData = tc.result ? JSON.parse(tc.result) : null
             if (resultData?.slug) {
+              window.dispatchEvent(new CustomEvent('copilot:workflow-updated', {
+                detail: { slug: resultData.slug },
+              }))
               router.push(`/swarms/${resultData.slug}/edit`)
               openPanel()
             }

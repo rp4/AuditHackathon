@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useSwarm, useUpdateSwarm, useCategories, useToggleFavorite, useDeleteSwarm, useFavorites } from '@/hooks/useSwarms'
 import { downloadJson } from '@/lib/utils/downloadJson'
@@ -44,6 +45,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const { data: swarm, isLoading: loadingSwarm } = useSwarm(resolvedParams.slug)
   const { data: categories = [], isLoading: loadingCategories } = useCategories()
   const updateSwarm = useUpdateSwarm(resolvedParams.slug)
@@ -325,6 +327,18 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     window.addEventListener('copilot:step-updated', handler)
     return () => window.removeEventListener('copilot:step-updated', handler)
   }, [])
+
+  // Listen for copilot update_workflow events and invalidate the React Query cache
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { slug } = (e as CustomEvent).detail as { slug: string }
+      if (slug === resolvedParams.slug) {
+        queryClient.invalidateQueries({ queryKey: ['swarm', slug] })
+      }
+    }
+    window.addEventListener('copilot:workflow-updated', handler)
+    return () => window.removeEventListener('copilot:workflow-updated', handler)
+  }, [resolvedParams.slug, queryClient])
 
   // Listen for copilot step-status events (executing, review, completed, error)
   useEffect(() => {
