@@ -96,6 +96,7 @@ function updateStats(summary) {
 
   document.getElementById('total-records').textContent = formatNumber(totalRecords);
   document.getElementById('total-entities').textContent = totalEntities;
+  document.getElementById('mcp-tools-count').textContent = summary.mcpTools || 2;
 }
 
 /**
@@ -121,10 +122,15 @@ function setupEventListeners() {
     copyToClipboard(endpoint, 'Endpoint copied to clipboard');
   });
 
-  // Copy example button
-  document.getElementById('copy-example').addEventListener('click', () => {
-    const example = document.querySelector('.code-block code').textContent;
-    copyToClipboard(example, 'Example copied to clipboard');
+  // Copy example buttons
+  document.getElementById('copy-example-1')?.addEventListener('click', () => {
+    const example = document.querySelectorAll('.code-block code')[0].textContent;
+    copyToClipboard(example, 'Example 1 copied to clipboard');
+  });
+
+  document.getElementById('copy-example-2')?.addEventListener('click', () => {
+    const example = document.querySelectorAll('.code-block code')[1].textContent;
+    copyToClipboard(example, 'Example 2 copied to clipboard');
   });
 }
 

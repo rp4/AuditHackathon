@@ -16,7 +16,7 @@
       <img src="images/bluthlogo.jpg" alt="Bluth Company Logo" class="logo">
       <div class="header-text">
         <h1>Bluth Company Audit Data MCP</h1>
-        <p class="tagline">Mock audit data for AI agent testing - "There's always money in the banana stand"</p>
+        <p class="tagline">Mock audit data for AI agent testing</p>
       </div>
     </div>
   </header>
@@ -34,7 +34,7 @@
           <div class="stat-label">Data Entities</div>
         </div>
         <div class="stat-card stat-card-highlight">
-          <div class="stat-value">9</div>
+          <div class="stat-value" id="mcp-tools-count">-</div>
           <div class="stat-label">MCP Tools</div>
         </div>
       </div>
@@ -85,7 +85,7 @@
         <div class="endpoint-box">
           <label>MCP Endpoint:</label>
           <div class="endpoint-url">
-            <code id="mcp-endpoint">https://data.audittoolbox.com/mcp</code>
+            <code id="mcp-endpoint">https://data.auditswarm.com/mcp</code>
             <button id="copy-endpoint" class="btn btn-small" title="Copy to clipboard">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -99,55 +99,58 @@
           <h3>Available MCP Tools</h3>
           <div class="tools-list">
             <div class="tool-card">
-              <div class="tool-name">query_employees</div>
-              <div class="tool-desc">Find ghost employees, terminated staff, related parties</div>
+              <div class="tool-name">get_schema</div>
+              <div class="tool-desc">Get database schema with all tables, columns, types, and row counts. Call this first to discover available data.</div>
             </div>
             <div class="tool-card">
-              <div class="tool-name">query_vendors</div>
-              <div class="tool-desc">Find related party vendors, suspicious recipients</div>
-            </div>
-            <div class="tool-card">
-              <div class="tool-name">query_journal_entries</div>
-              <div class="tool-desc">High-value transactions, suspicious entries</div>
-            </div>
-            <div class="tool-card">
-              <div class="tool-name">query_bank_transactions</div>
-              <div class="tool-desc">Suspicious/flagged bank transactions</div>
-            </div>
-            <div class="tool-card">
-              <div class="tool-name">query_projects</div>
-              <div class="tool-desc">Cost overruns, troubled projects</div>
-            </div>
-            <div class="tool-card">
-              <div class="tool-name">detect_ghost_employees</div>
-              <div class="tool-desc">Automated ghost employee detection</div>
-            </div>
-            <div class="tool-card">
-              <div class="tool-name">detect_related_party_transactions</div>
-              <div class="tool-desc">Related party analysis</div>
-            </div>
-            <div class="tool-card">
-              <div class="tool-name">get_data_summary</div>
-              <div class="tool-desc">Overview of available data</div>
+              <div class="tool-name">query_data</div>
+              <div class="tool-desc">Query any table with filtering, sorting, and pagination. Supports SQL WHERE clauses and ORDER BY.</div>
             </div>
           </div>
         </div>
 
         <div class="example-section">
-          <h3>Example Request</h3>
+          <h3>Example Requests</h3>
+
+          <h4 style="margin-top: 1rem; font-size: 0.95rem; font-weight: 600;">1. Get Schema (discover all tables)</h4>
           <div class="code-block">
-            <pre><code>curl -X POST "https://data.audittoolbox.com/mcp" \
+            <pre><code>curl -X POST "https://data.auditswarm.com/mcp" \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,
     "method": "tools/call",
     "params": {
-      "name": "detect_ghost_employees",
+      "name": "get_schema",
       "arguments": {}
     }
   }'</code></pre>
-            <button id="copy-example" class="btn btn-small" title="Copy to clipboard">
+            <button id="copy-example-1" class="btn btn-small" title="Copy to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+
+          <h4 style="margin-top: 1.5rem; font-size: 0.95rem; font-weight: 600;">2. Query Data (find related party vendors)</h4>
+          <div class="code-block">
+            <pre><code>curl -X POST "https://data.auditswarm.com/mcp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "query_data",
+      "arguments": {
+        "table": "Vendors",
+        "filter": "isRelatedParty = 1",
+        "limit": 10
+      }
+    }
+  }'</code></pre>
+            <button id="copy-example-2" class="btn btn-small" title="Copy to clipboard">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -164,9 +167,6 @@
   <footer class="footer">
     <div class="footer-content">
       <p class="footer-quote">"There's always money in the banana stand"</p>
-      <p class="footer-disclaimer">
-        Mock data for AI audit agent testing. Based on the fictional Bluth Company from <em>Arrested Development</em>.
-      </p>
     </div>
   </footer>
 
