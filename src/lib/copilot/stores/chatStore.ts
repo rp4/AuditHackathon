@@ -338,11 +338,25 @@ export const useChatStore = create<ChatStore>()(
                     }
                     break
 
+                  case 'step_status':
+                    if (parsed.stepStatus && typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('copilot:step-status', {
+                        detail: parsed.stepStatus,
+                      }))
+                    }
+                    break
+
                   case 'error':
                     set({ error: parsed.error || 'An error occurred' })
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('copilot:step-status-clear'))
+                    }
                     break
 
                   case 'done':
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('copilot:step-status-clear'))
+                    }
                     break
                 }
               } catch (e) {

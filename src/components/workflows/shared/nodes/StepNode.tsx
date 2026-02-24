@@ -2,7 +2,7 @@
 
 import { memo, useCallback } from 'react'
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow'
-import { FileText, Trash2 } from 'lucide-react'
+import { FileText, Trash2, Loader2, Eye, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface StepNodeData {
@@ -11,6 +11,9 @@ export interface StepNodeData {
   instructions?: string
   readOnly?: boolean
   isSelected?: boolean
+  completed?: boolean
+  executing?: boolean
+  pendingReview?: boolean
   [key: string]: unknown
 }
 
@@ -19,6 +22,9 @@ export const StepNode = memo((props: NodeProps<StepNodeData>) => {
   const { setNodes, setEdges } = useReactFlow()
   const readOnly = data.readOnly || false
   const isSelected = data.isSelected || false
+  const executing = data.executing || false
+  const pendingReview = data.pendingReview || false
+  const completed = !!data.completed
 
   const onDelete = useCallback(() => {
     setNodes((nodes) => nodes.filter((node) => node.id !== id))
@@ -32,9 +38,13 @@ export const StepNode = memo((props: NodeProps<StepNodeData>) => {
         'cursor-pointer group',
         isSelected
           ? 'border-brand-500 ring-2 ring-brand-500/30 shadow-brand-200/50'
-          : data.completed
-            ? 'border-green-500 ring-2 ring-green-500/30'
-            : 'border-gray-300'
+          : executing
+            ? 'border-brand-500 ring-2 ring-brand-500/20 animate-pulse-ring'
+            : pendingReview
+              ? 'border-amber-500 ring-2 ring-amber-500/30'
+              : completed
+                ? 'border-green-500 ring-2 ring-green-500/30'
+                : 'border-gray-300'
       )}
     >
       <Handle
@@ -44,8 +54,8 @@ export const StepNode = memo((props: NodeProps<StepNodeData>) => {
         style={{ left: -7 }}
       />
 
-      {/* Delete button */}
-      {!readOnly && (
+      {/* Delete button — hidden in readOnly mode and when node has a status badge */}
+      {!readOnly && !executing && !pendingReview && !completed && (
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -56,6 +66,23 @@ export const StepNode = memo((props: NodeProps<StepNodeData>) => {
         >
           <Trash2 className="h-3 w-3" />
         </button>
+      )}
+
+      {/* Status badge — upper-right corner */}
+      {executing && (
+        <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-white shadow-md z-10">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        </div>
+      )}
+      {pendingReview && !executing && (
+        <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-md z-10">
+          <Eye className="h-3.5 w-3.5" />
+        </div>
+      )}
+      {completed && !executing && !pendingReview && (
+        <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white shadow-md z-10">
+          <Check className="h-3.5 w-3.5" />
+        </div>
       )}
 
       <div className="p-4">

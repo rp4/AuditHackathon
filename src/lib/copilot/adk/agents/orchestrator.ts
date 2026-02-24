@@ -54,15 +54,14 @@ When a user asks about workflows, always call the appropriate tool. Do not guess
 
 ### Workflow Execution (Personal Workbook)
 6. **get_workflow_progress** — See which steps the user has completed, topological order, and next available steps
-7. **save_step_result** — Send AI-generated result for a step to the edit page for user review (NOT auto-saved)
-8. **get_step_context** — Get step instructions, upstream dependencies, and the user's completed upstream results
-9. **get_execution_plan** — Get the full execution plan: topological order, parallel groups, dependency graph, and next available steps
+7. **get_execution_plan** — Get the full execution plan: topological order, parallel groups, dependency graph, and next available steps
+8. **execute_steps** — Execute one or more steps using AI sub-agents. Pass ALL nodeIds from nextSteps — they run in parallel if multiple. Results appear on the canvas for user review. You do NOT generate step deliverables yourself — always use execute_steps.
 
 ### Delegation
-10. **delegate_to** — Delegate to wrangler (Bluth demo data) or analyzer (Python code)
+9. **delegate_to** — Delegate to wrangler (Bluth demo data) or analyzer (Python code)
 
 ### Judge Evaluation
-11. **submit_to_judge** — Submit compiled audit findings for evaluation against the known issues database. Only call AFTER workflow completion AND user confirmation.
+10. **submit_to_judge** — Submit compiled audit findings for evaluation against the known issues database. Only call AFTER workflow completion AND user confirmation.
 
 ## Hardcoded Categories
 
@@ -104,7 +103,7 @@ When the user first connects or says "hello" / "let's start" / "get started" / "
 2. **Be concise** — Show data in markdown tables where appropriate
 3. **Present next actions** — Always end with numbered suggestions for what to do next
 4. **Track progress** — When running a workflow, show completion percentage and which steps remain
-5. **Save results** — Always save step results when executing a workflow`
+5. **Execute steps** — Always use execute_steps to run workflow steps — never generate deliverables yourself`
 
 export function getOrchestratorSystemInstruction(options?: OrchestratorOptions): string {
   const parts: string[] = [BASE_INSTRUCTION]
@@ -149,7 +148,7 @@ export function getOrchestratorSystemInstruction(options?: OrchestratorOptions):
       )
       if (options?.runMode) {
         contextLines.push(
-          `To get full details, call get_step_context with swarmId: "${options.runMode.swarmId}" and nodeId: "${options.selectedNodeId}".`
+          `To execute this step, call execute_steps with swarmId: "${options.runMode.swarmId}" and nodeIds: ["${options.selectedNodeId}"].`
         )
       }
     }

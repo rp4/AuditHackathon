@@ -221,6 +221,8 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
         }
 
         // Handle save_step_result → navigate to edit page for user review
+        // NOTE: In the new architecture, execute_steps uses step_status events instead.
+        // This handler is kept for backwards compatibility if save_step_result is called directly.
         if (tc.name === 'save_step_result') {
           try {
             const resultData = tc.result ? JSON.parse(tc.result) : null

@@ -16,6 +16,8 @@ export {
   getAnalyzerSystemInstruction,
 } from './analyzer'
 
+export { createStepExecutor, type StepExecutorContext } from './step-executor'
+
 export { createJudgeAgent, evaluateFindings } from './judge'
 
 export { createCharacterAgent, isValidCharacter } from './characters'

@@ -70,6 +70,16 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
   const [highlightResult, setHighlightResult] = useState(false)
   const [isDraftResult, setIsDraftResult] = useState(false)
   const draftLoadedRef = useRef(false)
+  const selectedNodeIdRef = useRef<string | null>(null)
+
+  // Keep ref in sync with selectedNodeId state
+  useEffect(() => {
+    selectedNodeIdRef.current = selectedNodeId
+  }, [selectedNodeId])
+
+  // Step execution visual state (from copilot step_status events)
+  const [executingNodes, setExecutingNodes] = useState<Set<string>>(new Set())
+  const [reviewNodes, setReviewNodes] = useState<Map<string, string>>(new Map()) // nodeId → draft result
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [localFavorited, setLocalFavorited] = useState<boolean | null>(null)
@@ -220,6 +230,16 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
       return
     }
 
+    // If the node has a pending review result from execute_steps, load that as a draft
+    if (reviewNodes.has(selectedNodeId)) {
+      setEditingResult(reviewNodes.get(selectedNodeId)!)
+      setEditingCompleted(true)
+      setIsDraftResult(true)
+      setHighlightResult(true)
+      setTimeout(() => setHighlightResult(false), 5000)
+      return
+    }
+
     setIsDraftResult(false)
     const fetchNodeResult = async () => {
       try {
@@ -304,6 +324,45 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     }
     window.addEventListener('copilot:step-updated', handler)
     return () => window.removeEventListener('copilot:step-updated', handler)
+  }, [])
+
+  // Listen for copilot step-status events (executing, review, completed, error)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { nodeId, status, result } = (e as CustomEvent).detail as {
+        nodeId: string
+        status: 'executing' | 'review' | 'completed' | 'error'
+        result?: string
+      }
+      if (status === 'executing') {
+        setExecutingNodes(prev => new Set(prev).add(nodeId))
+      } else if (status === 'review') {
+        setExecutingNodes(prev => { const next = new Set(prev); next.delete(nodeId); return next })
+        setReviewNodes(prev => new Map(prev).set(nodeId, result || ''))
+        // If this node is currently selected, directly populate the result panel
+        if (nodeId === selectedNodeIdRef.current) {
+          setEditingResult(result || '')
+          setEditingCompleted(true)
+          setIsDraftResult(true)
+          setHighlightResult(true)
+          setTimeout(() => setHighlightResult(false), 5000)
+        }
+      } else if (status === 'completed') {
+        setExecutingNodes(prev => { const next = new Set(prev); next.delete(nodeId); return next })
+        setReviewNodes(prev => { const next = new Map(prev); next.delete(nodeId); return next })
+      } else if (status === 'error') {
+        setExecutingNodes(prev => { const next = new Set(prev); next.delete(nodeId); return next })
+      }
+    }
+    const clearHandler = () => {
+      setExecutingNodes(new Set())
+    }
+    window.addEventListener('copilot:step-status', handler)
+    window.addEventListener('copilot:step-status-clear', clearHandler)
+    return () => {
+      window.removeEventListener('copilot:step-status', handler)
+      window.removeEventListener('copilot:step-status-clear', clearHandler)
+    }
   }, [])
 
   // Handle ?node= param without draft — auto-select the node (URL persists for context)
@@ -432,28 +491,38 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
 
       // Clear draft state and close panel
       setIsDraftResult(false)
+
+      // Remove from review nodes
+      setReviewNodes(prev => { const next = new Map(prev); next.delete(selectedNodeId); return next })
       setSelectedNodeId(null)
 
-      toast.success('Step approved! Continuing to next step...')
+      // Check if this was the last review node — auto-continue when all are approved
+      const remainingReviews = new Map(reviewNodes)
+      remainingReviews.delete(selectedNodeId)
 
-      // Signal the agent to continue via the chat store
-      const { currentSessionId } = useChatStore.getState()
-      if (currentSessionId) {
-        useChatStore.getState().sendMessage(
-          'Step approved, continue to next step.',
-          undefined,
-          undefined,
-          'copilot',
-          undefined,
-          { runMode: { swarmId: swarm.id, swarmSlug: resolvedParams.slug } }
-        )
+      if (remainingReviews.size === 0) {
+        toast.success('All steps approved! Continuing to next wave...')
+        // Signal the agent to continue via the chat store
+        const { currentSessionId } = useChatStore.getState()
+        if (currentSessionId) {
+          useChatStore.getState().sendMessage(
+            'Steps approved, continue to next step.',
+            undefined,
+            undefined,
+            'copilot',
+            undefined,
+            { runMode: { swarmId: swarm.id, swarmSlug: resolvedParams.slug } }
+          )
+        }
+      } else {
+        toast.success(`Step approved! ${remainingReviews.size} step(s) remaining for review.`)
       }
     } catch {
       toast.error('Failed to save step result')
     } finally {
       setSavingResult(false)
     }
-  }, [swarm?.id, selectedNodeId, editingResult, resolvedParams.slug])
+  }, [swarm?.id, selectedNodeId, editingResult, resolvedParams.slug, reviewNodes])
 
   const toggleCategory = (categoryId: string) => {
     setFormData(prev => ({
@@ -678,17 +747,16 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     />
   ) : null
 
-  // Enrich nodes with completed status from step results
+  // Enrich nodes with completed/executing/pendingReview status
   const enrichedNodes = useMemo(
     () => workflowNodes.map(node => {
       const result = stepResults.get(node.id)
       const completed = result?.completed || false
-      if (completed !== !!node.data.completed) {
-        return { ...node, data: { ...node.data, completed } }
-      }
-      return node
+      const executing = executingNodes.has(node.id)
+      const pendingReview = reviewNodes.has(node.id)
+      return { ...node, data: { ...node.data, completed, executing, pendingReview } }
     }),
-    [workflowNodes, stepResults]
+    [workflowNodes, stepResults, executingNodes, reviewNodes]
   )
 
   // Banner content — editable template details

@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState } from 'react'
+import { memo, useState, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { User, Paperclip, Wrench, CheckCircle, XCircle, Loader2, ChevronRight, ChevronDown, Code2, Play, Image as ImageIcon } from 'lucide-react'
@@ -72,6 +72,92 @@ function ToolCallDisplay({ toolCall }: { toolCall: ToolCall }) {
               <pre className="whitespace-pre-wrap">{toolCall.result}</pre>
             </div>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function summarizeToolArgs(name: string, args: Record<string, unknown>): string {
+  if (name === 'delegate_to' && args.agent) {
+    const task = args.task ? String(args.task) : ''
+    const truncated = task.length > 60 ? task.slice(0, 60) + '...' : task
+    return `${args.agent}${truncated ? `: ${truncated}` : ''}`
+  }
+  if (args.entity) return String(args.entity)
+  if (args.query) {
+    const q = String(args.query)
+    return q.length > 60 ? q.slice(0, 60) + '...' : q
+  }
+  const firstVal = Object.values(args)[0]
+  return firstVal ? String(firstVal).slice(0, 50) : ''
+}
+
+function CompactToolCallDisplay({ toolCall }: { toolCall: ToolCall }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const summary = summarizeToolArgs(toolCall.name, toolCall.arguments || {})
+
+  return (
+    <div className="rounded bg-gray-50 dark:bg-gray-800/50">
+      <div className="flex items-center gap-2 px-2.5 py-1.5 text-xs">
+        <Wrench className="w-3 h-3 text-gray-400 flex-shrink-0" />
+        <span className="font-medium text-gray-600 dark:text-gray-400">{toolCall.name}</span>
+        {summary && (
+          <span className="text-gray-400 dark:text-gray-500 truncate">{summary}</span>
+        )}
+        <span className="ml-auto flex-shrink-0">
+          {toolCall.status === 'running' && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
+          {toolCall.status === 'completed' && <CheckCircle className="w-3 h-3 text-green-500" />}
+          {toolCall.status === 'error' && <XCircle className="w-3 h-3 text-red-500" />}
+        </span>
+        {(toolCall.result || Object.keys(toolCall.arguments || {}).length > 0) && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          </button>
+        )}
+      </div>
+      {isExpanded && (
+        <div className="px-2.5 pb-2 space-y-1">
+          <div className="text-[10px] text-gray-500 dark:text-gray-500 font-mono overflow-x-auto">
+            <pre className="whitespace-pre-wrap">{JSON.stringify(toolCall.arguments || {}, null, 2)}</pre>
+          </div>
+          {toolCall.result && (
+            <div className="text-[10px] text-gray-500 dark:text-gray-500 font-mono overflow-x-auto border-t border-gray-200 dark:border-gray-700 pt-1">
+              <pre className="whitespace-pre-wrap">{toolCall.result}</pre>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StepActivityGroup({ stepLabel, toolCalls }: { stepLabel: string; toolCalls: ToolCall[] }) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const isAllDone = toolCalls.every(tc => tc.status === 'completed' || tc.status === 'error')
+  const hasError = toolCalls.some(tc => tc.status === 'error')
+
+  return (
+    <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="flex items-center gap-2 w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 text-sm font-medium text-left hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+      >
+        {isCollapsed ? <ChevronRight className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+        <span className="text-gray-700 dark:text-gray-300 flex-1 truncate">{stepLabel}</span>
+        {!isAllDone && <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-500" />}
+        {isAllDone && !hasError && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
+        {isAllDone && hasError && <XCircle className="w-3.5 h-3.5 text-red-500" />}
+        <span className="text-xs text-gray-400">{toolCalls.filter(tc => tc.status === 'completed').length}/{toolCalls.length}</span>
+      </button>
+      {!isCollapsed && (
+        <div className="px-2 py-1.5 space-y-1">
+          {toolCalls.map(tc => (
+            <CompactToolCallDisplay key={tc.id} toolCall={tc} />
+          ))}
         </div>
       )}
     </div>
@@ -181,6 +267,32 @@ function GeneratedImageDisplay({ image }: { image: GeneratedImage }) {
 export const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
+  // Group tool calls: ungrouped (orchestrator-level) vs grouped by step label
+  const { ungroupedToolCalls, stepGroups } = useMemo(() => {
+    if (!message.toolCalls || message.toolCalls.length === 0) {
+      return { ungroupedToolCalls: [], stepGroups: [] as Array<{ label: string; toolCalls: ToolCall[] }> }
+    }
+
+    const ungrouped: ToolCall[] = []
+    const groupMap = new Map<string, ToolCall[]>()
+    const groupOrder: string[] = []
+
+    for (const tc of message.toolCalls) {
+      if (tc.stepLabel) {
+        if (!groupMap.has(tc.stepLabel)) {
+          groupMap.set(tc.stepLabel, [])
+          groupOrder.push(tc.stepLabel)
+        }
+        groupMap.get(tc.stepLabel)!.push(tc)
+      } else {
+        ungrouped.push(tc)
+      }
+    }
+
+    const groups = groupOrder.map(label => ({ label, toolCalls: groupMap.get(label)! }))
+    return { ungroupedToolCalls: ungrouped, stepGroups: groups }
+  }, [message.toolCalls])
+
   return (
     <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div
@@ -266,8 +378,11 @@ export const ChatMessage = memo(function ChatMessage({ message }: ChatMessagePro
 
         {message.toolCalls && message.toolCalls.length > 0 && (
           <div className="mt-2 w-full space-y-2">
-            {message.toolCalls.map((toolCall) => (
+            {ungroupedToolCalls.map((toolCall) => (
               <ToolCallDisplay key={toolCall.id} toolCall={toolCall} />
+            ))}
+            {stepGroups.map((group) => (
+              <StepActivityGroup key={group.label} stepLabel={group.label} toolCalls={group.toolCalls} />
             ))}
           </div>
         )}

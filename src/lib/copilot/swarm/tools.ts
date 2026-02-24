@@ -157,9 +157,9 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
     },
   },
   {
-    name: 'save_step_result',
+    name: 'execute_steps',
     description:
-      'Send an AI-generated result for a workflow step to the edit page for user review. The result will pre-populate the step\'s result field — the user must click "Approve & Continue" to confirm, save, and proceed to the next step.',
+      'Execute one or more workflow steps using AI sub-agents. For parallel-ready steps, all run concurrently. Each result is sent to the canvas for user review. The user must approve each step before you continue.',
     parametersJsonSchema: {
       type: 'object',
       properties: {
@@ -167,39 +167,14 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
           type: 'string',
           description: 'The swarm/workflow ID',
         },
-        nodeId: {
-          type: 'string',
-          description: 'The step node ID',
-        },
-        result: {
-          type: 'string',
-          description: 'The AI-generated result content for this step',
-        },
-        completed: {
-          type: 'boolean',
-          description: 'Whether to mark the step as completed (default: true)',
+        nodeIds: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Node IDs of the steps to execute. Pass all nextSteps from get_execution_plan — they will run in parallel if multiple.',
         },
       },
-      required: ['swarmId', 'nodeId', 'result'],
-    },
-  },
-  {
-    name: 'get_step_context',
-    description:
-      "Get detailed context for a workflow step including its label, description, instructions, upstream dependencies, and the user's completed upstream results.",
-    parametersJsonSchema: {
-      type: 'object',
-      properties: {
-        swarmId: {
-          type: 'string',
-          description: 'The swarm/workflow ID',
-        },
-        nodeId: {
-          type: 'string',
-          description: 'The step node ID to get context for',
-        },
-      },
-      required: ['swarmId', 'nodeId'],
+      required: ['swarmId', 'nodeIds'],
     },
   },
   {

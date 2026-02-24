@@ -33,6 +33,7 @@ import {
   getAnalyzerSystemInstruction,
   evaluateFindings,
 } from './agents'
+import { createStepExecutor, type StepExecutorContext } from './agents/step-executor'
 import { trackUsage, type UserContext } from '@/lib/copilot/services/usage-tracking'
 import type { GeminiModel, StreamChunk, FileAttachment } from '@/lib/copilot/types'
 
@@ -224,7 +225,13 @@ export class MultiAgentOrchestrator {
             break
           }
 
-          if (toolName === 'delegate_to') {
+          if (toolName === 'execute_steps') {
+            // === STEP EXECUTION PATH ===
+            yield* this.handleStepExecution(
+              chat,
+              toolArgs as { swarmId: string; nodeIds: string[] }
+            )
+          } else if (toolName === 'delegate_to') {
             // === DELEGATION PATH ===
             yield* this.handleDelegation(
               chat,
@@ -320,6 +327,225 @@ export class MultiAgentOrchestrator {
     this.trackOrchestratorResponse(nextResponse)
 
     // Store for the outer loop to pick up on next iteration
+    this._lastResponse = nextResponse
+  }
+
+  /**
+   * Handle execute_steps — spawn step-executor sub-agents (in parallel if multiple).
+   * Each agent generates a deliverable for one step. Results are streamed to the
+   * canvas via step_status chunks for user review.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async *handleStepExecution(
+    chat: any,
+    args: { swarmId: string; nodeIds: string[] }
+  ): AsyncGenerator<StreamChunk> {
+    const { swarmId, nodeIds } = args
+    const toolCallId = crypto.randomUUID()
+
+    if (!swarmId || !nodeIds || nodeIds.length === 0) {
+      const nextResponse = await chat.sendMessage({
+        message: {
+          functionResponse: {
+            name: 'execute_steps',
+            response: { error: 'swarmId and nodeIds are required' },
+          },
+        },
+      })
+      this.trackOrchestratorResponse(nextResponse)
+      this._lastResponse = nextResponse
+      this._lastToolSuccess = false
+      return
+    }
+
+    // Yield tool_call so the chat UI shows execute_steps is running
+    yield {
+      type: 'tool_call',
+      toolCall: {
+        id: toolCallId,
+        name: 'execute_steps',
+        arguments: args,
+        status: 'running',
+      },
+    }
+
+    // 1. Get step context for all steps
+    const contexts: Array<{ nodeId: string; context: StepExecutorContext | null; error?: string }> = []
+    for (const nodeId of nodeIds) {
+      const result = await this.swarmRouter.callTool('get_step_context', { swarmId, nodeId })
+      if (result.success && result.result) {
+        const data = result.result as {
+          step: { nodeId: string; label: string; description?: string; instructions?: string }
+          upstreamSteps: Array<{ label: string; result?: string }>
+        }
+        contexts.push({
+          nodeId,
+          context: {
+            nodeId,
+            label: data.step.label,
+            description: data.step.description,
+            instructions: data.step.instructions || '',
+            upstreamResults: (data.upstreamSteps || [])
+              .filter(u => u.result)
+              .map(u => ({ label: u.label, result: u.result! })),
+          },
+        })
+      } else {
+        contexts.push({ nodeId, context: null, error: result.error || 'Failed to get step context' })
+      }
+    }
+
+    // 2. Yield step_status: executing for all valid steps
+    for (const ctx of contexts) {
+      if (ctx.context) {
+        yield { type: 'step_status', stepStatus: { nodeId: ctx.nodeId, status: 'executing' } }
+      }
+    }
+
+    // 3. Run step-executors in parallel, streaming tool activity to the chat
+    type ExecutorResult = { nodeId: string; label: string; status: 'review' | 'error'; result?: string; error?: string }
+
+    // Shared queue for streaming chunks from parallel executors
+    const chunkQueue: StreamChunk[] = []
+    let queueResolver: (() => void) | null = null
+    let allExecutorsDone = false
+
+    const enqueueChunk = (chunk: StreamChunk) => {
+      chunkQueue.push(chunk)
+      if (queueResolver) {
+        const resolve = queueResolver
+        queueResolver = null
+        resolve()
+      }
+    }
+
+    // Start all executors in parallel — each streams tool calls to the queue
+    const executorPromises = contexts.map(async (ctx): Promise<ExecutorResult> => {
+      if (!ctx.context) {
+        return { nodeId: ctx.nodeId, label: ctx.nodeId, status: 'error', error: ctx.error }
+      }
+
+      const stepLabel = ctx.context.label
+
+      try {
+        const executor = createStepExecutor({
+          model: this.config.model,
+          ctx: ctx.context,
+          bluthClient: this.bluthClient,
+          userContext: this.userContext,
+          sessionId: this.config.sessionId,
+          onActivity: (chunk) => {
+            // Forward nested sub-agent tool calls (wrangler/analyzer) tagged with step label
+            if (chunk.toolCall) {
+              enqueueChunk({
+                ...chunk,
+                toolCall: { ...chunk.toolCall, stepLabel },
+              })
+            }
+          },
+        })
+
+        // Stream the step executor — forward its own tool calls (delegate_to) tagged with step label
+        let deliverable = ''
+        for await (const chunk of executor.streamMessage('Execute this step and produce the deliverable.')) {
+          if ((chunk.type === 'tool_call' || chunk.type === 'tool_result') && chunk.toolCall) {
+            enqueueChunk({
+              ...chunk,
+              toolCall: { ...chunk.toolCall, stepLabel },
+            })
+          } else if (chunk.type === 'text') {
+            deliverable += chunk.content || ''
+          }
+          // Ignore 'done' and 'error' from sub-agent stream
+        }
+        await executor.close()
+
+        // Emit step_status: review so the canvas updates immediately
+        enqueueChunk({
+          type: 'step_status',
+          stepStatus: { nodeId: ctx.nodeId, status: 'review', result: deliverable },
+        })
+
+        return { nodeId: ctx.nodeId, label: stepLabel, status: 'review', result: deliverable }
+      } catch (error) {
+        enqueueChunk({
+          type: 'step_status',
+          stepStatus: { nodeId: ctx.nodeId, status: 'error' },
+        })
+        return {
+          nodeId: ctx.nodeId,
+          label: ctx.context?.label || ctx.nodeId,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Step execution failed',
+        }
+      }
+    })
+
+    // Signal when all executors are done
+    const settledPromise = Promise.allSettled(executorPromises).then(results => {
+      allExecutorsDone = true
+      if (queueResolver) {
+        const resolve = queueResolver
+        queueResolver = null
+        resolve()
+      }
+      return results
+    })
+
+    // Drain the queue — yields chunks in real-time as executors produce them
+    while (!allExecutorsDone || chunkQueue.length > 0) {
+      if (chunkQueue.length > 0) {
+        yield chunkQueue.shift()!
+      } else if (!allExecutorsDone) {
+        await new Promise<void>(r => { queueResolver = r })
+      }
+    }
+
+    // Collect execution results
+    const settled = await settledPromise
+    const executionResults: ExecutorResult[] = settled.map(outcome =>
+      outcome.status === 'fulfilled'
+        ? outcome.value
+        : { nodeId: 'unknown', label: 'unknown', status: 'error' as const, error: 'Unexpected failure' }
+    )
+
+    // 4. Yield tool_result so the chat UI shows completion
+    const successCount = executionResults.filter(r => r.status === 'review').length
+    const errorCount = executionResults.filter(r => r.status === 'error').length
+    const summaryStr = JSON.stringify({
+      executed: executionResults.map(r => ({
+        nodeId: r.nodeId,
+        label: r.label,
+        status: r.status,
+      })),
+      message: errorCount > 0
+        ? `${successCount} step(s) executed, ${errorCount} failed. Results sent to canvas for user review.`
+        : `${successCount} step(s) executed${successCount > 1 ? ' in parallel' : ''}. Results sent to canvas for user review.`,
+    })
+
+    this._lastToolSuccess = errorCount === 0
+
+    yield {
+      type: 'tool_result',
+      toolCall: {
+        id: toolCallId,
+        name: 'execute_steps',
+        arguments: args,
+        result: summaryStr,
+        status: errorCount === 0 ? 'completed' : 'error',
+      },
+    }
+
+    // 5. Send function response back to orchestrator LLM
+    const nextResponse = await chat.sendMessage({
+      message: {
+        functionResponse: {
+          name: 'execute_steps',
+          response: JSON.parse(summaryStr),
+        },
+      },
+    })
+    this.trackOrchestratorResponse(nextResponse)
     this._lastResponse = nextResponse
   }
 

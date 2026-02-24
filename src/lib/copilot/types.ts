@@ -38,6 +38,7 @@ export interface ToolCall {
   arguments: Record<string, unknown>
   result?: string
   status: 'pending' | 'running' | 'completed' | 'error'
+  stepLabel?: string // present when this tool call belongs to a step-executor sub-agent
 }
 
 export interface ChatSession {
@@ -78,12 +79,19 @@ export interface CodeExecution {
   status: 'running' | 'completed' | 'error'
 }
 
+export interface StepStatus {
+  nodeId: string
+  status: 'executing' | 'review' | 'completed' | 'error'
+  result?: string // included when status='review' (the draft deliverable)
+}
+
 export interface StreamChunk {
-  type: 'text' | 'tool_call' | 'tool_result' | 'code_execution' | 'code_result' | 'image' | 'error' | 'done'
+  type: 'text' | 'tool_call' | 'tool_result' | 'code_execution' | 'code_result' | 'image' | 'error' | 'done' | 'step_status'
   content?: string
   toolCall?: ToolCall
   codeExecution?: CodeExecution
   image?: { data: string; mimeType: string }
+  stepStatus?: StepStatus
   error?: string
 }
 
