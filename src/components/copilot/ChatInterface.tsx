@@ -7,11 +7,11 @@ import { ChatInput } from './ChatInput'
 import { ChatHistory } from './ChatHistory'
 import { ModelSelector } from './ModelSelector'
 import { AgentSelector } from './AgentSelector'
-import { useChatStore } from '@/lib/copilot/stores/chatStore'
+import { useChatStore, type CopilotError } from '@/lib/copilot/stores/chatStore'
 import { useSessionStore } from '@/lib/copilot/stores/sessionStore'
 import { useCopilotPanelStore } from '@/lib/copilot/stores/panelStore'
 import { getAgentOption } from '@/lib/copilot/adk/agents/registry'
-import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle, Maximize2, Minimize2, Sparkles, FileText, Search, Play } from 'lucide-react'
+import { Menu, PanelLeftClose, Plus, LogOut, User as UserIcon, Square, BarChart3, Shield, AlertTriangle, Maximize2, Minimize2, Sparkles, FileText, Search, Play, RefreshCw, Clock, WifiOff, LogIn } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import type { GeminiModel, AgentId, FileAttachment } from '@/lib/copilot/types'
@@ -33,6 +33,78 @@ function LoadingDots({ size = 32 }: { size?: number }) {
           }}
         />
       ))}
+    </div>
+  )
+}
+
+function CopilotErrorBanner({ error, errorDetail, onDismiss }: { error: string; errorDetail: CopilotError | null; onDismiss: () => void }) {
+  const type = errorDetail?.type ?? 'unknown'
+  const status = errorDetail?.status
+  const ts = errorDetail?.timestamp ? new Date(errorDetail.timestamp).toLocaleTimeString() : null
+
+  const config: Record<string, { icon: typeof AlertTriangle; bg: string; border: string; text: string; hint: string }> = {
+    session_expired: {
+      icon: LogIn,
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      border: 'border-amber-200 dark:border-amber-800',
+      text: 'text-amber-700 dark:text-amber-400',
+      hint: 'Your session expired. Signing you back in...',
+    },
+    rate_limited: {
+      icon: Clock,
+      bg: 'bg-orange-50 dark:bg-orange-900/20',
+      border: 'border-orange-200 dark:border-orange-800',
+      text: 'text-orange-700 dark:text-orange-400',
+      hint: 'Rate limit hit (HTTP 429). Wait ~30s, then retry.',
+    },
+    spending_limit: {
+      icon: Shield,
+      bg: 'bg-red-50 dark:bg-red-900/20',
+      border: 'border-red-200 dark:border-red-800',
+      text: 'text-red-700 dark:text-red-400',
+      hint: 'Monthly budget exhausted. Ask an admin to increase your limit.',
+    },
+    network: {
+      icon: WifiOff,
+      bg: 'bg-slate-50 dark:bg-slate-900/20',
+      border: 'border-slate-200 dark:border-slate-800',
+      text: 'text-slate-700 dark:text-slate-400',
+      hint: 'Network error — check your connection and try again.',
+    },
+    stream_error: {
+      icon: RefreshCw,
+      bg: 'bg-red-50 dark:bg-red-900/20',
+      border: 'border-red-200 dark:border-red-800',
+      text: 'text-red-700 dark:text-red-400',
+      hint: 'The AI response stream failed. Try sending your message again.',
+    },
+    unknown: {
+      icon: AlertTriangle,
+      bg: 'bg-red-50 dark:bg-red-900/20',
+      border: 'border-red-200 dark:border-red-800',
+      text: 'text-red-600 dark:text-red-400',
+      hint: '',
+    },
+  }
+
+  const c = config[type] || config.unknown
+  const Icon = c.icon
+
+  return (
+    <div className={`p-3 ${c.bg} border ${c.border} rounded-lg text-sm ${c.text}`}>
+      <div className="flex items-start gap-2">
+        <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="font-medium">{error}</p>
+          {c.hint && <p className="mt-1 opacity-80 text-xs">{c.hint}</p>}
+          <div className="mt-1.5 flex items-center gap-3 text-xs opacity-60">
+            {status && <span>HTTP {status}</span>}
+            {type !== 'unknown' && <span>{type.replace(/_/g, ' ')}</span>}
+            {ts && <span>{ts}</span>}
+          </div>
+        </div>
+        <button onClick={onDismiss} className="text-xs opacity-60 hover:opacity-100 flex-shrink-0">&times;</button>
+      </div>
     </div>
   )
 }
@@ -91,6 +163,17 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Listen for session-expired events from the chat store and prompt re-auth
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      signIn(process.env.NODE_ENV === 'production' ? 'linkedin' : undefined, {
+        callbackUrl: window.location.href,
+      })
+    }
+    window.addEventListener('copilot:session-expired', handleSessionExpired)
+    return () => window.removeEventListener('copilot:session-expired', handleSessionExpired)
+  }, [])
+
   const [budgetStatus, setBudgetStatus] = useState<{
     spend: number
     limit: number | null
@@ -118,10 +201,12 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
     getCurrentMessages,
     isLoading,
     error,
+    errorDetail,
     sendMessage,
     stopGeneration,
     setSessionId,
     deleteSessionMessages,
+    setError,
   } = useChatStore()
 
   const messages = getCurrentMessages()
@@ -396,8 +481,8 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                   ))}
                 </div>
                 {error && (
-                  <div className="mb-4 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-                    {error}
+                  <div className="mb-4 mt-4">
+                    <CopilotErrorBanner error={error} errorDetail={errorDetail} onDismiss={() => setError(null)} />
                   </div>
                 )}
               </div>
@@ -422,9 +507,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
               )}
 
               {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-                  {error}
-                </div>
+                <CopilotErrorBanner error={error} errorDetail={errorDetail} onDismiss={() => setError(null)} />
               )}
 
               <div ref={messagesEndRef} />
@@ -613,8 +696,8 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
                 )}
 
                 {error && (
-                  <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-                    {error}
+                  <div className="mb-6">
+                    <CopilotErrorBanner error={error} errorDetail={errorDetail} onDismiss={() => setError(null)} />
                   </div>
                 )}
 
@@ -691,9 +774,7 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
               )}
 
               {error && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
-                  {error}
-                </div>
+                <CopilotErrorBanner error={error} errorDetail={errorDetail} onDismiss={() => setError(null)} />
               )}
 
               <div ref={messagesEndRef} />

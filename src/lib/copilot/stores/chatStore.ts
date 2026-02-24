@@ -2,11 +2,21 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ChatMessage, FileAttachment, GeminiModel, AgentId, StreamChunk } from '@/lib/copilot/types'
 
+export type CopilotErrorType = 'session_expired' | 'rate_limited' | 'spending_limit' | 'stream_error' | 'network' | 'unknown'
+
+export interface CopilotError {
+  message: string
+  type: CopilotErrorType
+  status?: number
+  timestamp: number
+}
+
 interface ChatState {
   messagesById: Record<string, ChatMessage[]> // sessionId -> messages[]
   currentSessionId: string | null
   isLoading: boolean
   error: string | null
+  errorDetail: CopilotError | null
   abortController: AbortController | null
 }
 
@@ -18,7 +28,7 @@ interface ChatActions {
   clearMessages: () => void
   deleteSessionMessages: (sessionId: string) => void
   setLoading: (loading: boolean) => void
-  setError: (error: string | null) => void
+  setError: (error: string | null, detail?: Omit<CopilotError, 'message' | 'timestamp'>) => void
   setSessionId: (sessionId: string | null) => void
   stopGeneration: () => void
   sendMessage: (
@@ -41,6 +51,7 @@ export const useChatStore = create<ChatStore>()(
       currentSessionId: null,
       isLoading: false,
       error: null,
+      errorDetail: null,
       abortController: null,
 
       getCurrentMessages: () => {
@@ -101,6 +112,7 @@ export const useChatStore = create<ChatStore>()(
             [currentSessionId]: [],
           },
           error: null,
+          errorDetail: null,
         })
       },
 
@@ -115,8 +127,13 @@ export const useChatStore = create<ChatStore>()(
         set({ isLoading: loading })
       },
 
-      setError: (error) => {
-        set({ error })
+      setError: (error, detail) => {
+        set({
+          error,
+          errorDetail: error
+            ? { message: error, type: detail?.type ?? 'unknown', status: detail?.status, timestamp: Date.now() }
+            : null,
+        })
       },
 
       setSessionId: (sessionId) => {
@@ -145,7 +162,7 @@ export const useChatStore = create<ChatStore>()(
           return
         }
 
-        set({ error: null })
+        set({ error: null, errorDetail: null })
 
         // Add user message
         const userMessage: ChatMessage = {
@@ -205,7 +222,30 @@ export const useChatStore = create<ChatStore>()(
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
-            throw new Error(errorData.error || `Request failed: ${response.status}`)
+            const status = response.status
+            const serverMsg = errorData.error || ''
+
+            if (status === 401) {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('copilot:session-expired'))
+              }
+              const err = new Error('Your session has expired. Please sign in again.')
+              ;(err as any)._copilot = { type: 'session_expired' as const, status }
+              throw err
+            }
+            if (status === 429) {
+              const isSpendingLimit = serverMsg.toLowerCase().includes('spending limit')
+              const err = new Error(
+                isSpendingLimit
+                  ? serverMsg
+                  : 'Too many requests — please wait a moment and try again.'
+              )
+              ;(err as any)._copilot = { type: isSpendingLimit ? 'spending_limit' as const : 'rate_limited' as const, status }
+              throw err
+            }
+            const err = new Error(serverMsg || `Request failed (HTTP ${status})`)
+            ;(err as any)._copilot = { type: 'unknown' as const, status }
+            throw err
           }
 
           const reader = response.body?.getReader()
@@ -347,7 +387,7 @@ export const useChatStore = create<ChatStore>()(
                     break
 
                   case 'error':
-                    set({ error: parsed.error || 'An error occurred' })
+                    get().setError(parsed.error || 'An error occurred', { type: 'stream_error' })
                     if (typeof window !== 'undefined') {
                       window.dispatchEvent(new CustomEvent('copilot:step-status-clear'))
                     }
@@ -372,7 +412,10 @@ export const useChatStore = create<ChatStore>()(
           console.error('Chat error:', error)
           const errorMessage =
             error instanceof Error ? error.message : 'Failed to send message'
-          set({ error: errorMessage })
+          const copilotMeta = (error as any)?._copilot as { type: CopilotErrorType; status?: number } | undefined
+          const errorType: CopilotErrorType = copilotMeta?.type
+            ?? (error instanceof TypeError ? 'network' : 'unknown')
+          get().setError(errorMessage, { type: errorType, status: copilotMeta?.status })
 
           get().removeMessage(assistantMessageId)
         } finally {

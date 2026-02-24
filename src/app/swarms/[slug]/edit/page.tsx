@@ -18,6 +18,7 @@ import {
   Download,
   Share2,
   Trash2,
+  LogIn,
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -42,11 +43,11 @@ interface StepResultData {
 
 export default function EditSwarmPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, signIn } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const { data: swarm, isLoading: loadingSwarm } = useSwarm(resolvedParams.slug)
+  const { data: swarm, isLoading: loadingSwarm, isError: swarmError } = useSwarm(resolvedParams.slug)
   const { data: categories = [], isLoading: loadingCategories } = useCategories()
   const updateSwarm = useUpdateSwarm(resolvedParams.slug)
   const toggleFavorite = useToggleFavorite()
@@ -582,8 +583,8 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     )
   }
 
-  // Loading state
-  if (loadingSwarm) {
+  // Loading state — wait for both auth and swarm data before rendering access errors
+  if (loadingSwarm || authLoading) {
     return (
       <div className="h-screen bg-stone-50">
         <LoadingSpinner fullPage />
@@ -591,32 +592,80 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     )
   }
 
-  // Access denied state
-  if (!isAuthenticated || !swarm) {
+  // Session expired — offer sign-in instead of a dead-end error
+  if (!isAuthenticated) {
     return (
       <div className="h-screen flex items-center justify-center bg-stone-50">
-        <div className="text-center space-y-4">
-          <div className="h-16 w-16 mx-auto rounded-2xl bg-red-100 flex items-center justify-center">
-            <AlertCircle className="h-8 w-8 text-red-500" />
+        <div className="text-center space-y-4 max-w-md">
+          <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-100 flex items-center justify-center">
+            <LogIn className="h-8 w-8 text-amber-600" />
           </div>
-          <h1 className="text-2xl font-bold text-stone-800">Access Denied</h1>
-          <p className="text-stone-500">You need to be signed in and own this workflow to edit it</p>
-          <Link href={`/swarms/${resolvedParams.slug}`}>
-            <Button className="bg-brand-500 hover:bg-brand-600 text-white">
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to Workflow
+          <h1 className="text-2xl font-bold text-stone-800">Session Expired</h1>
+          <p className="text-stone-500">
+            Your session has ended. Sign in again to continue editing.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => signIn()} className="bg-brand-500 hover:bg-brand-600 text-white">
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In
             </Button>
-          </Link>
+            <Link href={`/swarms/${resolvedParams.slug}`}>
+              <Button variant="outline">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Workflow
+              </Button>
+            </Link>
+          </div>
+          <p className="text-xs text-stone-400 pt-2">
+            Slug: {resolvedParams.slug} &middot; {new Date().toLocaleTimeString()}
+          </p>
         </div>
       </div>
     )
   }
 
-  // Not authorized state
+  // Swarm not found or failed to load
+  if (!swarm) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="h-16 w-16 mx-auto rounded-2xl bg-red-100 flex items-center justify-center">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-stone-800">
+            {swarmError ? 'Failed to Load Workflow' : 'Workflow Not Found'}
+          </h1>
+          <p className="text-stone-500">
+            {swarmError
+              ? 'Something went wrong loading this workflow. Try refreshing the page.'
+              : `No workflow found at "${resolvedParams.slug}". It may have been deleted.`}
+          </p>
+          <div className="flex gap-3 justify-center">
+            {swarmError && (
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Refresh Page
+              </Button>
+            )}
+            <Link href={`/swarms/${resolvedParams.slug}`}>
+              <Button className="bg-brand-500 hover:bg-brand-600 text-white">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Workflow
+              </Button>
+            </Link>
+          </div>
+          <p className="text-xs text-stone-400 pt-2">
+            Signed in as: {user?.email} &middot; Slug: {resolvedParams.slug}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Not authorized — signed in but don't own the swarm
   if (swarm.userId !== user?.id) {
     return (
       <div className="h-screen flex items-center justify-center bg-stone-50">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4 max-w-md">
           <div className="h-16 w-16 mx-auto rounded-2xl bg-red-100 flex items-center justify-center">
             <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
@@ -628,6 +677,9 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
               Back to Workflow
             </Button>
           </Link>
+          <p className="text-xs text-stone-400 pt-2">
+            Signed in as: {user?.email} &middot; Owner: {swarm.userId}
+          </p>
         </div>
       </div>
     )

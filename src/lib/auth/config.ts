@@ -6,6 +6,21 @@ import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma/client'
 import type { Adapter } from 'next-auth/adapters'
 
+// Simple TTL cache for session isDeleted checks to avoid hitting DB on every getServerSession()
+const sessionDeletedCache = new Map<string, { isDeleted: boolean; expiresAt: number }>()
+const SESSION_CACHE_TTL_MS = 30_000 // 30 seconds
+
+function getCachedIsDeleted(userId: string): boolean | null {
+  const entry = sessionDeletedCache.get(userId)
+  if (entry && Date.now() < entry.expiresAt) return entry.isDeleted
+  if (entry) sessionDeletedCache.delete(userId)
+  return null
+}
+
+function setCachedIsDeleted(userId: string, isDeleted: boolean) {
+  sessionDeletedCache.set(userId, { isDeleted, expiresAt: Date.now() + SESSION_CACHE_TTL_MS })
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
 
@@ -214,15 +229,26 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      // Check if the user still exists and is not deleted
+      // Check if the user still exists and is not deleted (cached to avoid DB pressure)
       if (token?.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { isDeleted: true }
-        })
+        const userId = token.id as string
+        let isDeleted = getCachedIsDeleted(userId)
 
-        // If user is deleted, return null to invalidate the session
-        if (dbUser?.isDeleted) {
+        if (isDeleted === null) {
+          try {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { isDeleted: true }
+            })
+            isDeleted = dbUser?.isDeleted ?? false
+            setCachedIsDeleted(userId, isDeleted)
+          } catch {
+            // DB error — don't invalidate session, use stale-open policy
+            isDeleted = false
+          }
+        }
+
+        if (isDeleted) {
           return null as any
         }
       }

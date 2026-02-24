@@ -9,6 +9,13 @@ export async function middleware(request: NextRequest) {
   // Generate request ID for tracing
   const requestId = crypto.randomUUID()
 
+  // Never rate-limit auth session refresh — blocking this logs users out
+  if (pathname.startsWith('/api/auth/')) {
+    const response = NextResponse.next()
+    response.headers.set('X-Request-ID', requestId)
+    return response
+  }
+
   // CSRF Protection for state-changing requests
   if (
     request.method !== 'GET' &&
