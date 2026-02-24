@@ -510,7 +510,7 @@ export default function UploadPage() {
             onClick={handleSubmit}
             disabled={loading || !formData.name || !formData.description || !selectedCategoryId}
             size="sm"
-            className="bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white shadow-md"
+            className="bg-brand-500 hover:bg-brand-600 text-white shadow-md"
           >
             {loading ? (
               <>

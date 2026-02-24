@@ -50,7 +50,7 @@ interface ChatInterfaceProps {
   compact?: boolean
   onExpandRequest?: () => void
   onWorkflowGenerated?: (data: { name: string; description: string; nodes: unknown[]; edges: unknown[]; metadata?: unknown; categorySlug?: string }) => void
-  copilotOptions?: { canvasMode?: boolean; runMode?: { swarmId: string; swarmSlug: string } }
+  copilotOptions?: { canvasMode?: boolean; runMode?: { swarmId: string; swarmSlug: string }; selectedNodeId?: string; selectedNodeLabel?: string }
 }
 
 export function ChatInterface({ user, compact = false, onExpandRequest, onWorkflowGenerated, copilotOptions }: ChatInterfaceProps) {
@@ -234,6 +234,20 @@ export function ChatInterface({ user, compact = false, onExpandRequest, onWorkfl
               localStorage.setItem('draft-step-result', JSON.stringify(draft))
               router.push(`/swarms/${resultData.swarmSlug}/edit?node=${resultData.nodeId}&draft=1`)
               openPanel()
+            }
+          } catch {
+            // ignore parse errors
+          }
+        }
+
+        // Handle update_step → dispatch event so the edit page can patch local node state
+        if (tc.name === 'update_step') {
+          try {
+            const resultData = tc.result ? JSON.parse(tc.result) : null
+            if (resultData?.nodeId && resultData?.patched) {
+              window.dispatchEvent(new CustomEvent('copilot:step-updated', {
+                detail: { nodeId: resultData.nodeId, patched: resultData.patched },
+              }))
             }
           } catch {
             // ignore parse errors

@@ -62,6 +62,8 @@ export function CopilotPanel() {
             copilotOptions={{
               canvasMode: copilotOptions.canvasMode,
               runMode: copilotOptions.runMode,
+              selectedNodeId: copilotOptions.selectedNodeId,
+              selectedNodeLabel: copilotOptions.selectedNodeLabel,
             }}
           />
         ) : (

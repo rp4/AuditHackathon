@@ -38,10 +38,8 @@ export class SwarmToolRouter {
           return await this.createWorkflow(args)
         case 'update_workflow':
           return await this.updateWorkflow(args)
-        case 'get_favorites':
-          return await this.getFavorites()
-        case 'toggle_favorite':
-          return await this.toggleFavorite(args)
+        case 'update_step':
+          return await this.updateStep(args)
         case 'get_categories':
           return await this.getCategories()
         case 'get_workflow_progress':
@@ -288,67 +286,56 @@ export class SwarmToolRouter {
     }
   }
 
-  private async getFavorites(): Promise<ToolResult> {
-    const favorites = await prisma.favorite.findMany({
-      where: { userId: this.userId },
-      include: {
-        swarm: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            rating_avg: true,
-            category: { select: { name: true } },
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
+  private async updateStep(args: Record<string, unknown>): Promise<ToolResult> {
+    const slug = args.slug as string
+    const nodeId = args.nodeId as string
+    if (!slug) return { success: false, error: 'slug is required' }
+    if (!nodeId) return { success: false, error: 'nodeId is required' }
+
+    const swarm = await prisma.swarm.findFirst({
+      where: { slug, isDeleted: false },
+      select: { id: true, userId: true, workflowNodes: true },
     })
+
+    if (!swarm) return { success: false, error: `Workflow "${slug}" not found` }
+    if (swarm.userId !== this.userId) {
+      return { success: false, error: 'You can only update your own workflows' }
+    }
+
+    let nodes: Array<{ id: string; data?: Record<string, unknown>; [key: string]: unknown }> = []
+    try { nodes = JSON.parse(swarm.workflowNodes || '[]') } catch { /* empty */ }
+
+    const nodeIndex = nodes.findIndex((n) => n.id === nodeId)
+    if (nodeIndex === -1) {
+      return { success: false, error: `Step "${nodeId}" not found in workflow` }
+    }
+
+    const node = nodes[nodeIndex]
+    if (!node.data) node.data = {}
+    if (args.label) node.data.label = args.label as string
+    if (args.description) node.data.description = args.description as string
+    if (args.instructions) node.data.instructions = args.instructions as string
+
+    await prisma.swarm.update({
+      where: { id: swarm.id },
+      data: { workflowNodes: JSON.stringify(nodes) },
+    })
+
+    // Build patched fields for frontend sync
+    const patched: Record<string, string> = {}
+    if (args.label) patched.label = args.label as string
+    if (args.description) patched.description = args.description as string
+    if (args.instructions) patched.instructions = args.instructions as string
 
     return {
       success: true,
       result: {
-        favorites: favorites.map((f) => ({
-          swarmId: f.swarm.id,
-          name: f.swarm.name,
-          slug: f.swarm.slug,
-          description: f.swarm.description,
-          category: f.swarm.category?.name || null,
-          rating: f.swarm.rating_avg,
-          favoritedAt: f.createdAt,
-        })),
-        total: favorites.length,
+        nodeId,
+        slug,
+        label: node.data.label || nodeId,
+        patched,
+        message: `Step "${node.data.label || nodeId}" updated successfully.`,
       },
-    }
-  }
-
-  private async toggleFavorite(args: Record<string, unknown>): Promise<ToolResult> {
-    const swarmId = args.swarmId as string
-    if (!swarmId) return { success: false, error: 'swarmId is required' }
-
-    const existing = await prisma.favorite.findUnique({
-      where: { userId_swarmId: { userId: this.userId, swarmId } },
-    })
-
-    if (existing) {
-      await prisma.$transaction([
-        prisma.favorite.delete({ where: { id: existing.id } }),
-        prisma.swarm.update({
-          where: { id: swarmId },
-          data: { favorites_count: { decrement: 1 } },
-        }),
-      ])
-      return { success: true, result: { favorited: false, message: 'Removed from favorites' } }
-    } else {
-      await prisma.$transaction([
-        prisma.favorite.create({ data: { userId: this.userId, swarmId } }),
-        prisma.swarm.update({
-          where: { id: swarmId },
-          data: { favorites_count: { increment: 1 } },
-        }),
-      ])
-      return { success: true, result: { favorited: true, message: 'Added to favorites' } }
     }
   }
 

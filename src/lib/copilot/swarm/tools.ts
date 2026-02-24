@@ -117,25 +117,28 @@ export const SWARM_TOOL_DECLARATIONS: FunctionDeclaration[] = [
     },
   },
   {
-    name: 'get_favorites',
-    description: "Get the current user's favorited workflow templates.",
-    parametersJsonSchema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'toggle_favorite',
-    description: 'Favorite or unfavorite a workflow template.',
+    name: 'update_step',
+    description:
+      'Update a single step (node) in a workflow. Patches only the provided fields — other nodes and fields are preserved. Owner only.',
     parametersJsonSchema: {
       type: 'object',
       properties: {
-        swarmId: {
+        slug: {
           type: 'string',
-          description: 'The Swarm ID to favorite or unfavorite',
+          description: 'Workflow slug',
+        },
+        nodeId: {
+          type: 'string',
+          description: 'The node ID of the step to update',
+        },
+        label: { type: 'string', description: 'New step label' },
+        description: { type: 'string', description: 'New step description' },
+        instructions: {
+          type: 'string',
+          description: 'New step instructions (supports markdown)',
         },
       },
-      required: ['swarmId'],
+      required: ['slug', 'nodeId'],
     },
   },
   {

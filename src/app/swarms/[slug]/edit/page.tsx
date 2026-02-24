@@ -149,9 +149,13 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     })
   }
 
-  // Register copilot options so the global panel has run mode context
+  // Register copilot options so the global panel has run mode context + selected node
   useRegisterCopilotOptions({
     ...(swarm?.id ? { runMode: { swarmId: swarm.id, swarmSlug: resolvedParams.slug } } : {}),
+    ...(selectedNodeId ? {
+      selectedNodeId,
+      selectedNodeLabel: workflowNodes.find(n => n.id === selectedNodeId)?.data?.label || selectedNodeId,
+    } : {}),
   })
 
   // Populate form when swarm loads
@@ -283,19 +287,38 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
     }
   }, [searchParams, router, resolvedParams.slug])
 
-  // Handle ?node= param without draft — just auto-select the node
+  // Listen for copilot update_step events and patch the affected node in local state
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { nodeId, patched } = (e as CustomEvent).detail as {
+        nodeId: string
+        patched: Record<string, string>
+      }
+      setWorkflowNodes(prev =>
+        prev.map(node =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, ...patched } }
+            : node
+        )
+      )
+    }
+    window.addEventListener('copilot:step-updated', handler)
+    return () => window.removeEventListener('copilot:step-updated', handler)
+  }, [])
+
+  // Handle ?node= param without draft — auto-select the node (URL persists for context)
   useEffect(() => {
     const nodeParam = searchParams.get('node')
     const draftParam = searchParams.get('draft')
     if (!nodeParam || draftParam === '1') return
     if (!workflowNodes.length) return
+    if (selectedNodeId === nodeParam) return
 
     const nodeExists = workflowNodes.some(n => n.id === nodeParam)
     if (nodeExists) {
       setSelectedNodeId(nodeParam)
-      router.replace(`/swarms/${resolvedParams.slug}/edit`, { scroll: false })
     }
-  }, [searchParams, workflowNodes, router, resolvedParams.slug])
+  }, [searchParams, workflowNodes, selectedNodeId])
 
   const handleNodesChange = useCallback((nodes: Node[]) => {
     setWorkflowNodes(nodes)
@@ -307,11 +330,21 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     setSelectedNodeId(node.id)
+    // Sync to URL for persistence and copilot context
+    const url = new URL(window.location.href)
+    url.searchParams.set('node', node.id)
+    url.searchParams.delete('draft')
+    window.history.replaceState(null, '', url.toString())
   }, [])
 
   const handleDeselectNode = useCallback(() => {
     setSelectedNodeId(null)
     setIsDraftResult(false)
+    // Clear node from URL
+    const url = new URL(window.location.href)
+    url.searchParams.delete('node')
+    url.searchParams.delete('draft')
+    window.history.replaceState(null, '', url.toString())
   }, [])
 
   const handleNodeUpdate = useCallback((nodeId: string, field: string, value: string) => {
@@ -720,7 +753,7 @@ export default function EditSwarmPage({ params }: { params: Promise<{ slug: stri
             onClick={handleSubmit}
             disabled={updateSwarm.isPending || !formData.name || !formData.description}
             size="sm"
-            className="bg-gradient-to-r from-brand-500 to-brand-end-500 hover:from-brand-600 hover:to-brand-end-600 text-white shadow-md"
+            className="bg-brand-500 hover:bg-brand-600 text-white shadow-md"
           >
             {updateSwarm.isPending ? (
               <>

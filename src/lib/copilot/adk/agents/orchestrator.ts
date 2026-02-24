@@ -32,6 +32,8 @@ export const DELEGATE_TO_DECLARATION: FunctionDeclaration = {
 export interface OrchestratorOptions {
   canvasMode?: boolean
   runMode?: { swarmId: string; swarmSlug: string }
+  selectedNodeId?: string
+  selectedNodeLabel?: string
 }
 
 const BASE_INSTRUCTION = `You are the AI copilot for AuditSwarm, a workflow template marketplace for auditors. You help users create, browse, and execute audit workflow templates.
@@ -48,21 +50,19 @@ When a user asks about workflows, always call the appropriate tool. Do not guess
 3. **create_workflow** — Create a new workflow template with nodes and edges
 4. **update_workflow** — Edit an existing workflow (owner only)
 
-### User Interactions
-5. **get_favorites** — View the user's favorited workflows
-6. **toggle_favorite** — Favorite or unfavorite a workflow
+5. **update_step** — Update a single step's label, description, or instructions without resending the full nodes array (owner only)
 
 ### Workflow Execution (Personal Workbook)
-7. **get_workflow_progress** — See which steps the user has completed, topological order, and next available steps
-8. **save_step_result** — Send AI-generated result for a step to the edit page for user review (NOT auto-saved)
-9. **get_step_context** — Get step instructions, upstream dependencies, and the user's completed upstream results
-10. **get_execution_plan** — Get the full execution plan: topological order, parallel groups, dependency graph, and next available steps
+6. **get_workflow_progress** — See which steps the user has completed, topological order, and next available steps
+7. **save_step_result** — Send AI-generated result for a step to the edit page for user review (NOT auto-saved)
+8. **get_step_context** — Get step instructions, upstream dependencies, and the user's completed upstream results
+9. **get_execution_plan** — Get the full execution plan: topological order, parallel groups, dependency graph, and next available steps
 
 ### Delegation
-11. **delegate_to** — Delegate to wrangler (Bluth demo data) or analyzer (Python code)
+10. **delegate_to** — Delegate to wrangler (Bluth demo data) or analyzer (Python code)
 
 ### Judge Evaluation
-12. **submit_to_judge** — Submit compiled audit findings for evaluation against the known issues database. Only call AFTER workflow completion AND user confirmation.
+11. **submit_to_judge** — Submit compiled audit findings for evaluation against the known issues database. Only call AFTER workflow completion AND user confirmation.
 
 ## Hardcoded Categories
 
@@ -129,6 +129,32 @@ export function getOrchestratorSystemInstruction(options?: OrchestratorOptions):
   // Load canvas mode skill when applicable
   if (options?.canvasMode) {
     parts.push(loadSkill('canvas-mode'))
+  }
+
+  // Inject unified context block with swarmId + selectedNodeId together
+  if (options?.runMode || options?.selectedNodeId) {
+    const contextLines: string[] = ['## Current User Context\n']
+
+    if (options?.runMode) {
+      contextLines.push(
+        `You are working on workflow "${options.runMode.swarmSlug}" (swarmId: ${options.runMode.swarmId}).`
+      )
+    }
+
+    if (options?.selectedNodeId) {
+      const label = options.selectedNodeLabel || options.selectedNodeId
+      contextLines.push(
+        `The user has selected step "${label}" (nodeId: ${options.selectedNodeId}) on the workflow canvas. ` +
+        `When they ask about "this step", "the current step", or "this one", they mean this step.`
+      )
+      if (options?.runMode) {
+        contextLines.push(
+          `To get full details, call get_step_context with swarmId: "${options.runMode.swarmId}" and nodeId: "${options.selectedNodeId}".`
+        )
+      }
+    }
+
+    parts.push(contextLines.join('\n'))
   }
 
   return parts.join('\n\n')

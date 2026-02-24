@@ -5,6 +5,8 @@ import { createContext, useContext, useCallback, useRef, useState, useEffect, ty
 interface CopilotPageOptions {
   canvasMode?: boolean
   runMode?: { swarmId: string; swarmSlug: string }
+  selectedNodeId?: string
+  selectedNodeLabel?: string
   onWorkflowGenerated?: (data: {
     name: string
     description: string
@@ -72,4 +74,11 @@ export function useRegisterCopilotOptions(opts: CopilotPageOptions) {
     register(optsRef as React.RefObject<CopilotPageOptions>)
     return () => unregister()
   }, [register, unregister])
+
+  // Re-register when dynamic options change so the provider re-renders
+  // and the context value reflects the latest selectedNodeId
+  const selectedNodeId = opts.selectedNodeId
+  useEffect(() => {
+    register(optsRef as React.RefObject<CopilotPageOptions>)
+  }, [register, selectedNodeId])
 }

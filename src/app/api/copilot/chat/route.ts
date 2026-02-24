@@ -31,6 +31,8 @@ const chatRequestSchema = z.object({
     swarmId: z.string().max(100).regex(/^[a-zA-Z0-9_-]+$/),
     swarmSlug: z.string().max(200).regex(/^[a-z0-9-]+$/),
   }).optional(),
+  selectedNodeId: z.string().max(100).optional(),
+  selectedNodeLabel: z.string().max(500).optional(),
 })
 
 /**
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const raw = await request.json()
     const body = chatRequestSchema.parse(raw)
-    const { message, attachments, model = 'gemini-3-flash-preview', sessionId, history = [], agentId = 'copilot', canvasMode, runMode } = body
+    const { message, attachments, model = 'gemini-3-flash-preview', sessionId, history = [], agentId = 'copilot', canvasMode, runMode, selectedNodeId, selectedNodeLabel } = body
 
     if (!message && (!attachments || attachments.length === 0)) {
       return NextResponse.json(
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
       agent = createCharacterAgent({ characterId, model, userId, userEmail, sessionId })
     } else {
       // Default: Copilot (MultiAgentOrchestrator)
-      agent = createMultiAgentOrchestrator({ model, userId, userEmail, sessionId, canvasMode, runMode })
+      agent = createMultiAgentOrchestrator({ model, userId, userEmail, sessionId, canvasMode, runMode, selectedNodeId, selectedNodeLabel })
     }
 
     const encoder = new TextEncoder()

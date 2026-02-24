@@ -202,31 +202,8 @@ export async function evaluateFindings(params: {
   // Update the report with actual new count
   await updateReport(report.id, { newIssues: newlyFound.length })
 
-  // Get updated totals
+  // Get updated discovery count (do NOT expose total issue count — that leaks the answer key)
   const totalDiscovered = await getUserDiscoveryCount(userId)
-  const totalIssues = await prisma.auditIssue.count({
-    where: { isActive: true },
-  })
-
-  // Get category breakdown for the scorecard
-  const allIssuesByCategory = await prisma.auditIssue.groupBy({
-    by: ['category'],
-    where: { isActive: true },
-    _count: true,
-  })
-  const discoveries = await prisma.issueDiscovery.findMany({
-    where: { userId },
-    include: { issue: { select: { category: true } } },
-  })
-  const categoryBreakdown: Record<string, { found: number; total: number }> = {}
-  for (const g of allIssuesByCategory) {
-    categoryBreakdown[g.category] = { found: 0, total: g._count }
-  }
-  for (const d of discoveries) {
-    if (categoryBreakdown[d.issue.category]) {
-      categoryBreakdown[d.issue.category].found++
-    }
-  }
 
   return {
     success: true,
@@ -237,14 +214,11 @@ export async function evaluateFindings(params: {
       newCount: newlyFound.length,
       alreadyFoundCount: alreadyFound.length,
       totalDiscovered,
-      totalIssues,
-      percentage: Math.round((totalDiscovered / Math.max(totalIssues, 1)) * 100),
-      categoryBreakdown,
       reasoning,
       message:
         newlyFound.length > 0
-          ? `${newlyFound.length} new issue(s) credited! You have now found ${totalDiscovered} of ${totalIssues} total issues.`
-          : `No new issues found in this report. You have found ${totalDiscovered} of ${totalIssues} total issues.`,
+          ? `${newlyFound.length} new issue(s) credited! You have now found ${totalDiscovered} issues total.`
+          : `No new issues found in this report. You have found ${totalDiscovered} issues total.`,
     },
   }
 }
@@ -284,7 +258,7 @@ async function judgeToolRouter(
   }
 
   if (name === 'get_user_issue_status') {
-    const [discoveries, totalIssues, reportCount] = await Promise.all([
+    const [discoveries, reportCount] = await Promise.all([
       prisma.issueDiscovery.findMany({
         where: { userId },
         include: {
@@ -293,28 +267,14 @@ async function judgeToolRouter(
           },
         },
       }),
-      prisma.auditIssue.count({ where: { isActive: true } }),
       getUserReportCount(userId),
     ])
 
-    // Group by category
-    const allIssues = await prisma.auditIssue.groupBy({
-      by: ['category'],
-      where: { isActive: true },
-      _count: true,
-    })
-    const categoryTotals = Object.fromEntries(
-      allIssues.map(g => [g.category, g._count])
-    )
-
-    const byCategory: Record<string, { found: number; total: number; codes: string[] }> =
-      {}
-    for (const [cat, total] of Object.entries(categoryTotals)) {
-      byCategory[cat] = { found: 0, total, codes: [] }
-    }
+    // Group found issues by category (only show counts the user has found — never reveal totals)
+    const byCategory: Record<string, { found: number; codes: string[] }> = {}
     for (const d of discoveries) {
       const cat = d.issue.category
-      if (!byCategory[cat]) byCategory[cat] = { found: 0, total: 0, codes: [] }
+      if (!byCategory[cat]) byCategory[cat] = { found: 0, codes: [] }
       byCategory[cat].found++
       byCategory[cat].codes.push(d.issue.issueCode)
     }
@@ -323,9 +283,7 @@ async function judgeToolRouter(
       success: true,
       result: {
         totalFound: discoveries.length,
-        totalIssues,
         reportsSubmitted: reportCount,
-        percentage: Math.round((discoveries.length / Math.max(totalIssues, 1)) * 100),
         byCategory,
         foundIssueCodes: discoveries.map(d => d.issue.issueCode),
       },

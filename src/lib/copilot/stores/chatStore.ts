@@ -27,7 +27,7 @@ interface ChatActions {
     model?: GeminiModel,
     agentId?: AgentId,
     onFirstMessage?: (content: string) => void,
-    options?: { canvasMode?: boolean; runMode?: { swarmId: string; swarmSlug: string } }
+    options?: { canvasMode?: boolean; runMode?: { swarmId: string; swarmSlug: string }; selectedNodeId?: string; selectedNodeLabel?: string }
   ) => Promise<void>
 }
 
@@ -198,6 +198,7 @@ export const useChatStore = create<ChatStore>()(
               agentId,
               ...(options?.canvasMode && { canvasMode: true }),
               ...(options?.runMode && { runMode: options.runMode }),
+              ...(options?.selectedNodeId && { selectedNodeId: options.selectedNodeId, selectedNodeLabel: options.selectedNodeLabel }),
             }),
             signal: abortController.signal,
           })

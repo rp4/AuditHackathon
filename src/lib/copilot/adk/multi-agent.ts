@@ -45,6 +45,8 @@ interface MultiAgentConfig {
   sessionId?: string
   canvasMode?: boolean
   runMode?: { swarmId: string; swarmSlug: string }
+  selectedNodeId?: string
+  selectedNodeLabel?: string
 }
 
 export class MultiAgentOrchestrator {
@@ -154,6 +156,8 @@ export class MultiAgentOrchestrator {
         systemInstruction: getOrchestratorSystemInstruction({
           canvasMode: this.config.canvasMode,
           runMode: this.config.runMode,
+          selectedNodeId: this.config.selectedNodeId,
+          selectedNodeLabel: this.config.selectedNodeLabel,
         }),
         tools: [
           {
@@ -528,6 +532,8 @@ export function createMultiAgentOrchestrator(config: {
   sessionId?: string
   canvasMode?: boolean
   runMode?: { swarmId: string; swarmSlug: string }
+  selectedNodeId?: string
+  selectedNodeLabel?: string
 }): MultiAgentOrchestrator {
   return new MultiAgentOrchestrator({
     model: config.model || 'gemini-3-flash-preview',
@@ -536,5 +542,7 @@ export function createMultiAgentOrchestrator(config: {
     sessionId: config.sessionId,
     canvasMode: config.canvasMode,
     runMode: config.runMode,
+    selectedNodeId: config.selectedNodeId,
+    selectedNodeLabel: config.selectedNodeLabel,
   })
 }

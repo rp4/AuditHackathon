@@ -4,10 +4,10 @@ When the user asks to "skillify" a workflow, enhance step instructions, or gener
 1. Call **get_workflow** with the workflow slug to get the full current state (nodes, edges, metadata)
 2. For each step node, determine its upstream dependencies (edges where `target === nodeId`) and downstream dependents (edges where `source === nodeId`)
 3. For each step, generate a comprehensive markdown skill document using the template below
-4. Call **update_workflow** with the slug and the FULL nodes array — where each targeted step's `instructions` field contains the new skill document. Preserve all other node properties (id, type, position, label, description) exactly as they were
+4. Call **update_step** for each step with the slug, nodeId, and the new `instructions` content. This patches only the targeted step — no need to resend the full nodes array
 5. Confirm the changes and list which steps were enhanced
 
-**IMPORTANT**: When calling update_workflow, include ALL nodes (not just the skillified ones). Copy non-targeted nodes unchanged. Only modify the `instructions` field of targeted nodes. If a step already has instructions, incorporate and improve that content rather than discarding it.
+**IMPORTANT**: If a step already has instructions, incorporate and improve that content rather than discarding it.
 
 ### Skill Document Template
 
