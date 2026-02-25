@@ -1,8 +1,8 @@
-# AuditSwarm
+# AuditAllstars
 
 **An AI-powered audit workflow platform built by auditors, for auditors.**
 
-AuditSwarm is a production-ready platform where audit professionals create, share, and execute visual workflow templates - with an AI copilot that runs each step against real data. Unlike general-purpose AI agents that demand open-ended system access, AuditSwarm is **secure and scoped**: the AI operates strictly within the boundaries of defined workflow steps, with no ability to modify source systems or take unsupervised action.
+AuditAllstars is a production-ready platform where audit professionals create, share, and execute visual workflow templates - with an AI copilot that runs each step against real data. Unlike general-purpose AI agents that demand open-ended system access, AuditAllstars is **secure and scoped**: the AI operates strictly within the boundaries of defined workflow steps, with no ability to modify source systems or take unsupervised action.
 
 > Built entirely in [Claude Code](https://claude.ai/code) by a cross-industry team of auditors.
 
@@ -14,7 +14,7 @@ Auditors across every industry repeat the same manual processes -mapping control
 
 ## The Solution
 
-AuditSwarm delivers four integrated components that together form a complete audit execution platform:
+AuditAllstars delivers four integrated components that together form a complete audit execution platform:
 
 ### 1. Workflow Library
 
@@ -62,7 +62,7 @@ A SAP CAP-based OData v4 mock server that simulates a realistic enterprise envir
 
 ### Secure and Scoped -Not Another Open Agent
 
-Most AI agent frameworks give the model broad access and hope for the best. AuditSwarm takes the opposite approach:
+Most AI agent frameworks give the model broad access and hope for the best. AuditAllstars takes the opposite approach:
 
 - **Workflow-defined scope** -AI only executes the steps defined in the workflow template
 - **Role-separated agents** -Each sub-agent has a strict tool set with no cross-access
@@ -83,7 +83,7 @@ Our team is composed of audit professionals from across industries -financial se
 
 ### Works Today
 
-This is not a concept or a slide deck. AuditSwarm is a **deployed, functional platform**:
+This is not a concept or a slide deck. AuditAllstars is a **deployed, functional platform**:
 
 - **[auditallstars.com](https://auditallstars.com)** -The main platform: workflow library, AI copilot, and gamified evaluation
 - **[data.auditallstars.com](https://data.auditallstars.com)** -The Bluth Company MCP server providing mock enterprise data
@@ -96,7 +96,7 @@ This is not a concept or a slide deck. AuditSwarm is a **deployed, functional pl
 ## Architecture
 
 ```
-                         AuditSwarm Platform
+                         AuditAllstars Platform
     +---------------------------------------------------------+
     |                                                         |
     |  Workflow Library          AI Copilot (Multi-Agent)     |
@@ -133,7 +133,7 @@ This is not a concept or a slide deck. AuditSwarm is a **deployed, functional pl
 
 ## Industry Agnostic by Design
 
-AuditSwarm is not tied to any single industry or audit type. The platform supports:
+AuditAllstars is not tied to any single industry or audit type. The platform supports:
 
 - **Financial audits** -Journal entry testing, bank reconciliation, vendor analysis
 - **IT audits** -Access reviews, segregation of duties, change management
@@ -141,10 +141,10 @@ AuditSwarm is not tied to any single industry or audit type. The platform suppor
 - **Operational audits** -Process efficiency analysis, risk assessment, benchmarking
 - **Forensic investigations** -Anomaly detection, pattern analysis, transaction tracing
 
-Any audit process that can be expressed as a sequence of steps with dependencies can be modeled, shared, and executed in AuditSwarm. The workflow library grows with every team that contributes -making the platform more valuable for all auditors, regardless of industry.
+Any audit process that can be expressed as a sequence of steps with dependencies can be modeled, shared, and executed in AuditAllstars. The workflow library grows with every team that contributes -making the platform more valuable for all auditors, regardless of industry.
 
 ---
 
 ## Team
 
-A cross-industry team of audit professionals who believe AI should augment auditor judgment, not replace it. We built AuditSwarm because we live the problem every day -and because we know that the best audit technology is the kind that respects how auditors actually work.
+A cross-industry team of audit professionals who believe AI should augment auditor judgment, not replace it. We built AuditAllstars because we live the problem every day -and because we know that the best audit technology is the kind that respects how auditors actually work.
