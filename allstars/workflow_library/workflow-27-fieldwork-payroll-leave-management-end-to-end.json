@@ -1,0 +1,303 @@
+{
+  "name": "Fieldwork: Payroll & Leave Management (End-to-End)",
+  "description": "Comprehensive Payroll and Leave Management audit with data connectivity, population extraction, transactional testing, and final reporting.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-connection",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 390
+        },
+        "data": {
+          "label": "1. Establish Data Connection",
+          "description": "Establish secure MCP connectivity to the Payroll/HRIS database.",
+          "instructions": "# Data Connection & Governance\n\n## Objective\nEstablish a secure link between AuditSwarm and the source systems (ERP/HRIS) to ensure data integrity and read-only access.\n\n## Procedure\n1. **Identify Source Systems**: Map endpoints for systems like Workday, SAP, or Oracle Payroll.\n2. **Configure MCP Connection**: Use the Model Context Protocol to define:\n   - `host_endpoint`: Server URL/IP.\n   - `auth_method`: Service Account/API Token.\n   - `schema_name`: Target database schema (e.g., `PAYROLL_PROD`).\n3. **Validate Connectivity**: Run a test query to confirm read access to core tables (`employees`, `pay_runs`).\n\n## Attributes for Extraction\n- `Connection_Status`\n- `Access_Level_Confirmed`\n- `Last_Sync_Timestamp`\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-extraction",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "2. Population Extraction",
+          "description": "Extract full populations for payroll, leave, and user access.",
+          "instructions": "# Evidence Extraction & Population Gathering\n\n## Objective\nExtract the full population of transactions for the audit period to ensure completeness before sampling.\n\n## Procedure\n1. **Extract Payroll Register**: Pull all pay cycles for the period (Attributes: `employee_id`, `pay_period`, `gross_amt`, `net_amt`, `tax_total`).\n2. **Extract Leave Ledger**: Pull all leave adjustments and balances (Attributes: `adjustment_id`, `emp_id`, `leave_type`, `hours_adjusted`).\n3. **Extract Employee Master**: Pull current status, department, and pay rates (Attributes: `pay_rate`, `effective_date`, `status`).\n4. **Extract User Access List**: List of all users with 'Write' access to payroll (Attributes: `user_id`, `role_name`, `last_login`).\n\n## Quality Criteria\n- Total record count matches the general ledger control totals.\n- No date gaps in the pay cycle extraction.\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-recalc",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Payment Recalculation",
+          "description": "Recalculate gross-to-net for a sample of payments.",
+          "instructions": "# Payroll Recalculation Testing\n\n## Objective\nVerify the mathematical accuracy of payroll calculations via transactional re-performance.\n\n## Procedure\n1. **Sample Selection**: Select X records from the `Payroll_Register`.\n2. **Attribute Verification**:\n   - Trace `pay_rate` to Employee Master.\n   - Recalculate `Gross Pay` (Hours * Rate).\n   - Recalculate `Taxes` and `Benefits` based on statutory/plan rules.\n3. **Compare Result**: Verify `Recalculated_Net` == `System_Net`.\n\n## Transactional Attributes\n- `calc_variance_amt`\n- `calc_variance_pct`\n- `audit_status` (Pass/Fail)\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-payrate",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "4. Pay Rate Change Review",
+          "description": "Verify authorization for pay rate changes.",
+          "instructions": "# Pay Rate Change Authorization\n\n## Objective\nEnsure all changes to compensation are authorized by appropriate management.\n\n## Procedure\n1. **Extract Audit Trail**: Filter the `Employee_Master` for any `pay_rate` changes in the period.\n2. **Attribute Matching**:\n   - Identify `modified_by` user.\n   - Trace to `approval_ticket_id` or `manager_signoff` field.\n3. **Timing Check**: Ensure `approval_date` <= `effective_date`.\n\n## Transactional Attributes\n- `old_rate`, `new_rate`\n- `approver_user_id`\n- `approval_timestamp`\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 280,
+        "height": 100
+      },
+      {
+        "id": "step-leave",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "5. Leave Adjustment Testing",
+          "description": "Trace leave adjustments to approved requests.",
+          "instructions": "# Leave Adjustment Verification\n\n## Objective\nVerify that manual adjustments to leave balances are valid and approved.\n\n## Procedure\n1. **Identify Adjustments**: Filter `Leave_Ledger` for `manual_entry` flags.\n2. **Trace to Source**: Link the `adjustment_id` to the HR ticket or approved leave request form.\n3. **Attribute Check**: Verify the `hours_adjusted` matches the supporting documentation.\n\n## Transactional Attributes\n- `adjustment_type`\n- `supporting_doc_ref`\n- `adjustment_reason`\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 301,
+        "height": 100,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-access",
+        "type": "step",
+        "position": {
+          "x": 860,
+          "y": 560
+        },
+        "data": {
+          "label": "6. User Access Review",
+          "description": "Verify payroll system access and SOD.",
+          "instructions": "# Access & Segregation of Duties\n\n## Objective\nConfirm that only authorized personnel have access and no SOD conflicts exist.\n\n## Procedure\n1. **Role Analysis**: Review `user_role_mapping`.\n2. **SOD Check**: Identify users holding both `HR_Admin` (Rate changes) and `Payroll_Processor` (Payment execution) roles.\n3. **Termination Check**: Cross-reference `User_List` against `Terminated_Employee_List`.\n\n## Transactional Attributes\n- `sod_conflict_flag`\n- `term_access_flag`\n- `access_review_date`\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 280,
+        "height": 100,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 860,
+          "y": 560
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-recon",
+        "type": "step",
+        "position": {
+          "x": 860,
+          "y": 720
+        },
+        "data": {
+          "label": "7. Reconciliation Testing",
+          "description": "Inspect payroll reconciliation evidence.",
+          "instructions": "# Payroll Reconciliation Controls\n\n## Objective\nVerify that periodic reconciliations are performed and reviewed.\n\n## Procedure\n1. **Examine Evidence**: Inspect monthly `Reconciliation_Reports`.\n2. **Verify Attributes**:\n   - Presence of `preparer_id`.\n   - Presence of `reviewer_id` (must be different from preparer).\n   - Date of review within 5 days of payroll cycle completion.\n\n## Quality Criteria\n- Evidence of resolution for all reconciling items.\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 280,
+        "height": 100,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 860,
+          "y": 720
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-report",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 390
+        },
+        "data": {
+          "label": "8. Findings & Reporting",
+          "description": "Compile all findings and generate the final audit report.",
+          "instructions": "# Final Findings & Issue Report\n\n## Objective\nConsolidate results from all testing steps into a formal audit report.\n\n## Procedure\n1. **Aggregate Findings**: Collect all 'Fail' statuses from previous steps.\n2. **Quantify Impact**: Calculate total dollar value at risk (e.g., total of inaccurate payments).\n3. **Assign Severity**: Rate issues (High/Medium/Low) based on impact and likelihood.\n4. **Draft Report**: Generate summary including:\n   - Condition, Cause, and Consequence.\n   - Management Recommendations.\n\n## Expected Outputs\n- [ ] Final Audit Report (PDF/Markdown)\n- [ ] Issue Tracker Entry\n- [ ] Management Letter Points\n",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-connection",
+        "target": "step-extraction",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-extraction",
+        "target": "step-recalc",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-extraction",
+        "target": "step-payrate",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-extraction",
+        "target": "step-leave",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-extraction",
+        "target": "step-access",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-7",
+        "source": "step-extraction",
+        "target": "step-recon",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-8",
+        "source": "step-recalc",
+        "target": "step-report",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-8",
+        "source": "step-payrate",
+        "target": "step-report",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-8",
+        "source": "step-leave",
+        "target": "step-report",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-8",
+        "source": "step-access",
+        "target": "step-report",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e7-8",
+        "source": "step-recon",
+        "target": "step-report",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

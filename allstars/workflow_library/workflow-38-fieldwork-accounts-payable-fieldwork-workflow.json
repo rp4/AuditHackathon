@@ -1,0 +1,210 @@
+{
+  "name": "Fieldwork: Accounts Payable Fieldwork Workflow",
+  "description": "Fieldwork steps for auditing Accounts Payable, covering risk assessment responses, substantive testing, and data analytics based on standard audit procedures.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "position": {
+          "y": 305,
+          "x": 50
+        },
+        "id": "step-1",
+        "type": "step",
+        "data": {
+          "instructions": "# Internal Control Testing\n\n## Objective\nTo evaluate the design and operating effectiveness of key controls in the Accounts Payable process to ensure that only valid, authorized, and accurate transactions are recorded.\n\n## Prerequisites\n- Access to the Accounts Payable (AP) policy manual\n- Access to the Purchase Order (PO) system and receiving logs\n- A representative sample of vendor invoices from the audit period\n\n## Procedure\n### 1. 3-Way Matching Verification\n- **Select a sample** of invoices and trace each back to its corresponding PO and receiving report.\n- **Verify alignment** on price and quantity across all three documents.\n- **Identify discrepancies** and check if they were flagged by the system or staff.\n\n### 2. Authorization & Spending Limits\n- **Check signatory authority** for each sampled transaction.\n- **Verify compliance** with the organization's delegated authority matrix (DAM).\n- **Scan for overrides** where controls may have been bypassed by management.\n\n### 3. Vendor Master File Controls\n- **Review new vendor additions** during the period.\n- **Verify documentation** (W-9s, business licenses) and approval signatures for new entries.\n\n## Expected Outputs\n- [ ] Control Testing Matrix — document findings for each sample item\n- [ ] Deficiency Log — list of any control gaps or operating failures\n\n## Quality Criteria\n- All samples must be traceable to primary source documents.\n- Deviations must be investigated and documented with management's explanation.\n- Results should conclude on whether controls can be relied upon for substantive testing.",
+          "description": "Test internal controls such as 3-way matching, spending limits, and vendor approvals.",
+          "label": "Internal Control Testing"
+        }
+      },
+      {
+        "position": {
+          "y": 305,
+          "x": 450
+        },
+        "id": "step-2",
+        "type": "step",
+        "data": {
+          "label": "AP Listing Reconciliation",
+          "instructions": "Obtain the AP aging report. Agree the total to the general ledger control account. Investigate any significant reconciling items.",
+          "description": "Reconcile the AP aging report to the general ledger balance."
+        }
+      },
+      {
+        "id": "step-3",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "description": "Scan post-year-end bank statements and invoices for unrecorded liabilities.",
+          "instructions": "Review cash disbursements made after year-end. Trace to invoices and ensure that if the expense relates to the current year, it is recorded in the AP balance.",
+          "label": "Unrecorded Liabilities Search"
+        },
+        "type": "step"
+      },
+      {
+        "position": {
+          "y": 220,
+          "x": 850
+        },
+        "id": "step-4",
+        "type": "step",
+        "data": {
+          "label": "Substantive Analytics",
+          "instructions": "Calculate AP turnover, trade payables as % of cash, and average payment period. Compare to prior year and industry benchmarks.",
+          "description": "Calculate and analyze key ratios like AP turnover and payment period."
+        }
+      },
+      {
+        "type": "step",
+        "data": {
+          "description": "Directly verify balances with a sample of third-party suppliers.",
+          "instructions": "Select a sample of vendors (including those with high activity but low balances). Send confirmation requests and reconcile responses to client records.",
+          "label": "Supplier Confirmations"
+        },
+        "position": {
+          "y": 390,
+          "x": 850
+        },
+        "id": "step-5"
+      },
+      {
+        "type": "step",
+        "data": {
+          "label": "Accruals & Contingent Liabilities",
+          "description": "Verify the accuracy and completeness of accruals and legal claims.",
+          "instructions": "Review legal expense accounts and inquire with management about potential lawsuits or contingent liabilities. Verify the calculation of significant accruals."
+        },
+        "position": {
+          "y": 560,
+          "x": 850
+        },
+        "id": "step-6"
+      },
+      {
+        "type": "step",
+        "data": {
+          "label": "Data Analytics (Fraud)",
+          "description": "Use data analytics to identify duplicates and potential fraud.",
+          "instructions": "Analyze the vendor master file for duplicate names, addresses, or tax IDs. Compare vendor addresses against employee addresses. Search for duplicate invoice numbers and amounts."
+        },
+        "position": {
+          "x": 1250,
+          "y": 305
+        },
+        "id": "step-7"
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-7",
+        "source": "step-3",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-7",
+        "source": "step-4",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-7",
+        "source": "step-5",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

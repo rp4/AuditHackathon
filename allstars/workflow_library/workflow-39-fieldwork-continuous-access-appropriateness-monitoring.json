@@ -1,0 +1,134 @@
+{
+  "name": "Fieldwork: Continuous Access Appropriateness Monitoring",
+  "description": "A continuous auditing workflow that uses AI to monitor user access appropriateness daily, mapping access to HR data and evaluating transactional impact for flagged anomalies.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "Data Ingestion & HR Mapping",
+          "description": "Normalize and join HR records with system user listings using unique identifiers.",
+          "instructions": "# Data Ingestion & HR Mapping\\n\\n## Objective\\nEstablish a clean, unified dataset linking employee lifecycle data (HR) to system-level permissions.\\n\\n## Procedure\\n1. **Import HR Data**: Fetch listings including employee ID, first name, last name, Job Title, Department.\\n2. **Import User Data**: Fetch system user lists with unique identifiers tied to employee ID, roles, access provisioned by, and last login dates.\\n3. **Map Identities**: Perform a join between HR and User data based on the unique identifier (e.g., Employee ID).\\n4. **Identify Gaps**: Flag any system accounts without a corresponding HR record (orphan accounts).\\n\\n## Expected Outputs\\n- Unified User-HR Master Table\\n- List of Orphan Accounts"
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "Risk Profiling & Baselines",
+          "description": "Analyze historical UARs and risk rankings to define the 'normal' access baseline for roles/departments.",
+          "instructions": "# Risk Profiling & Baselines\\n\\n## Objective\\nDefine the \\\"norm\\\" for access appropriateness based on historical patterns and role risk assessments.\\n\\n## Procedure\\n1. **Analyze Historical UARs**: Review previously approved/rejected access to identify patterns of \\\"appropriate\\\" access by job title and department.\\n2. **Incorporate Entitlement Validations**: Rank roles by risk (High, Medium, Low) based on existing entitlement catalogs.\\n3. **Establish Departmental Baselines**: Group users by department/title to determine standard permission sets (Birthright access).\\n\\n## Expected Outputs\\n- Role-Risk Matrix\\n- Permission Baseline per Department/Title"
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Daily AI Anomaly Detection",
+          "description": "Daily AI-driven testing of 100% of users to identify access outliers.",
+          "instructions": "# Daily AI Anomaly Detection\\n\\n## Objective\\nContinuously test 100% of user access to identify deviations from established baselines and role norms.\\n\\n## Procedure\\n1. **Run Scan**: Process the current user listing through the AI model.\\n2. **Identify Outliers**: Flag users whose permissions significantly deviate from their peers (same title/dept) or the baseline.\\n3. **Verify Lifecycle Events**: Check for \\\"mover\\\" or \\\"leaver\\\" delays (e.g., terminated users still holding active access).\\n4. **Flag Alerts**: Categorize anomalies by risk level.\\n\\n## Expected Outputs\\n- Daily Anomaly Report\\n- High-Risk Access Alerts"
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Transactional Impact Analysis",
+          "description": "Map flagged access to transactional logs to determine if unauthorized activities occurred.",
+          "instructions": "# Transactional Impact Analysis \\n\\n## Objective\\nDetermine the actual risk realized by inappropriate access by analyzing what actions the flagged users performed.\\n\\n## Procedure\\n1. **Export Transaction Logs**: Pull General Ledger (GL) transactions or system audit logs with timestamps.\\n2. **Map User to Activity**: Link flagged users from Step 3 to their transaction history.\\n3. **Analyze Impact**: Identify any transactions performed using the potentially inappropriate access during the period of concern.\\n4. **Quantify Risk**: Assess the financial or operational impact of these transactions (e.g., dollar value of GL entries).\\n\\n## Expected Outputs\\n- Impact Analysis Report\\n- List of Transactions by Flagged Users"
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 50
+        },
+        "data": {
+          "label": "Alert Generation & Remediation",
+          "description": "Route alerts to supervisors and record remediation actions or justifications.",
+          "instructions": "# Alert Generation & Remediation\\n\\n## Objective\\nClose the loop by notifying stakeholders and ensuring inappropriate access is removed or formally justified.\\n\\n## Procedure\\n1. **Route Alerts**: Send high-risk findings within a final report showing the potential inappropriate access, including the user, job title, department, and any transactions that occurred during the period of inappropriate access.\\n2. **Track Remediation**: Prompt the user if access is appropriate or inappropriate. If inappropriate, show the user the transaction detail and ask if there are concerns with the data and justification if appropriate or action taken if inappropriate.\\n3. **Model Feedback**: Feed the outcome (Correct Alert vs. False Positive) back into the AI model to improve detection accuracy.\\n\\n## Expected Outputs\\n- Remediation Tracking Log\\n- Final Audit Summary Report"
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

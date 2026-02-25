@@ -1,0 +1,18 @@
+cr_reviewid,cr_reviewcycle,cr_userid,cr_employeeid,cr_employeename,cr_systemname,cr_reviewer,cr_reviewername,cr_duedate,cr_completiondate,cr_decision,cr_reviewtimeseconds,cr_isrubberstamped,cr_notes
+AR-2024-Q3-001,2024-Q3,U001,E001,George Bluth Sr,SAP_PROD,E001,George Bluth Sr,2024-09-30,2024-09-30,Approved,5,Yes,Self-reviewed - rubber stamp
+AR-2024-Q3-002,2024-Q3,U005,E002,Lucille Bluth,SAP_PROD,E001,George Bluth Sr,2024-09-30,2024-09-28,Approved,12,Yes,Quick approval
+AR-2024-Q3-003,2024-Q3,U007,E003,Michael Bluth,SAP_PROD,E001,George Bluth Sr,2024-09-30,2024-09-25,Approved,45,No,Proper review
+AR-2024-Q3-004,2024-Q3,U010,E004,GOB Bluth,Domain_Admin,E004,GOB Bluth,2024-09-30,,Pending,,No,SELF-REVIEW PENDING
+AR-2024-Q3-005,2024-Q3,U012,E005,Lindsay Bluth Funke,SAP_PROD,E003,Michael Bluth,2024-09-30,2024-09-29,Approved,30,No,
+AR-2024-Q3-006,2024-Q3,U013,E006,Tobias Funke,SAP_PROD,E005,Lindsay Bluth Funke,2024-09-30,2024-09-30,Approved,3,Yes,3 seconds
+AR-2024-Q3-007,2024-Q3,U014,E007,George Michael Bluth,SAP_PROD,E003,Michael Bluth,2024-09-30,2024-09-20,Approved,120,No,Detailed review
+AR-2024-Q3-008,2024-Q3,U015,E007,George Michael Bluth,Fakeblock_Admin,E007,George Michael Bluth,2024-09-30,2024-09-30,Approved,2,Yes,SELF-REVIEW
+AR-2024-Q3-009,2024-Q3,U017,E009,Buster Bluth,SAP_PROD,E002,Lucille Bluth,2024-09-30,2024-09-30,Approved,8,Yes,Mother approved
+AR-2024-Q3-010,2024-Q3,U020,E011,Annyong Bluth,SAP_PROD,E002,Lucille Bluth,2024-09-30,2024-09-30,Approved,5,Yes,Excessive access approved
+AR-2024-Q3-011,2024-Q3,U023,E013,Bob Loblaw,SAP_PROD,E012,Barry Zuckerkorn,2024-09-30,,Pending,,No,TERMINATED USER
+AR-2024-Q3-012,2024-Q3,U026,E014,Kitty Sanchez,SAP_PROD,E001,George Bluth Sr,2024-09-30,2024-09-30,Approved,4,Yes,
+AR-2024-Q3-013,2024-Q3,U030,E020,Franklin Bluth,Badge_System,E004,GOB Bluth,2024-09-30,2024-09-30,Approved,1,Yes,PUPPET - 1 second
+AR-2024-Q3-014,2024-Q3,U031,E020,Franklin Bluth,SAP_PROD,E004,GOB Bluth,2024-09-30,2024-09-30,Approved,1,Yes,PUPPET approved
+AR-2024-Q3-015,2024-Q3,U034,E025,Rita Leeds,SAP_PROD,E003,Michael Bluth,2024-09-30,,Pending,,No,TERMINATED 2006
+AR-2024-Q3-016,2024-Q3,SA001,N/A,Service Account - SAP,SAP_PROD,,,2024-09-30,,Pending,,No,No owner assigned
+AR-2024-Q3-017,2024-Q3,SA002,N/A,Service Account - Backup,FileShare,,,2024-09-30,,Pending,,No,No owner assigned

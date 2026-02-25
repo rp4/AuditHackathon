@@ -1,0 +1,163 @@
+{
+  "name": "Reporting: SOX Audit Reporting (MCP Driven Workflow)",
+  "description": "A specialized workflow for generating and reviewing SOX Audit Reports, integrating MCP data, fieldwork results, and issue logs into a coherent final report for business unit heads.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "data": {
+          "label": "MCP Data & Artifact Sync",
+          "description": "Establish connection to the Model Context Protocol (MCP) or data platform to synchronize audit artifacts with the audit management software.",
+          "instructions": "# MCP Data & Artifact Synchronization\n\n## Objective\nTo ensure all evidence and artifacts gathered during the audit period are correctly linked from the MCP to the corresponding audit procedures in the management software.\n\n## Prerequisites\n- Access to MCP environment\n- Mapping of MCP folders/tags to Audit Management Software (AMS) modules\n- Completed fieldwork data\n\n## Procedure\n1. **Establish MCP Connection**: Verify the API or connector between the MCP and AMS is active.\n2. **Map Artifacts**: Link specific evidence files (testing worksheets, screenshots, data extracts) to their respective control IDs or process areas.\n3. **Validate Completeness**: Run a reconciliation report to ensure no artifacts gathered in the MCP are missing from the AMS audit file.\n\n## Expected Outputs\n- [ ] Synchronized artifact library\n- [ ] Artifact reconciliation report\n- [ ] Linked evidence trail for all SOX controls",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "SOX Fieldwork Consolidation",
+          "description": "Consolidate results from all process areas, control tests, and fieldwork steps performed throughout the SOX cycle.",
+          "instructions": "# SOX Fieldwork Consolidation\n\n## Objective\nAggregate testing results from disparate process areas into a centralized view for report generation.\n\n## Procedure\n1. **Query Process Areas**: Extract results from all scoped process areas (e.g., Revenue, ITGC, Payroll).\n2. **Aggregate Control Results**: Summarize the pass/fail status of each control test.\n3. **Verify Fieldwork Status**: Ensure all fieldwork steps are marked as 'Completed' and 'Reviewed' in the AMS.\n\n## Key Considerations\n- Ensure consistent labeling across different process owners.\n- Flag any controls where testing was partially completed or bypassed.\n\n## Expected Outputs\n- [ ] Consolidated fieldwork summary\n- [ ] Control effectiveness matrix",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Issue Log & Deficiency Analysis",
+          "description": "Analyze the issue log to categorize deficiencies and ensure they are accurately reflected for the report.",
+          "instructions": "# Issue Log & Deficiency Analysis\n\n## Objective\nReview the centralized issue log to identify, categorize, and validate all SOX deficiencies before they are included in the final report.\n\n## Procedure\n1. **Review Issue Log**: Extract all findings recorded during the audit period.\n2. **Deficiency Categorization**: Classify findings as Control Deficiency (CD), Significant Deficiency (SD), or Material Weakness (MW).\n3. **Link to Control/Process**: Ensure every issue is mapped back to the specific SOX control and process area.\n4. **Validate Management Responses**: Confirm that process owners have provided adequate remediation plans and target dates.\n\n## Expected Outputs\n- [ ] Validated Issue Log\n- [ ] Deficiency Severity Summary\n- [ ] Linked remediation plans",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Coherent Audit Report Generation",
+          "description": "Synthesize data from MCP, fieldwork results, and issue logs into a coherent audit report for business unit heads.",
+          "instructions": "# Coherent Audit Report Generation\n\n## Objective\nGenerate a detailed, professional SOX audit report that provides a comprehensive overview of the audit results for business unit heads and process owners.\n\n## Procedure\n1. **Generate Executive Summary**: High-level overview of control environment health.\n2. **Detail Process Results**: For each process area, provide a narrative of the procedures performed and the effectiveness of controls.\n3. **Incorporate Visuals**: Use the consolidated fieldwork data to create summary charts (e.g., % controls effective).\n4. **Embed Artifact References**: Include direct links or references to the synchronized MCP artifacts for transparency.\n\n## Expected Outputs\n- [ ] Draft SOX Audit Report\n- [ ] Business Unit Summary reports",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 50
+        },
+        "data": {
+          "label": "Final Quality Review & Issuance",
+          "description": "Final checkpoints and quality review criteria prior to issuing the report to stakeholders.",
+          "instructions": "# Final Quality Review & Issuance\n\n## Objective\nPerform a final validation of the report against established review criteria to ensure accuracy, professionalism, and compliance.\n\n## Checkpoints\n- [ ] **Data Integrity**: Do the numbers in the report match the consolidated fieldwork results?\n- [ ] **Consistency**: Is the terminology consistent across different process areas?\n- [ ] **Artifact Accuracy**: Do all links to the MCP and AMS function correctly?\n- [ ] **Remediation Feasibility**: Are management’s action plans realistic and dated within a reasonable timeframe?\n\n## Procedure\n1. **Internal Peer Review**: Conduct a secondary review of the draft.\n2. **Stakeholder Pre-read**: Share with key process owners for factual accuracy check.\n3. **Final Issuance**: Distribute the report to Business Unit Heads and the Audit Committee.\n\n## Expected Outputs\n- [ ] Final Issued SOX Audit Report\n- [ ] Audit Report Distribution Log",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

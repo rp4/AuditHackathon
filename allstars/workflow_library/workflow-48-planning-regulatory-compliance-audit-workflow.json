@@ -1,0 +1,154 @@
+{
+  "name": "Planning: Regulatory Compliance Audit Workflow",
+  "description": "A workflow that automates the \"Planning\" phase of regulatory compliance audits by mapping requirements to risks and controls, incorporating external intelligence, and generating document request lists.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "data": {
+          "label": "Ingest Regulatory and Policy Data",
+          "description": "Collect and process complex regulatory texts (PCAOB, OCC, FRB) and internal company policies.",
+          "instructions": "Upload or provide links to the specific regulatory documents and internal policies relevant to this audit. The system will ingest these for comparative analysis."
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 60
+        }
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 220
+        },
+        "data": {
+          "label": "External Intelligence Scanning",
+          "description": "Scan enforcement actions and industry news to identify high-risk requirements.",
+          "instructions": "Analyze external intelligence sources to flag requirements where organizations have historically struggled or where regulators are currently focusing their enforcement efforts."
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 220
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 460,
+          "y": 140
+        },
+        "data": {
+          "label": "Automated RCM Generation",
+          "description": "Map regulatory requirements directly to risks and controls using IIA best practices.",
+          "instructions": "Using the ingested data and intelligence flags, generate a Risk Control Matrix (RCM) that maps each regulatory requirement to its corresponding risk and internal control."
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 140
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 135
+        },
+        "data": {
+          "label": "Generate Tailored DRL",
+          "description": "Generate a preliminary document request list based on the identified controls.",
+          "instructions": "Create a tailored Document Request List (DRL) that specifies the evidence needed to test the controls identified in the RCM."
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 135
+        },
+        "data": {
+          "label": "Export Final Audit Plan",
+          "description": "Finalize and export the audit plan in formats like JSON or Excel.",
+          "instructions": "Review the generated RCM and DRL. Export the final audit planning package to your preferred format (JSON for GRC systems or Excel for manual tracking)."
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

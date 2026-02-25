@@ -1,0 +1,16 @@
+cr_userid,cr_employeeid,cr_employeename,cr_systemname,cr_accesslevel,cr_granteddate,cr_lastreviewdate,cr_approvedby,cr_approvername,cr_status,cr_businessjustification,cr_isselfreview,cr_notes
+U001,E001,George Bluth Sr,SAP_PROD,Admin,2000-01-01,2020-01-01,E001,Self-Approved,Active,CEO Access,Yes,INCARCERATED - Still has admin access
+U002,E001,George Bluth Sr,VPN,Full,2000-01-01,2020-01-01,E001,Self-Approved,Active,Remote Access,Yes,ACCESSED FROM MEXICO PRISON
+U007,E003,Michael Bluth,SAP_PROD,Admin,2000-01-01,2024-01-01,E001,George Bluth Sr,Active,President Access,No,
+U008,E003,Michael Bluth,Domain_Admin,Admin,2000-01-01,2024-01-01,E001,George Bluth Sr,Active,IT Administration,No,
+U010,E004,GOB Bluth,Domain_Admin,Admin,2024-06-01,,E004,GOB Bluth,Active,Magic IT Needs,Yes,SELF-APPROVED - No review
+U015,E007,George Michael Bluth,Fakeblock_Admin,Admin,2012-06-15,,E007,George Michael Bluth,Active,Project Owner,Yes,Self-approved for own project
+U020,E011,Annyong Bluth,SAP_PROD,ReadAll,2023-01-01,,E002,Lucille Bluth,Active,Intern Analysis,No,Exported all data before leaving
+U023,E013,Bob Loblaw,SAP_PROD,User,2006-03-01,,E012,Barry Zuckerkorn,Active,Legal Access,No,TERMINATED 2007 - ACCESS NOT REMOVED
+U024,E013,Bob Loblaw,Email,Full,2006-03-01,,E012,Barry Zuckerkorn,Active,Communication,No,TERMINATED 2007 - ACCESS NOT REMOVED
+U025,E013,Bob Loblaw,VPN,Full,2006-03-01,,E012,Barry Zuckerkorn,Active,Remote Access,No,TERMINATED 2007 - ACCESS NOT REMOVED
+U030,E020,Franklin Bluth,Badge_System,Employee,2003-09-15,,E004,GOB Bluth,Active,Facility Access,No,PUPPET HAS BADGE ACCESS
+U031,E020,Franklin Bluth,SAP_PROD,User,2003-09-15,,E004,GOB Bluth,Active,Entertainment Access,No,PUPPET HAS SYSTEM ACCESS
+U034,E025,Rita Leeds,SAP_PROD,User,2006-01-01,,E003,Michael Bluth,Active,Research Access,No,TERMINATED 2006 - ACCESS NOT REMOVED
+SA001,N/A,Service Account - SAP,SAP_PROD,Admin,2010-01-01,,IT,System,Active,Batch Processing,No,Shared password - 5 years without rotation
+SA002,N/A,Service Account - Backup,FileShare,Admin,2010-01-01,,IT,System,Active,Nightly Backup,No,5 years without rotation

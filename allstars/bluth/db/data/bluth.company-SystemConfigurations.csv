@@ -1,0 +1,16 @@
+ID,configId,systemName,configKey,configCategory,expectedValue,currentValue,lastCheckedDate,isCompliant,description,soxRelevant,riskLevel
+sc001,SC-001,SAP_ERP,THREE_WAY_MATCH_ENABLED,PaymentControls,true,true,2024-11-01,true,Require PO-receipt-invoice match before payment,true,High
+sc002,SC-002,SAP_ERP,OVERRIDE_APPROVAL_REQUIRED,PaymentControls,true,false,2024-11-01,false,Require approval for payment override of 3-way match,true,High
+sc003,SC-003,SAP_ERP,MAX_SINGLE_PAYMENT,PaymentControls,500000,500000,2024-11-01,true,Maximum single payment amount without CFO approval,true,High
+sc004,SC-004,SAP_ERP,PASSWORD_MIN_LENGTH,PasswordPolicy,12,8,2024-11-01,false,Minimum password character length,false,Medium
+sc005,SC-005,SAP_ERP,PASSWORD_EXPIRY_DAYS,PasswordPolicy,90,365,2024-11-01,false,Days before password must be changed,false,Medium
+sc006,SC-006,SAP_ERP,DUAL_APPROVAL_THRESHOLD,ApprovalWorkflows,10000,50000,2024-11-01,false,Payment amount requiring two approvers,true,High
+sc007,SC-007,SAP_ERP,VENDOR_DUPLICATE_CHECK,PaymentControls,true,false,2024-11-01,false,Check for duplicate vendor records on creation,true,High
+sc008,SC-008,SAP_ERP,JE_AUTO_APPROVAL_LIMIT,ApprovalWorkflows,1000,25000,2024-11-01,false,Maximum JE amount that bypasses manual approval,true,High
+sc009,SC-009,SAP_ERP,SESSION_TIMEOUT_MINUTES,SecuritySettings,30,30,2024-11-01,true,Idle session timeout in minutes,false,Low
+sc010,SC-010,SAP_ERP,FAILED_LOGIN_LOCKOUT,SecuritySettings,5,5,2024-11-01,true,Failed login attempts before account lockout,false,Medium
+sc011,SC-011,SAP_ERP,AUDIT_LOG_ENABLED,SecuritySettings,true,true,2024-11-01,true,Enable transaction audit logging,true,High
+sc012,SC-012,SAP_ERP,SEGREGATION_OF_DUTIES_CHECK,ApprovalWorkflows,true,true,2024-11-01,true,Enforce SoD rules on transaction posting,true,High
+sc013,SC-013,SAP_ERP,VENDOR_BANK_CHANGE_APPROVAL,PaymentControls,true,true,2024-11-01,true,Require approval for vendor bank account changes,true,High
+sc014,SC-014,SAP_ERP,MFA_ENABLED,SecuritySettings,true,true,2024-11-01,true,Multi-factor authentication for remote access,false,High
+sc015,SC-015,SAP_ERP,DATA_ENCRYPTION_AT_REST,SecuritySettings,AES-256,AES-256,2024-11-01,true,Encryption standard for data at rest,false,High

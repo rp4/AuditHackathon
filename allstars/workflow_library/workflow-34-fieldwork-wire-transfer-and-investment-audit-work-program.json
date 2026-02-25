@@ -1,0 +1,215 @@
+{
+  "name": "Fieldwork: Wire Transfer and Investment Audit Work Program",
+  "description": "Comprehensive audit work program for Wire Transfers and Investments, focusing on transactional testing, dual authorization, and system security. Includes data extraction via MCP and population sampling.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 305
+        },
+        "data": {
+          "label": "1. Data Extraction & Scoping (MCP)",
+          "description": "Extract the full population of wire transfer and investment transactions from the core system using MCP.",
+          "instructions": "# Obtain & Scope Wire Transfer Population\n\n## Objective\nTo ensure a complete and accurate population of transactions is available for testing, filtered by relevant attributes.\n\n## Prerequisites\n- Access to Machine Control Platform (MCP) connectors for the Treasury/Wire system.\n- General Ledger (GL) trial balance for reconciliation.\n\n## Procedure\n### Step-by-step instructions\n1. **Connect to MCP Data Source**\n   - Use the 'Wire_Transaction_Log' connector.\n   - Extract data for the defined audit period.\n2. **Define Transactional Attributes**\n   - Ensure the export includes: `Transaction_ID`, `Date`, `Value_Date`, `Amount`, `Currency`, `Sender_Account`, `Receiver_Account`, `Initiator_User_ID`, `Approver_User_ID`, and `Status`.\n3. **Reconcile to GL**\n   - Summarize the MCP population by month/currency and compare to the GL 'Cash/Wire' accounts. Investigate variances > 1%.\n\n## Expected Outputs\n- [ ] Cleaned dataset of all wire transfers (CSV/JSON)\n- [ ] Reconciliation memo confirming population completeness\n\n## Quality Criteria\n- Population must include successful, pending, and cancelled wires to test control effectiveness across all states.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "2. Dual Authorization Testing",
+          "description": "Test for unauthorized transfers by verifying dual approval attributes in the transactional data.",
+          "instructions": "# Test Dual Authorization Controls\n\n## Objective\nVerify that every wire transfer was authorized by at least two distinct authorized users, preventing unauthorized or fraudulent movement of funds.\n\n## Procedure\n### Step-by-step instructions\n1. **Sample Selection**\n   - Select a statistically significant sample (e.g., 25-40 items) from the population obtained in Step 1.\n2. **Attribute Verification**\n   - For each sample item, compare the `Initiator_User_ID` and `Approver_User_ID`.\n   - **Requirement:** `Initiator_User_ID` must NOT equal `Approver_User_ID`.\n3. **Authorization Matrix Check**\n   - Cross-reference both User IDs against the 'Authorized Signatory/Wire Matrix' to ensure users have the appropriate limit authority for the `Amount`.\n\n## Expected Outputs\n- [ ] Dual Authorization testing worksheet\n- [ ] List of exceptions where dual auth was bypassed or limits exceeded\n\n## Quality Criteria\n- Evidence must show distinct timestamps for initiation and approval.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Bank Confirmation Tracing",
+          "description": "Trace internal records to external bank confirmations to ensure transaction accuracy.",
+          "instructions": "# Trace Transfers to Bank Confirmations\n\n## Objective\nValidate the 'Existence' and 'Accuracy' assertions by matching internal records to external third-party evidence.\n\n## Procedure\n### Step-by-step instructions\n1. **Request External Evidence**\n   - Obtain bank confirmation messages (e.g., SWIFT MT103) or daily bank statements for the sampled transactions.\n2. **Transactional Matching**\n   - Match the following attributes:\n     - Internal `Amount` == Bank Statement `Debit Amount`\n     - Internal `Receiver_Account` == Bank Confirmation `Beneficiary`\n     - `Value_Date` alignment (typically T+0 or T+1)\n3. **Verify Reference Numbers**\n   - Ensure the bank's Transaction Reference Number (TRN) is recorded in the internal system.\n\n## Expected Outputs\n- [ ] Bank Tracing Matrix\n- [ ] Support documentation for each sample item\n\n## Quality Criteria\n- No discrepancies in beneficiary details or amounts. Any 'repaired' wires must have separate documentation.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Reconciliation Review",
+          "description": "Review daily reconciliation reports and evidence of supervisory review.",
+          "instructions": "# Inspect Daily Wire Reconciliations\n\n## Objective\nEnsure that reconciliations between the wire system and bank accounts are performed timely and reviewed by management to detect inaccuracies.\n\n## Procedure\n### Step-by-step instructions\n1. **Sample Reconciliation Dates**\n   - Select 10-15 dates throughout the audit period, including month-ends.\n2. **Evidence Inspection**\n   - Inspect the 'Daily Reconciliation Report'.\n   - Verify that the `GL_Balance` matches the `Bank_Balance` (considering timing items).\n3. **Verify Review Attribute**\n   - Inspect the report for a `Reviewer_Signature` or `System_Approval_Stamp`.\n   - Confirm the review occurred within 24 hours of the reconciliation.\n\n## Expected Outputs\n- [ ] Reconciliation Review Log\n- [ ] Summary of uncleared reconciling items > 5 days old\n\n## Quality Criteria\n- Reconciliations must be signed by someone other than the preparer.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "5. Access & Security Audit",
+          "description": "Audit system access lists and verify security settings (Encryption/MFA).",
+          "instructions": "# Audit System Access & Encryption\n\n## Objective\nEvaluate the security posture of the wire transfer system to prevent unauthorized access.\n\n## Procedure\n### Step-by-step instructions\n1. **Access List Extraction**\n   - Pull the 'Active User List' from the wire system.\n2. **Termination Testing**\n   - Compare the user list to the HR Termination Report.\n   - **Attribute:** `Access_Deactivation_Date` should be <= `Termination_Date`.\n3. **Technical Security Review**\n   - Inspect system configuration screenshots.\n   - Verify: \n     - Multi-Factor Authentication (MFA) is 'Enforced' for all users.\n     - Encryption level is set to AES-256 or higher for data in transit.\n\n## Expected Outputs\n- [ ] User Access Audit Worksheet\n- [ ] Security Configuration Summary\n\n## Quality Criteria\n- Zero tolerance for active accounts belonging to terminated employees.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 305
+        },
+        "data": {
+          "label": "6. Identify Findings & Issue Report",
+          "description": "Consolidate all exceptions into findings and draft the final audit report.",
+          "instructions": "# Identify Findings & Issue Report\n\n## Objective\nCompile all identified control deficiencies and transactional errors into a structured audit report for stakeholders.\n\n## Procedure\n### Step-by-step instructions\n1. **Aggregate Exceptions**\n   - Collect findings from Steps 2, 3, 4, and 5.\n2. **Root Cause Analysis**\n   - For each exception, identify if it was a 'Process Failure', 'System Limitation', or 'Human Error'.\n3. **Categorize Severity**\n   - Assign 'High', 'Medium', or 'Low' based on financial exposure and likelihood.\n4. **Draft the Issue Report**\n   - Use the template: Condition, Criteria, Cause, Effect, Recommendation.\n5. **Finalize with Management**\n   - Present findings to the Treasury Head and record management responses.\n\n## Expected Outputs\n- [ ] Final Audit Findings Memo\n- [ ] Completed Audit Issue Report\n\n## Quality Criteria\n- Every finding must be linked to a specific control or risk identified in the RCM.\n- Recommendations must be actionable and have an assigned owner.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

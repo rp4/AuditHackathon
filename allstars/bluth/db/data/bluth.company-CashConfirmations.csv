@@ -1,0 +1,5 @@
+ID,confirmationId,bankAccount,bankName,confirmationDate,confirmedBalance,bookBalance,difference,currency,hasRestrictions,restrictionDetails,hasCompensatingBalances,loanRelationships
+cc001,CC-001,****0001-US,Bank of Newport,2025-01-15,1250000.00,1250000.00,0.00,USD,false,,false,
+cc002,CC-002,****0002-MX,Banco Nacional de Mexico,2025-01-15,685000.00,700000.00,-15000.00,MXN,false,,false,Line of credit - Cornballer manufacturing facility
+cc003,CC-003,****0001-CAY,Grand Cayman International,2025-01-15,2350000.00,0.00,2350000.00,USD,true,Account frozen pending investigation,false,Not disclosed to auditors
+cc004,CC-004,****0003-BS,Bank of Newport - Banana Stand,2025-01-15,0.00,0.00,0.00,USD,false,,false,

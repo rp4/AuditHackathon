@@ -1,0 +1,251 @@
+{
+  "name": "Fieldwork: Claims Management & Legal Billing Audit Program",
+  "description": "Comprehensive audit program for medical malpractice claims management, focusing on legal billing (counsel fees, experts, depositions), claim mapping, and control testing for duplicates, timeliness, and guideline compliance.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "data": {
+          "label": "Scope & Data Collection",
+          "description": "Gather all legal expense invoices submitted by law firms for the audit period.",
+          "instructions": "# Scope & Data Collection\n\n## Objective\nEstablish a complete and accurate population of legal expense invoices for the audit period to ensure the audit scope is comprehensive and reliable.\n\n## Prerequisites\n- Access to the legal billing system or Accounts Payable (AP) ledger.\n- Defined audit period (e.g., Fiscal Year 2023).\n- List of active law firms, expert witnesses, and court reporting agencies.\n\n## Procedure\n### Step-by-step instructions\n1. **Extract Invoice Data**\n   - Retrieve all legal-related invoices from the ERP or dedicated legal matter management system.\n   - Fields should include: Invoice ID, Date, Amount, Vendor Name, Matter/Claim ID, and Service Description.\n\n2. **Verify Completeness**\n   - Reconcile total invoice amounts to the General Ledger (GL) legal expense accounts to ensure no missing data.\n   - Cross-check against the vendor master file for any unknown legal service providers.\n\n### Key considerations\n- Ensure both defense counsel fees and \"ancillary\" costs (experts, depositions) are captured.\n- Watch for split invoices where one matter is billed across multiple line items.\n\n## Expected Outputs\n- [ ] Comprehensive population file (Excel/CSV)\n- [ ] GL reconciliation summary\n- [ ] List of firms/vendors in scope\n\n## Quality Criteria\n- Data integrity verified against financial records.\n- No gaps in the chronological invoice sequence for the audit period.",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 460,
+          "y": 60
+        },
+        "data": {
+          "label": "Claim Validation & Mapping",
+          "description": "Verify invoices map to authorized claims.",
+          "instructions": "Perform a reconciliation between the invoice population and the authorized claims database. Confirm each invoice is linked to an active, authorized case file.",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 280,
+        "height": 100,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 60
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 860,
+          "y": 60
+        },
+        "data": {
+          "label": "Duplicate Invoice Testing",
+          "description": "Identify potential duplicate billings.",
+          "instructions": "Run duplicate testing on invoice number, amount, date, and vendor to identify potential double payments or overlapping services.",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 280,
+        "height": 100,
+        "positionAbsolute": {
+          "x": 860,
+          "y": 60
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Timeliness of Approval Testing",
+          "description": "Assess the speed of invoice processing.",
+          "instructions": "Calculate the duration between invoice submission and approval/payment. Compare against established service level agreements (SLAs).",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 289,
+        "height": 100,
+        "positionAbsolute": {
+          "x": 1250,
+          "y": 50
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 50
+        },
+        "data": {
+          "label": "DoA & Escalation Compliance",
+          "description": "Verify approval limits and escalations.",
+          "instructions": "Confirm that invoices were approved by individuals with the appropriate Delegation of Authority (DOA). Test the escalation process for high-value or complex billing.",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 280,
+        "height": 100,
+        "positionAbsolute": {
+          "x": 1650,
+          "y": 50
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 2050,
+          "y": 50
+        },
+        "data": {
+          "label": "Exception Handling & Resolution",
+          "description": "Review the resolution of flagged exceptions.",
+          "instructions": "Select a sample of billing exceptions (e.g., rejected line items) and audit the resolution process to ensure it follows policy.",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 298,
+        "height": 100,
+        "positionAbsolute": {
+          "x": 2050,
+          "y": 50
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 2450,
+          "y": 50
+        },
+        "data": {
+          "label": "Billing Guidelines Compliance",
+          "description": "Audit compliance with legal billing guidelines.",
+          "instructions": "Review invoices for non-billable items or rate variances according to the established billing guidelines for the medical malpractice practice area.",
+          "readOnly": false,
+          "isSelected": false,
+          "completed": true
+        },
+        "width": 293,
+        "height": 100,
+        "positionAbsolute": {
+          "x": 2450,
+          "y": 50
+        },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

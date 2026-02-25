@@ -1,0 +1,107 @@
+{
+  "name": "Fieldwork: Vendor Shadow AI Detection",
+  "description": "An AI-enabled workflow designed to detect shadow AI within vendor tooling by reconciling internal vendor inventories with real-time web data. The workflow flags sanctioned vendor tools that have shadow AI features enabled without organizational oversight or risk assessment.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "Inventory Ingestion",
+          "description": "Ingest the sanctioned internal vendor list, including metadata on approved AI capabilities.",
+          "instructions": "Upload or provide the internal vendor inventory list. Ensure the data contains columns for:\n- Vendor Name\n- Tool/Software Name\n- Current Approved AI Status (e.g., None, Approved, Restricted)\n- Approved AI Capabilities (if any)"
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "Autonomous Web Search",
+          "description": "Perform targeted internet searches for each tool to identify marketed AI features.",
+          "instructions": "For each tool identified in the inventory:\n1. Search vendor product pages, release notes, and tech news.\n2. Look for keywords such as \"AI\", \"Generative AI\", \"LLM\", \"Machine Learning\", \"Co-pilot\", or \"Assistant\".\n3. Record the specific AI features found and the date they were announced or released.\n4. Capture source URLs for documentation."
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Automated Reconciliation",
+          "description": "Compare real-time web findings against the internal sanctioned list to identify discrepancies.",
+          "instructions": "Reconcile the web search results with the internal inventory:\n1. Flag tools where web data indicates AI features exist but the internal record says 'None' or 'No AI'.\n2. Flag tools where the web-identified AI capabilities exceed the 'Approved AI Capabilities' in the internal record.\n3. List the specific discrepancies found for each tool."
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Exception Reporting",
+          "description": "Generate a report flagging vendors with unapproved or unassessed AI features.",
+          "instructions": "Compile the 'Shadow AI Delta Report':\n1. List all flagged vendors and tools.\n2. Detail the unapproved AI features discovered.\n3. Provide evidence links.\n4. Assign a preliminary risk rating (High/Medium/Low) based on the nature of the AI capability (e.g., Generative AI vs. simple ML).\n5. Recommend immediate next steps for risk assessment."
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

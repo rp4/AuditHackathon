@@ -1,0 +1,209 @@
+{
+  "name": "Fieldwork: PCI Compliance - MCP-Driven Workflow",
+  "description": "A transactional PCI audit program designed for MCP (Management Control Platform) integration, focusing on automated data extraction, attribute testing, and continuous compliance monitoring.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-0",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "MCP Data Extraction & Connector Setup",
+          "description": "Establish secure, read-only connections to the Management Control Platform (MCP) to automate the extraction of PCI-relevant datasets and logs.",
+          "instructions": "# MCP Data Extraction & Connector Setup\n\n## Objective\nEstablish secure, read-only connections to the Management Control Platform (MCP) to automate the extraction of PCI-relevant datasets and logs.\n\n## Procedure\n1. **Identify Connector Requirements**: Determine the API endpoints or log streaming protocols (Syslog, S3, Webhooks) supported by the MCP for the Cardholder Data Environment (CDE).\n2. **Configure Read-Only Service Accounts**: Provision service accounts with minimum necessary permissions (Least Privilege) to extract:\n   - Asset Inventory (e.g., EC2, Azure VM, GCP Compute metadata)\n   - Identity & Access Management (IAM) policies\n   - Network Security Group / Firewall rules\n   - System/Kernel logs (AuditD, CloudTrail)\n3. **Map MCP Metadata to PCI Zones**: Use MCP tags (e.g., `PCI_Scope: CDE`) to filter populations automatically. This ensures the audit only targets relevant transactional data.\n4. **Verify Data Integrity**: Ensure that data extracted from the MCP includes cryptographic hashes or immutable timestamps to prevent evidence tampering.\n\n## Expected Outputs\n- [ ] Active MCP Connector Configuration\n- [ ] Verified population list of CDE assets\n- [ ] Read-only service account audit log",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "PCI Scope Validation",
+          "description": "Validate the defined PCI scope by comparing documentation against actual network data from the MCP.",
+          "instructions": "# PCI Scope Validation\n\n## Objective\nVerify that the Cardholder Data Environment (CDE) is accurately defined and that all systems storing, processing, or transmitting CHD are included in the scope.\n\n## Procedure\n1. **Extract Network Topology**: Pull VPC/Subnet maps and routing tables from the MCP.\n2. **Analyze Data Flows**: Use MCP flow logs (e.g., VPC Flow Logs) to identify any unauthorized connections between CDE and non-CDE zones.\n3. **Inventory Comparison**: Reconcile the user's \"PCI Scope\" document against the actual active asset inventory pulled in Step 0.\n4. **Attribute Check**: Verify that every asset in the CDE has an owner, purpose, and classification attribute assigned in the MCP.\n\n## Expected Outputs\n- [ ] Validated PCI Scope Map\n- [ ] Gap analysis report (Missing vs. Ghost assets)",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "POI Device Tamper Testing",
+          "description": "Perform transactional testing on PIN-processing devices to ensure physical and digital integrity.",
+          "instructions": "# POI Device Tamper Testing\n\n## Objective\nSelect a sample of PIN-entry devices (POI) and verify that they are protected against tampering and unauthorized substitution.\n\n## Procedure\n1. **Sample Selection**: Pull the full POI asset list from the MCP. Select a representative sample based on location and device type.\n2. **Attribute Verification**: For each sampled device, verify the 'Serial Number' and 'Firmware Version' match the records in the MCP.\n3. **Inspect Tamper Evidence**: Review physical inspection logs (stored in MCP or linked DMS) to confirm monthly checks were performed.\n4. **Transactional Log Review**: Check the 'Last Heartbeat' and 'Software Integrity Check' status for the sampled devices in the MCP dashboard.\n\n## Expected Outputs\n- [ ] POI Testing Worksheet with pass/fail results\n- [ ] Evidence of physical inspection logs for the sample period",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Key Management & Dual Control",
+          "description": "Audit the lifecycle of cryptographic keys used for CHD encryption, focusing on dual control.",
+          "instructions": "# Key Management & Dual Control\n\n## Objective\nEnsure that cryptographic keys are managed securely, with dual control and split knowledge throughout their lifecycle.\n\n## Procedure\n1. **Extract Key Metadata**: Pull a list of active encryption keys from the MCP/KMS (Key Management Service).\n2. **Verify Policy Attributes**: Inspect the KMS policy for each key to ensure 'Dual Control' is enforced (e.g., requiring two separate IAM roles for key rotation).\n3. **Audit Key Rotation Logs**: Extract transactional logs of key generation and rotation. Verify that no single user performed both generation and backup.\n4. **Test Split Knowledge**: Inspect documentation for manual key components (if applicable) to verify they are stored in separate safes with distinct custodians.\n\n## Expected Outputs\n- [ ] KMS Policy Analysis Report\n- [ ] Key Lifecycle Transaction Log Audit",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 50
+        },
+        "data": {
+          "label": "Firewall Rule & Approval Analysis",
+          "description": "Verify that firewall rules protecting the CDE are approved and reviewed.",
+          "instructions": "# Firewall Rule & Approval Analysis\n\n## Objective\nVerify that firewall/security group rules protecting the CDE are necessary, approved, and follow the principle of least privilege.\n\n## Procedure\n1. **Extract Active Rules**: Pull all active Security Group/Firewall rules from the MCP.\n2. **Transactional Join**: Join the active rules list with the Change Management (CMDB/Jira) data based on 'Rule ID' or 'Ticket Reference' attribute.\n3. **Attribute Testing**:\n   - Check for `0.0.0.0/0` (Any) rules that are not specifically justified.\n   - Verify that 'Approved By' attribute in the change ticket is a different individual than 'Requested By'.\n4. **Review 6-Month Recertification**: Check MCP 'Last Updated' tags to ensure every rule has been reviewed within the last 180 days.\n\n## Expected Outputs\n- [ ] Firewall Rule Approval Matrix\n- [ ] Exception list of unapproved or overly permissive rules",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 2050,
+          "y": 50
+        },
+        "data": {
+          "label": "Vulnerability & Penetration Testing Remediation",
+          "description": "Analyze vulnerability scans and penetration tests for timely remediation.",
+          "instructions": "# Vulnerability & Pentest Remediation\n\n## Objective\nInspect vulnerability scan results and penetration testing reports to ensure PCI DSS requirements for remediation are met.\n\n## Procedure\n1. **Extract Scan History**: Pull the last 4 quarters of ASV (Approved Scanning Vendor) scans from the MCP.\n2. **Transactional SLA Check**: Calculate the time between 'Finding Date' and 'Remediation Date'. Verify that all 'High' or 'Critical' vulnerabilities were remediated within 30 days (per PCI requirements).\n3. **Verify Remediation Evidence**: For a sample of remediated vulnerabilities, check the 'Rescan Status' attribute in the MCP to confirm the vulnerability is no longer present.\n4. **Pentest Action Plans**: Review the latest annual PenTest report and verify that all findings have an associated 'Action Plan' or 'Risk Acceptance' attribute in the MCP.\n\n## Expected Outputs\n- [ ] Vulnerability Remediation SLA Report\n- [ ] Sample verification of \"Closed\" findings",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 2450,
+          "y": 50
+        },
+        "data": {
+          "label": "Identify Findings & Issue Report",
+          "description": "Aggregate all findings, perform root-cause analysis, and generate the final audit report.",
+          "instructions": "# Identify Findings & Issue Report\n\n## Objective\nCompile all exceptions identified in previous steps into a formal audit report with severity ratings and management responses.\n\n## Procedure\n1. **Aggregate Exceptions**: Consolidate failed tests from Steps 1-5 into a single \"Findings Repository.\"\n2. **Transactional Root Cause**: Perform a join against MCP metadata (e.g., `Owner`, `Department`, `Asset_Age`) to see if findings correlate to specific systemic issues.\n3. **Severity Rating**: Assign PCI DSS risk levels (Critical, High, Medium, Low) based on the impact on Cardholder Data.\n4. **Draft Report**: Generate the report including:\n   - Executive Summary\n   - Transactional Testing Methodology\n   - Detailed Findings & Recommendations\n   - Management Action Plans (MAPs)\n\n## Expected Outputs\n- [ ] Final PCI Compliance Audit Report\n- [ ] Management Response & Action Plan Tracker",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e0-1",
+        "source": "step-0",
+        "target": "step-1",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

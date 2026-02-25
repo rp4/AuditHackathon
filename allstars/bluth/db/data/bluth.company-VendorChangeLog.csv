@@ -1,0 +1,36 @@
+ID,changeId,vendor_ID,changeDate,changeType,fieldChanged,oldValue,newValue,changedBy,approvedBy,approvalDate,supportingDocRef,supportingDocType
+vcl001,VCL-001,v001,2024-01-10,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-01-08,DOC-VCL001,W9
+vcl002,VCL-002,v002,2024-01-12,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-01-10,DOC-VCL002,W9
+vcl003,VCL-003,v004,2024-01-15,New,ALL,,Initial vendor setup,Annyong Bluth,Wayne Jarvis,2024-01-14,DOC-VCL003,W9
+vcl004,VCL-004,v006,2024-01-20,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-01-18,DOC-VCL004,W9
+vcl005,VCL-005,v007,2024-01-22,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-01-20,DOC-VCL005,W9
+vcl006,VCL-006,v014,2024-01-25,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-01-23,DOC-VCL006,W9
+vcl007,VCL-007,v017,2024-02-01,New,ALL,,Initial vendor setup,Annyong Bluth,Lucille Bluth,2024-01-30,DOC-VCL007,W9
+vcl008,VCL-008,v018,2024-02-05,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-02-03,DOC-VCL008,W9
+vcl009,VCL-009,v019,2024-02-10,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-02-08,DOC-VCL009,W9
+vcl010,VCL-010,v001,2024-02-15,Update,address,100 Sitwell Plaza,150 Sitwell Tower,Annyong Bluth,Michael Bluth,2024-02-13,DOC-VCL010,ChangeRequestForm
+vcl011,VCL-011,v014,2024-02-20,Update,bankAccount,****2222,****2223,Annyong Bluth,Michael Bluth,2024-02-18,DOC-VCL011,Email
+vcl012,VCL-012,v013,2024-03-15,Update,bankAccount,****9999,****9998,Annyong Bluth,George Bluth Sr,2024-03-18,DOC-VCL012,ChangeRequestForm
+vcl013,VCL-013,v007,2024-03-20,Update,paymentTerms,Net30,Net45,Annyong Bluth,Michael Bluth,2024-03-18,DOC-VCL013,Email
+vcl014,VCL-014,v009,2024-03-25,New,ALL,,Initial vendor setup,GOB Bluth,Lucille Bluth,2024-03-23,,None
+vcl015,VCL-015,v008,2024-04-01,New,ALL,,Initial vendor setup,Annyong Bluth,Michael Bluth,2024-03-30,DOC-VCL015,W9
+vcl016,VCL-016,v022,2024-04-10,New,ALL,,Initial vendor setup,GOB Bluth,GOB Bluth,2024-04-10,DOC-VCL016,Email
+vcl017,VCL-017,v006,2024-04-15,Update,bankAccount,****5678,****5679,Annyong Bluth,Michael Bluth,2024-04-13,DOC-VCL017,ChangeRequestForm
+vcl018,VCL-018,v010,2024-04-20,Update,address,1 Balboa Towers,"456 Balboa Towers Penthouse, Unit PH-A",Kitty Sanchez,Lucille Bluth,2024-04-18,DOC-VCL018,ChangeRequestForm
+vcl019,VCL-019,v015,2024-05-01,Update,paymentTerms,COD,Net15,Annyong Bluth,Michael Bluth,2024-04-29,DOC-VCL019,Email
+vcl020,VCL-020,v024,2024-05-05,New,ALL,,Initial vendor setup,Annyong Bluth,Maeby Funke,2024-05-03,DOC-VCL020,W9
+vcl021,VCL-021,v019,2024-05-10,Update,email,acting@carlweathers.com,stew@carlweathers.com,Annyong Bluth,Michael Bluth,2024-05-08,DOC-VCL021,Email
+vcl022,VCL-022,v001,2024-05-10,Update,bankAccount,****1234,****1235,Kitty Sanchez,Lucille Bluth,2024-06-14,DOC-VCL022,ChangeRequestForm
+vcl023,VCL-023,v012,2024-05-20,Update,address,5555 Melrose Avenue,5600 Melrose Avenue,Annyong Bluth,Michael Bluth,2024-05-18,DOC-VCL023,ChangeRequestForm
+vcl024,VCL-024,v021,2024-07-03,Update,bankAccount,****1212,****1299,Annyong Bluth,Lucille Bluth,2024-07-01,DOC-VCL024,ChangeRequestForm
+vcl025,VCL-025,v021,2024-07-15,Update,bankAccount,****1299,****1300,Annyong Bluth,Lucille Bluth,2024-07-13,DOC-VCL025,ChangeRequestForm
+vcl026,VCL-026,v021,2024-07-28,Update,bankAccount,****1300,****1301,Annyong Bluth,Lucille Bluth,2024-07-26,DOC-VCL026,ChangeRequestForm
+vcl027,VCL-027,v004,2024-08-01,Update,phone,949-555-1004,949-555-1099,Annyong Bluth,Wayne Jarvis,2024-07-30,DOC-VCL027,Email
+vcl028,VCL-028,v024,2024-08-10,New,ALL,,"Franklin Entertainment LLC - New vendor setup, bank ****7712",GOB Bluth,GOB Bluth,2024-08-10,DOC-VCL028,W9
+vcl029,VCL-029,v005,2024-08-15,Update,address,Calle de la Quemadura 100,Calle de la Quemadura 200,Annyong Bluth,Michael Bluth,2024-08-13,DOC-VCL029,ChangeRequestForm
+vcl030,VCL-030,v020,2024-09-01,Update,paymentTerms,Net45,Net15,Kitty Sanchez,Lucille Bluth,2024-08-30,,Email
+vcl031,VCL-031,v011,2024-09-10,Update,email,service@yachtservices.com,service2@yachtservices.com,Annyong Bluth,Michael Bluth,2024-09-08,DOC-VCL031,Email
+vcl032,VCL-032,v013,2024-09-20,Update,bankAccount,****9998,****9997,Kitty Sanchez,George Bluth Sr,2024-09-18,DOC-VCL032,ChangeRequestForm
+vcl033,VCL-033,v016,2024-10-01,Update,address,Balboa Island,Balboa Island Suite B,Annyong Bluth,Michael Bluth,2024-09-29,DOC-VCL033,ChangeRequestForm
+vcl034,VCL-034,v018,2024-10-10,Update,phone,949-555-0204,949-555-0299,Annyong Bluth,Michael Bluth,2024-10-08,DOC-VCL034,Email
+vcl035,VCL-035,v023,2024-10-15,Update,paymentTerms,Net30,Net45,Annyong Bluth,Michael Bluth,2024-10-13,DOC-VCL035,Email

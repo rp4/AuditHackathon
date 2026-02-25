@@ -1,0 +1,6 @@
+ID,code,name,currency_code,country,city,isActive
+cc01,BC01,Bluth Company - US Headquarters,USD,US,Newport Beach,true
+cc02,BC02,Bluth Company - Mexico Operations,MXN,MX,Cabo San Lucas,true
+cc03,BC03,Bluth Company - Iraq Construction,USD,IQ,Baghdad,true
+cc04,BOFB,Bluth's Original Frozen Banana,USD,US,Newport Beach,false
+cc05,SITW,Sitwell Enterprises (Related Party),USD,US,Orange County,true

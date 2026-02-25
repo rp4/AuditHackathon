@@ -1,0 +1,256 @@
+{
+  "name": "Fieldwork: Identity and Access Management Audit",
+  "description": "Comprehensive IAM audit workflow based on IIA Global Technology Audit Guide (GTAG) - Auditing Identity and Access Management, 2nd Edition. Covers testing of identity controls, authorization processes, authentication mechanisms, and related monitoring controls aligned with COBIT 2019, NIST CSF 2.0, and CIS Controls v8.1.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "assess-iam-scope",
+        "type": "artifact",
+        "position": {
+          "x": 100,
+          "y": 300
+        },
+        "data": {
+          "label": "Assess IAM Scope and Environment",
+          "description": "Identify in-scope IT resources, data classifications, and IAM policies to establish engagement boundaries",
+          "instructions": "You are an IT audit specialist conducting engagement planning for an IAM audit. Review the organization's IT asset inventory, data classification policy, network architecture documentation, and IAM-related policies and procedures provided. Identify all in-scope IT resources including network infrastructure, servers, databases, middleware, and applications. Document the security categories assigned to each system and note which systems are federated with network identity versus standalone. Output a markdown file containing: (1) Executive summary of IAM scope, (2) Table of in-scope systems with columns: System Name, Type, Data Classification, Federation Status, Business Owner, and (3) Summary of applicable IAM policies. Reference IIA Standards 13.2 Engagement Risk Assessment and 13.3 Engagement Objectives and Scope, and GTAG Introduction section on risk-based scoping.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 300
+        }
+      },
+      {
+        "id": "evaluate-identity-controls",
+        "type": "artifact",
+        "position": {
+          "x": 450,
+          "y": 100
+        },
+        "data": {
+          "label": "Evaluate Identity Management Controls",
+          "description": "Assess controls over digital identity creation, verification, and lifecycle management",
+          "instructions": "You are an IT audit specialist evaluating identity management controls. Using the IAM scope assessment from the previous step, examine the organization's identity management processes. Review the identity proofing procedures, network ID creation workflows, and mechanized ID documentation. Test a sample of recent ID creation requests to verify: (1) proper approval by supervisor or designated responsible employee, (2) validation of identity through I-9 or equivalent verification, (3) association with verified individuals or documented owners for mechanized IDs. For federated systems, verify integration with HR database for automated status updates. For non-federated systems, evaluate the strength of identity verification processes. Output a markdown file containing: (1) Summary of identity control design, (2) Table of sampled ID requests with test results, (3) Identified control gaps, and (4) Risk implications for each gap. Reference NIST SP 800-63-3 Digital Identity Guidelines and GTAG Identity section on network and application-specific identity.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 450,
+          "y": 100
+        }
+      },
+      {
+        "id": "assess-authorization-controls",
+        "type": "artifact",
+        "position": {
+          "x": 450,
+          "y": 500
+        },
+        "data": {
+          "label": "Assess Authorization Control Framework",
+          "description": "Evaluate the design of role-based access control and authorization approval processes",
+          "instructions": "You are an IT audit specialist evaluating authorization controls. Using the IAM scope assessment from the previous step, examine how the organization determines and grants system access. Review documentation of: (1) How business owners work with system administrators to define system roles (COBIT 2019 DSS06.03), (2) Role-to-job-function mappings for each in-scope application, (3) Separation of duties requirements and prohibited permission combinations, (4) Dual authorization requirements for privileged or sensitive roles. Evaluate whether role definitions are documented and whether applications use role-based access control versus manual permission granting. Output a markdown file containing: (1) Assessment of role definition process maturity, (2) Table of in-scope systems showing: System, Role-Based (Y/N), Roles Documented (Y/N), SoD Controls (Y/N), (3) Identified design weaknesses, and (4) Recommendations. Reference COBIT 2019 DSS06.03 and CIS Controls v8.1 Safeguard 6.8 on role-based access control.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 450,
+          "y": 500
+        }
+      },
+      {
+        "id": "test-authentication-mechanisms",
+        "type": "artifact",
+        "position": {
+          "x": 800,
+          "y": 100
+        },
+        "data": {
+          "label": "Test Authentication Mechanisms",
+          "description": "Verify password controls and multi-factor authentication implementations meet security requirements",
+          "instructions": "You are an IT audit specialist testing authentication controls. Using the identity controls evaluation from the previous step, test authentication mechanisms across in-scope systems. For password controls, verify configuration of: (1) Minimum length requirements, (2) Complexity rules (uppercase, lowercase, numbers, symbols), (3) Expiration periods aligned with data classification, (4) Password history/reuse restrictions, (5) Account lockout thresholds. For multi-factor authentication, verify: (1) MFA is required for externally-exposed applications (CIS 6.3), (2) MFA is required for remote network access (CIS 6.4), (3) MFA is required for administrative access (CIS 6.5). Document any physical tokens, software authenticators, or biometric controls in use. Output a markdown file containing: (1) Password configuration matrix by system, (2) MFA coverage assessment table, (3) Exceptions and compensating controls, and (4) Recommendations for gaps. Reference NIST SP 800-53r5 identification and authentication section and CIS Controls v8.1 Control 6 Access Control Management.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 100
+        }
+      },
+      {
+        "id": "evaluate-privileged-access",
+        "type": "artifact",
+        "position": {
+          "x": 800,
+          "y": 350
+        },
+        "data": {
+          "label": "Evaluate Privileged Access Management",
+          "description": "Test controls over administrator accounts and elevated privilege assignment",
+          "instructions": "You are an IT audit specialist evaluating privileged access management. Using the authorization control assessment from the previous step, examine how the organization manages privileged accounts. Obtain listings of all accounts with administrator privileges, superuser access, or database administrator rights across in-scope systems. Verify: (1) Privileged users have separate dedicated administrator accounts (CIS 5.4), (2) Dual authorization is required for creating privileged roles, (3) Privileged account management tools are implemented for provisioning, monitoring, and enforcement, (4) Each privileged account is associated with a documented, authorized individual. Test a sample of privileged accounts to verify proper approval documentation. Identify any shared administrator credentials or orphaned privileged accounts. Output a markdown file containing: (1) Privileged account inventory summary, (2) Sample test results with approval verification, (3) Identified control deficiencies, and (4) Risk ratings and recommendations. Reference CIS Controls v8.1 Control 5 Safeguard 5.4 and GTAG Privileged Account Management section.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 350
+        }
+      },
+      {
+        "id": "review-reauthorization-deactivation",
+        "type": "artifact",
+        "position": {
+          "x": 800,
+          "y": 600
+        },
+        "data": {
+          "label": "Review Reauthorization and Deactivation",
+          "description": "Test periodic access reviews, job transfer processes, and dormant account controls",
+          "instructions": "You are an IT audit specialist reviewing access lifecycle controls. Using the authorization control assessment from the previous step, examine reauthorization and deactivation processes. Test: (1) Periodic reauthorization reviews - verify supervisors receive adequate information to make informed decisions and frequency aligns with data classification, (2) Job function change process - verify former supervisor deactivates unneeded access and new supervisor approves new access (CIS 6.2), (3) Termination process - select a sample of terminated employees and verify timely deactivation across all systems, especially non-federated applications, (4) Dormant account controls - verify automatic deactivation parameters are configured (CIS 5.3). Compare user access lists to HR data to identify anomalies suggesting rubber-stamp reauthorization or access creep. Output a markdown file containing: (1) Reauthorization process assessment, (2) Termination testing results table, (3) Dormant account configuration by system, (4) Access anomaly analysis, and (5) Recommendations. Reference CIS Controls v8.1 Safeguards 5.3 and 6.2, and GTAG Reauthorization Processes and Account Deactivation sections.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 600
+        }
+      },
+      {
+        "id": "assess-logging-monitoring",
+        "type": "artifact",
+        "position": {
+          "x": 1150,
+          "y": 350
+        },
+        "data": {
+          "label": "Assess Event Logging and Monitoring",
+          "description": "Verify security events are captured and monitored to detect IAM-related threats",
+          "instructions": "You are an IT audit specialist assessing IAM-related logging and monitoring controls. Using the authentication testing results, privileged access evaluation, and reauthorization review from the previous steps, examine event logging and monitoring for IAM events. Verify that systems log: (1) Account activation and deactivation events, (2) Successful and failed login attempts, (3) Permission and role changes, (4) Privileged user activities, (5) Password reset and credential changes. For log monitoring, assess: (1) Whether security event logs are secured from unauthorized modification, (2) Whether proactive monitoring exists to detect anomalies such as repeated failed logins, self-authorized privilege escalation, or unusual account activation/deactivation patterns, (3) Integration with security information and event management (SIEM) tools. Output a markdown file containing: (1) Event logging configuration matrix by system and event type, (2) Log monitoring capability assessment, (3) Gap analysis comparing actual logging to IAM-related risk patterns, and (4) Recommendations prioritized by risk. Reference CIS Controls v8.1 Control 8 Audit Log Management and GTAG Event Logging and Log Monitoring sections.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 1150,
+          "y": 350
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-scope-identity",
+        "source": "assess-iam-scope",
+        "target": "evaluate-identity-controls",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-scope-authorization",
+        "source": "assess-iam-scope",
+        "target": "assess-authorization-controls",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-identity-authentication",
+        "source": "evaluate-identity-controls",
+        "target": "test-authentication-mechanisms",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-authorization-privileged",
+        "source": "assess-authorization-controls",
+        "target": "evaluate-privileged-access",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-authorization-reauth",
+        "source": "assess-authorization-controls",
+        "target": "review-reauthorization-deactivation",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-authentication-logging",
+        "source": "test-authentication-mechanisms",
+        "target": "assess-logging-monitoring",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-privileged-logging",
+        "source": "evaluate-privileged-access",
+        "target": "assess-logging-monitoring",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-reauth-logging",
+        "source": "review-reauthorization-deactivation",
+        "target": "assess-logging-monitoring",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

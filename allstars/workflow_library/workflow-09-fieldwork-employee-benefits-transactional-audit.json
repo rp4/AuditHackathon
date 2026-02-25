@@ -1,0 +1,173 @@
+{
+  "name": "Fieldwork: Employee Benefits Transactional Audit",
+  "description": "An audit workflow for Employee Benefits focusing on transactional testing of eligibility, payment accuracy, and change management.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "data": {
+          "label": "1. Population Extraction",
+          "description": "Extract the full population of employees enrolled in benefit plans from the HRIS/Payroll system.",
+          "instructions": "# Data Acquisition & Population Integrity\n\n## Objective\nObtain a complete and accurate population of all employees enrolled in benefit plans during the audit period to serve as the sampling frame.\n\n## Procedure\n1. **Identify Data Sources**: Access the HRIS (Human Resources Information System) and Payroll modules.\n2. **Extract Population**: Query the system for all unique records where `Benefit_Status = 'Active'` or where a benefit deduction occurred during the period.\n3. **Define Attributes**: Ensure the extract includes the following attributes for MCP/Data analysis:\n   - Employee ID\n   - Full Name\n   - Benefit Plan Code (e.g., Medical-PPO, Dental-HMO)\n   - Coverage Level (e.g., Single, Family)\n   - Enrollment Effective Date\n   - Monthly Premium Amount (Employer vs. Employee share)\n4. **Data Integrity Check**: Reconcile the total count of records in the extract to the summary reports in the HRIS.\n\n## Expected Outputs\n- [ ] Master Population File (CSV/Excel)\n- [ ] Data integrity reconciliation memo",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "2. Eligibility Testing",
+          "description": "Test a sample of employees to ensure they meet plan eligibility requirements.",
+          "instructions": "# Benefit Eligibility Validation\n\n## Objective\nVerify that benefits are only paid to eligible employees in accordance with plan documents.\n\n## Prerequisites\n- Master Population File from Step 1.\n- Access to personnel files/electronic document management system (EDMS).\n\n## Procedure\n1. **Sample Selection**: Using a statistical sampling method (e.g., Random or Monetary Unit Sampling), select X employees from the population.\n2. **Attribute Testing**: For each sampled employee, inspect supporting documentation for:\n   - Employment status (Full-time vs. Part-time requirements)\n   - Dependent eligibility (Marriage certificates, birth certificates if applicable)\n   - Waiting period compliance (Check hire date vs. benefit start date)\n3. **Record Results**: Document any instances where eligibility could not be verified.\n\n## Quality Criteria\n- Documentation must support the specific coverage tier (e.g., if \"Family\" coverage is selected, dependent proof must be present).",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Payment Accuracy",
+          "description": "Reconcile benefit payments to payroll deductions and provider invoices for a sample.",
+          "instructions": "# Payment & Payroll Accuracy Test\n\n## Objective\nEnsure benefit payments are accurate, supported, and correctly reflected in payroll deductions.\n\n## Procedure\n1. **Sample Selection**: Select a sample of benefit payments/deductions from the population.\n2. **Trace to Payroll**: Trace the sampled employee's deduction amount to the Payroll Register for the corresponding period.\n3. **Trace to Provider Invoice**: Trace the total premium (Employee + Employer share) to the monthly invoice received from the benefit provider (e.g., BlueCross, Aetna).\n4. **Verify Calculation**: Recalculate the deduction based on the plan's rate sheet and the employee's selected coverage level.\n\n## Expected Outputs\n- [ ] Completed Testing Worksheet\n- [ ] Exception Log for variances > 1%",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Change Management",
+          "description": "Inspect a sample of benefit plan changes for proper authorization.",
+          "instructions": "# Benefit Plan Change Authorization\n\n## Objective\nConfirm that changes to benefit plans (enrollments, terminations, tier changes) are authorized and documented.\n\n## Procedure\n1. **Identify Changes**: Filter the population for any records where the coverage level or plan type changed during the audit period.\n2. **Sample Selection**: Select a sample of changed records.\n3. **Inspect Authorization**:\n   - Verify existence of a signed enrollment form or a timestamped electronic \"Life Event\" submission in the self-service portal.\n   - Inspect evidence of HR approval for manual overrides or retroactive changes.\n4. **Communication**: Verify that the change was communicated to the provider within the required window.\n\n## Quality Criteria\n- All manual entries must have a second-level approval signature or system log entry.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "5. Global Reconciliation",
+          "description": "Perform a full-population reconciliation of total deductions to provider remittances.",
+          "instructions": "# Deduction vs. Remittance Reconciliation\n\n## Objective\nEnsure that the total amounts deducted from employees' pay match the amounts actually remitted to the benefit providers.\n\n## Procedure\n1. **Aggregate Totals**: Sum all benefit deductions by Plan Category from the Payroll General Ledger for the entire audit period.\n2. **Gather Remittances**: Obtain the total wire transfers/checks sent to each benefit provider for the same period.\n3. **Perform Reconciliation**:\n   - Total Deductions + Employer Contributions = Total Remitted.\n4. **Investigate Variances**: Identify and explain any timing differences, credits for terminated employees, or adjustments.\n\n## Expected Outputs\n- [ ] Global Reconciliation Schedule\n- [ ] Explanation of material variances",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-5",
+        "source": "step-3",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

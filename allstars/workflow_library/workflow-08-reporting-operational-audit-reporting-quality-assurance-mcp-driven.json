@@ -1,0 +1,247 @@
+{
+  "name": "Reporting: Operational Audit Reporting - Quality Assurance (MCP Driven)",
+  "description": "A comprehensive Zero-Defect Review workflow for operational audit reports, ensuring alignment with IIA standards, the 5 Cs of reporting, and strict language/formatting requirements. Includes MCP data integration and artifact synchronization.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "node-1",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 60
+        },
+        "data": {
+          "label": "MCP Integration & Data Retrieval",
+          "description": "Connect to the Model Context Protocol (MCP) to pull the draft audit report, issue logs, and related engagement data.",
+          "instructions": "# MCP Data Integration\n\n## Objective\nEstablish a secure connection to the Model Context Protocol (MCP) to retrieve all necessary reporting inputs, including draft reports and the issue log.\n\n## Procedure\n1. **Initialize MCP Connection**: Use the audit environment's MCP bridge to access the project repository.\n2. **Fetch Draft Report**: Locate and pull the latest version of the audit report draft.\n3. **Retrieve Issue Log**: Pull the finalized issue log/matrix containing all findings identified during fieldwork.\n4. **Validate Data Completeness**: Ensure all expected findings from the fieldwork phase are present in the retrieved issue log.\n\n## Expected Outputs\n- Draft Audit Report (raw text/document)\n- Master Issue Log\n- Audit Metadata (Auditee, Dates, Lead Auditor)",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "node-2",
+        "type": "step",
+        "position": {
+          "x": 460,
+          "y": 60
+        },
+        "data": {
+          "label": "Audit Procedure & Result Linkage",
+          "description": "Link specific audit procedures and their corresponding results to generate a detailed overview for the report.",
+          "instructions": "# Procedure & Result Linkage\n\n## Objective\nMap every audit procedure performed to its specific result to ensure the report overview is evidence-based and comprehensive.\n\n## Procedure\n1. **Map Procedures**: Align each test procedure from the Audit Program with the results recorded in the working papers.\n2. **Generate Overview**: Create a narrative overview that summarizes the testing performed and the high-level outcomes.\n3. **Verify Coverage**: Ensure the report scope accurately reflects the procedures executed.\n\n## Expected Outputs\n- Detailed Testing Overview\n- Procedure-to-Result Mapping Matrix",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "node-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Artifact Alignment & Sync",
+          "description": "Synchronize supporting artifacts gathered from the MCP to the Audit Management Software (AMS) for permanent record.",
+          "instructions": "# Artifact Synchronization\n\n## Objective\nEnsure all evidence (artifacts) retrieved via MCP is correctly uploaded and linked within the Audit Management Software (AMS) for documentation compliance.\n\n## Procedure\n1. **Identify Artifacts**: List all supporting documents, screenshots, and data exports retrieved during the audit.\n2. **Upload to AMS**: Transfer artifacts from the MCP workspace to the corresponding steps in the AMS.\n3. **Link to Findings**: Explicitly link each artifact to the specific finding or procedure it supports.\n\n## Expected Outputs\n- Synchronized AMS Record\n- Linked Evidence Log",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node-4",
+        "type": "step",
+        "position": {
+          "x": 1240,
+          "y": 60
+        },
+        "data": {
+          "label": "Content & Structural Review (Pass 1)",
+          "description": "Pass 1: Perform a granular review of the report structure, 5 Cs, risk ratings, and MAPs.",
+          "instructions": "# Content Quality Review (Zero-Defect Pass 1)\n\n## Objective\nExecute a \"Zero-Defect Review\" of report content focusing on structural integrity and the 5 Cs of audit reporting.\n\n## Procedure\n1. **Structure Check**: Verify the report is labeled \"Assurance Audit Report\" or \"Advisory Project Memo.\"\n2. **Executive Summary Validation**: Ensure inclusion of Objective, Scope, Scope Limitations, Overall Rating (Satisfactory, Fair, Needs Improvement, Unsatisfactory), Conclusion, and Context.\n3. **The 5 Cs Analysis**: For every finding, verify:\n   - **Criteria**: What should be?\n   - **Condition**: What is?\n   - **Cause**: Why did it happen?\n   - **Consequence**: What is the risk/impact?\n   - **Corrective Action**: What is the fix?\n4. **Risk Rating Calibration**: Verify findings are rated (Critical, High, Medium, Low, or Observation) according to standard definitions.\n5. **MAP Review**: Ensure every Management Action Plan has a specific Owner (Director/VP), Target Date, and Status.\n\n## Quality Criteria\n- All 5 Cs must be present for every finding.\n- Executive summary must provide a clear overall conclusion.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1240,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "node-5",
+        "type": "step",
+        "position": {
+          "x": 1640,
+          "y": 60
+        },
+        "data": {
+          "label": "Language & Writing Quality (Pass 2)",
+          "description": "Pass 2: Scan for forbidden words, active voice, and core writing requirements.",
+          "instructions": "# Language & Writing Review (Zero-Defect Pass 2)\n\n## Objective\nEliminate forbidden words and ensure professional, active, and concise audit language.\n\n## Procedure\n1. **Forbidden Word Scan**: Identify and remove: *Failed, Neglected, Ineffective, Inadequate, Violated, Appears, Seems, \"It seems that\", \"Our impression is\", \"Should consider\", \"A few/many/several/sometimes\", \"We found/uncovered/disclosed\", Always, Never, Everything, Nothing, Clearly, Very, Significant.*\n2. **Active Voice Conversion**: Replace passive voice (e.g., \"Tests were performed\") with active voice (e.g., \"IA performed tests\").\n3. **Contraction Removal**: Eliminate all contractions (don't, can't, won't, etc.).\n4. **Conciseness Check**: Remove \"fluff\" and jargon; ensure technical terms are explained.\n\n## Quality Criteria\n- Zero instances of forbidden words.\n- 100% active voice in findings.\n- No contractions.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 1640,
+          "y": 60
+        }
+      },
+      {
+        "id": "node-6",
+        "type": "step",
+        "position": {
+          "x": 2060,
+          "y": 40
+        },
+        "data": {
+          "label": "Formatting & Standards (Pass 3)",
+          "description": "Pass 3: Verify acronyms, font consistency, and numbers.",
+          "instructions": "# Formatting & Consistency Review (Pass 3)\n\n## Objective\nEnsure the report meets all visual and stylistic standards for a professional \"Zero-Defect\" finish.\n\n## Procedure\n1. **Acronym Definition**: Ensure every acronym is defined upon first use.\n2. **Font Verification**: Confirm the use of \"Inter\" font and consistent sizing throughout.\n3. **Numerical Consistency**: Check for consistent use of spelled-out numbers vs. numerical digits according to style guides.\n4. **Standard Alignment**: Final check against IIA reporting standards.\n\n## Quality Criteria\n- Consistent font usage.\n- All acronyms defined.\n- Proper numerical formatting.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 2060,
+          "y": 40
+        }
+      },
+      {
+        "id": "node-7",
+        "type": "step",
+        "position": {
+          "x": 2480,
+          "y": 40
+        },
+        "data": {
+          "label": "Final Report & Review Log Production",
+          "description": "Generate the final Audit Self-Review Log and the ready-to-issue Audit Report.",
+          "instructions": "# Final Report & Review Log Production\n\n## Objective\nConsolidate all review findings into a final Audit Self-Review Log and produce the final, polished audit report.\n\n## Procedure\n1. **Generate Self-Review Log**: Create the Markdown table for all 'N' (Failed) items found in previous passes.\n   - Columns: Checklist Item, Section/Location, Finding (Discrepancy), Correction (Actionable Fix), Status.\n2. **Apply Final Fixes**: Ensure all corrections from the log are applied to the report.\n3. **Export Final Report**: Generate the final \"Assurance Audit Report\" or \"Advisory Project Memo\" for issuance.\n\n## Output Format\n- **Zero-Defect Review Log** (Markdown Table)\n- **Final Audit Report** (PDF/Word)",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 2480,
+          "y": 40
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "node-1",
+        "target": "node-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "node-2",
+        "target": "node-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "node-3",
+        "target": "node-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "node-4",
+        "target": "node-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "node-5",
+        "target": "node-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "node-6",
+        "target": "node-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

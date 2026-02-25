@@ -1,0 +1,290 @@
+{
+  "name": "Planning: High-Rigor Controls Optimization",
+  "description": "A high-rigor workflow to transform low-maturity Risk and Control Matrices (RCM) into audit-ready documentation using policy mapping, walkthrough synthesis, industry benchmarking, and management approval.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "position": {
+          "x": 60,
+          "y": 260
+        },
+        "height": 116,
+        "id": "define-scope",
+        "type": "step",
+        "data": {
+          "executing": false,
+          "description": "Define the business process, organizational units, and systems included in the optimization effort to establish clear boundaries.",
+          "pendingReview": false,
+          "label": "Define Process Scope",
+          "completed": true,
+          "instructions": "# Define Process Scope\n\n## Objective\nEstablish the boundaries of the controls optimization project by defining exactly which business processes, legal entities, systems, and departments are within the scope of work.\n\n## USER INPUT REQUIRED\n**Please provide the following to start the step:**\n- **Primary Process**: What specific end-to-end business cycle are you optimizing? (e.g., Accounts Payable, Hire-to-Retire, Financial Close)\n- **Organizational Units**: Which legal entities or geographic locations should be included?\n- **Key Systems**: List the primary ERP or software applications used in this process.\n\n## Prerequisites\n- Engagement letter or project charter\n- High-level organizational chart\n- List of key business applications and systems\n\n## Procedure\n### Step-by-step instructions\n1. **Identify the Core Process**\n   - Use the provided **Primary Process** input to document the start and end points.\n   - Document the start and end points of the process.\n\n2. **Define Organizational Boundaries**\n   - List the legal entities, geographic locations, and departments based on the **Organizational Units** provided.\n   - Note any shared service centers or third-party service providers (SaaS/BPO).\n\n3. **Inventory Supporting Systems**\n   - Map out the ERP and specialized tools based on the **Key Systems** input.\n\n### Key considerations\n- **Materiality**: Ensure focus remains on areas with significant financial or operational impact.\n- **Out-of-Scope**: Explicitly state what is *not* included to prevent \"scope creep.\"\n\n## Expected Outputs\n- [ ] Process Scope Document — listing processes, entities, and systems\n- [ ] Process Context Map — visual or narrative summary of boundaries\n\n## Quality Criteria\n- Boundaries are clearly defined with no ambiguity.\n- All stakeholders have agreed upon the scope definition.\n- Relationship to financial statements or operational goals is documented.\n\n## References\n- IIA Standard 2200 – Engagement Planning\n- COSO Framework (Control Environment)"
+        },
+        "width": 320,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "gather-rcm",
+        "position": {
+          "x": 460,
+          "y": 60
+        },
+        "height": 116,
+        "data": {
+          "instructions": "# Gather Existing RCM\n\n## Objective\nSecure the current version of the Risk and Control Matrix (RCM) to establish the baseline for the current control environment.\n\n## USER INPUT REQUIRED\n**Please provide the following:**\n- **Source Material**: Upload the current RCM file, paste the content here, or provide a link/path to where it is stored.\n- **RCM Context**: Is this the most recent internal audit version, or management's self-assessment version?\n\n## Procedure\n1. Obtain the most recent RCM based on the **Source Material** provided.\n2. Verify this is the baseline for current risk statements and control descriptions.\n3. Identify existing attributes (frequency, nature, owner).\n\n## Expected Outputs\n- [ ] Baseline RCM — verified and ready for analysis.",
+          "completed": true,
+          "description": "Secure the current version of the Risk and Control Matrix (RCM) to establish the baseline for the current control environment.",
+          "pendingReview": false,
+          "label": "Gather Existing RCM",
+          "executing": false
+        },
+        "width": 320,
+        "type": "step",
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 60
+        }
+      },
+      {
+        "id": "gather-policies",
+        "position": {
+          "y": 260,
+          "x": 460
+        },
+        "height": 116,
+        "data": {
+          "instructions": "# Gather Policies & SOPs\n\n## Objective\nCompile all relevant governing documents, including corporate policies, standard operating procedures (SOPs), and delegation of authority (DOA) matrices to ensure the control environment is mapped against actual requirements.\n\n## Prerequisites\n- List of internal departments in scope\n- Access to the organization’s policy management system or SharePoint\n\n## Procedure\n1. **Identify Relevant Governance**\n   - Systematically collect formal policies (the 'what') that govern the process in scope.\n   - Collect procedural manuals and desk-level instructions (the 'how').\n\n2. **Collect Authority Matrices**\n   - Obtain the Delegation of Authority (DOA) or Signature Authority Matrix (SAM) relevant to the process.\n\n3. **Verify Currency**\n   - Ensure all documents are the most recent approved versions.\n\n## Expected Outputs\n- [ ] Policy Repository — a structured set of governing documents\n- [ ] Document Log — listing version numbers and last review dates\n\n## Quality Criteria\n- Documents collected cover all key sub-processes within the scope.\n- Both policy (directives) and procedures (execution steps) are included.",
+          "completed": true,
+          "label": "Gather Policies & SOPs",
+          "pendingReview": false,
+          "description": "Compile all relevant governing documents, including corporate policies, standard operating procedures, and delegation of authority.",
+          "executing": false
+        },
+        "width": 320,
+        "type": "step",
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "perform-walkthroughs",
+        "height": 116,
+        "position": {
+          "y": 450,
+          "x": 450
+        },
+        "width": 320,
+        "data": {
+          "label": "Perform Management Walkthroughs",
+          "pendingReview": false,
+          "description": "Execute end-to-end walkthroughs to validate the actual process flow against documentation and identify operational nuances.",
+          "executing": false,
+          "instructions": "Conduct interviews with process owners and perform 'show-me' walkthroughs. Document the flow of transactions from initiation to recording in the general ledger. Capture walkthrough notes, system screenshots, and meeting transcripts to provide a factual basis for the current state.",
+          "completed": true
+        },
+        "type": "step",
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "data": {
+          "label": "Best Practices & Standards",
+          "description": "Research and integrate industry leading practices, regulatory requirements, and standard risk libraries.",
+          "pendingReview": false,
+          "executing": false,
+          "instructions": "Identify 'what good looks like' by referencing COSO frameworks, industry-specific standards, or peer benchmarks. Supply standard risk statements and control activities to use as a yardstick for the gap analysis phase.",
+          "completed": true
+        },
+        "width": 320,
+        "type": "step",
+        "id": "best-practices",
+        "position": {
+          "y": 250,
+          "x": 850
+        },
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "height": 116,
+        "position": {
+          "x": 1260,
+          "y": 240
+        },
+        "id": "gap-analysis",
+        "type": "step",
+        "width": 320,
+        "data": {
+          "instructions": "Perform a side-by-side comparison of the existing RCM against policies and walkthrough results. Identify 'blind spots' where risks are not mitigated, descriptions are vague, or controls are not aligned with best practices. **Deliverable: Comprehensive Gap Analysis Report.**",
+          "completed": true,
+          "label": "Perform Gap Analysis",
+          "pendingReview": false,
+          "description": "Systematically compare the current control environment against policies, walkthrough findings, and industry best practices to identify deficiencies.",
+          "executing": false
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1260,
+          "y": 240
+        },
+        "dragging": false
+      },
+      {
+        "data": {
+          "pendingReview": false,
+          "description": "Redesign controls to be audit-ready and perform a delta analysis to split out current, revamped, and new enhanced controls.",
+          "label": "Optimize Control Activities & Delta Analysis",
+          "executing": false,
+          "instructions": "Apply the 'Who, What, Where, When, Why, How' framework to rewrite control descriptions. Produce a comprehensive matrix that clearly splits out: 1) The **Original Control** as it existed, 2) The **Delta/Modifications** made to revamp it, and 3) **New Enhanced Controls** added to address gaps. This ensures traceability between the 'as-is' and 'to-be' states.",
+          "completed": true
+        },
+        "width": 320,
+        "type": "step",
+        "id": "optimize-controls",
+        "position": {
+          "x": 1660,
+          "y": 240
+        },
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1660,
+          "y": 240
+        },
+        "dragging": false
+      },
+      {
+        "width": 320,
+        "data": {
+          "completed": true,
+          "instructions": "# LLM-as-a-Judge Validation\n\n## Objective\nProvide an automated yet high-rigor peer review of the optimized control matrix using a specialized audit-tuned LLM.\n\n## Prerequisites\n- Completed 'Optimize Control Activities & Delta Analysis' output\n- Access to the target control framework (e.g., COSO 2013)\n\n## Procedure\n1. **Submit for Scoring**\n   - Provide the RCM to the judge for evaluation.\n   - The judge will evaluate each control for:\n     - **Specificity**: Are the Who/What/Where/When/Why/How clearly defined?\n     - **Evidence**: Is the 'Evidence of Performance' actionable?\n     - **Assertion Mapping**: Do the controls align correctly with financial/operational assertions?\n2. **Review Feedback**\n   - Analyze the judge's score and qualitative recommendations.\n   - Address any 'Red' or 'Amber' findings before moving to finalization.\n\n## Expected Outputs\n- [ ] Judge Scorecard — rigorous evaluation of each control\n- [ ] Refinement Feedback — specific suggestions for improvement",
+          "executing": false,
+          "pendingReview": false,
+          "description": "Use an LLM-based expert judge to review the optimized RCM for technical rigor, completeness, and adherence to professional standards before finalization.",
+          "label": "LLM-as-a-Judge Validation"
+        },
+        "type": "step",
+        "id": "judge-validation",
+        "height": 116,
+        "position": {
+          "x": 2060,
+          "y": 240
+        },
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 2060,
+          "y": 240
+        }
+      },
+      {
+        "id": "mgmt-review",
+        "position": {
+          "x": 2460,
+          "y": 240
+        },
+        "height": 116,
+        "data": {
+          "executing": false,
+          "label": "Management Review & Approval",
+          "description": "Present the optimized RCM and delta analysis to process owners and management for formal review, feedback, and sign-off.",
+          "pendingReview": false,
+          "completed": true,
+          "instructions": "Conduct a meeting or share the draft optimized RCM with management stakeholders. Ensure they understand the changes (deltas) from the baseline and the enhanced control activities. Capture feedback and obtain formal approval/sign-off before the final issuance of the RCM."
+        },
+        "width": 320,
+        "type": "step",
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 2460,
+          "y": 240
+        }
+      },
+      {
+        "position": {
+          "x": 2860,
+          "y": 240
+        },
+        "height": 116,
+        "id": "finalize-rcm",
+        "type": "step",
+        "data": {
+          "instructions": "Generate the final, revamped Accounts Payable Risk and Control Matrix (RCM) as a CSV formatted code block. \n\nThe output MUST contain only the CSV data. \nDo not include any introductory text, analysis, summary, or closing remarks. \n\nColumns should include:\n- Control ID\n- Process\n- Risk\n- Control Activity (Who, What, Where, When, Why, How)\n- Frequency\n- Control Type (Manual/Automated)\n- Control Nature (Preventative/Detective)\n- Assertion Mapping",
+          "completed": false,
+          "label": "Finalize and Issue Optimized RCM",
+          "pendingReview": false,
+          "description": "Incorporate management feedback and issue the final, approved high-maturity Risk and Control Matrix for use in audit execution.",
+          "executing": false
+        },
+        "width": 320,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 2860,
+          "y": 240
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "target": "gather-rcm",
+        "source": "define-scope",
+        "id": "e1-2a"
+      },
+      {
+        "source": "define-scope",
+        "target": "gather-policies",
+        "id": "e1-2b"
+      },
+      {
+        "id": "e1-2c",
+        "target": "perform-walkthroughs",
+        "source": "define-scope"
+      },
+      {
+        "id": "e2a-3",
+        "source": "gather-rcm",
+        "target": "best-practices"
+      },
+      {
+        "target": "best-practices",
+        "source": "gather-policies",
+        "id": "e2b-3"
+      },
+      {
+        "source": "perform-walkthroughs",
+        "target": "best-practices",
+        "id": "e2c-3"
+      },
+      {
+        "id": "e3-4",
+        "source": "best-practices",
+        "target": "gap-analysis"
+      },
+      {
+        "source": "gap-analysis",
+        "target": "optimize-controls",
+        "id": "e4-5"
+      },
+      {
+        "source": "optimize-controls",
+        "target": "judge-validation",
+        "id": "optimize-to-judge"
+      },
+      {
+        "target": "mgmt-review",
+        "source": "judge-validation",
+        "id": "judge-to-mgmt"
+      },
+      {
+        "id": "mgmt-to-finalize",
+        "source": "mgmt-review",
+        "target": "finalize-rcm"
+      }
+    ],
+    "metadata": {}
+  }
+}

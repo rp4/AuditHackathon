@@ -1,0 +1,9 @@
+biaId,businessProcess,department,criticalityLevel,rto,rpo,itDependencies,vendorDependencies,manualWorkaround
+bia001,Wire Transfer Processing,Finance,Critical,4,1,SAP ERP,First Nationwide Bank,false
+bia002,Accounts Payable Processing,Finance,High,24,4,SAP ERP,,true
+bia003,Payroll Processing,HR,Critical,8,2,Workday,ADP Payroll Services,false
+bia004,Customer Billing,Finance,High,24,4,SAP ERP,,true
+bia005,IT Infrastructure,IT,Critical,2,1,Core Network and Servers,,false
+bia006,Banana Stand Operations,Operations,Low,72,24,Banana Stand POS,,true
+bia007,Iraq Construction Management,Construction,High,48,24,SAP ERP Project Module,Saddam Hussain Construction,false
+bia008,Email and Collaboration,IT,Medium,12,2,Microsoft 365,Sitwell IT Services,false

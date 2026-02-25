@@ -1,0 +1,287 @@
+{
+  "name": "Fieldwork: Network Infrastructure - Transactional Audit Work Program",
+  "description": "A comprehensive audit work program for Network Infrastructure, covering everything from data gathering in SharePoint and MCP ingestion to transactional testing of configs, firewall rules, and redundancy.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 475
+        },
+        "data": {
+          "label": "1. Artifact Gathering (SharePoint)",
+          "description": "Collect policies, standards, and network topology from SharePoint.",
+          "instructions": "### Objective\nGather the 'source of truth' criteria documents.\n\n### Procedure\n1. Access the designated **Audit Evidence SharePoint** site.\n2. Download the following artifacts:\n   - Current Network Topology Diagrams (Internal, DMZ, External).\n   - Network Device Hardening Standards (Cisco, Palo Alto, Juniper).\n   - Firewall Management Policy and Rule Review Procedures.\n   - Network Logging and Monitoring Policy.\n\n### Expected Outputs\n- [ ] Network Diagrams\n- [ ] Hardening Standards\n- [ ] Relevant Policies",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 475
+        },
+        "data": {
+          "label": "2. Data Ingestion & Normalization (MCP)",
+          "description": "Point MCP to technical sources to extract populations for CMDB, logs, and configs.",
+          "instructions": "### Objective\nIngest raw populations for transactional sampling.\n\n### Procedure\n1. **Connect to MCP**: Configure the Management Control Point (MCP) to point to the following data sources:\n   - **CMDB**: Extract full population of active routers, switches, and firewalls.\n   - **Config Repository**: Pull 'running-config' files for all sampled devices.\n   - **Firewall Rules**: Export the full Access Control List (ACL) table from core firewalls.\n   - **Logs**: Pull the last 90 days of 'High' and 'Critical' alerts from the SIEM/Proxy logs.\n\n### Transactional Attributes\nEnsure each record has: `DeviceID`, `FirmwareVersion`, `LastChangeDate`, `RuleOwner`, and `Severity`.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Network Architecture Review",
+          "description": "Verify DMZ segmentation and firewall placement against diagrams.",
+          "instructions": "### Objective\nVerify that the actual network architecture matches the approved design.\n\n### Procedure\n1. Inspect the topology diagrams from Step 1.\n2. **Attribute Test**: Confirm the existence of dedicated DMZ segments for all internet-facing services.\n3. Verify that firewalls are logically placed between the Internal Network and the DMZ/External Network.\n4. **Sample**: Inspect 100% of core boundary segments.\n\n### Quality Criteria\n- No direct paths from External to Internal networks.\n- All DMZ traffic must pass through a stateful inspection firewall.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "4. Device Configuration Compliance",
+          "description": "Sample device configurations against hardening standards.",
+          "instructions": "### Objective\nEnsure network devices are configured securely.\n\n### Procedure\n1. **Sampling**: From the population in Step 2, select a random sample of 25 devices (Routers/Switches).\n2. **Transactional Test**: Compare each device's config against the Hardening Standard:\n   - [ ] Is SSH v2 enabled (and Telnet disabled)?\n   - [ ] Are default/community strings (SNMP) changed from defaults?\n   - [ ] Is the local 'enable' password encrypted (Secret)?\n   - [ ] Are unused ports disabled/shutdown?\n\n### MCP Data Point\nCompare the `running-config` hash against the `approved-config` hash in MCP to identify unauthorized changes.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "5. Firewall Rule Validation",
+          "description": "Review firewall rules for approval and business justification.",
+          "instructions": "### Objective\nValidate that firewall rules are necessary and authorized.\n\n### Procedure\n1. **Sampling**: Select a random sample of 40 firewall rules from the MCP export.\n2. **Attribute Verification**:\n   - [ ] Verify a documented 'Business Justification' for each rule.\n   - [ ] Verify the rule was approved by the Network Security Manager.\n   - [ ] Check for 'Any/Any' rules or overly permissive configurations.\n3. Cross-reference the `LastHitDate` attribute to identify and flag unused/obsolete rules (>180 days).",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 560
+        },
+        "data": {
+          "label": "6. Monitoring & Logging Review",
+          "description": "Verify alert monitoring and incident response for network events.",
+          "instructions": "### Objective\nEnsure network activity is effectively monitored.\n\n### Procedure\n1. **Sampling**: From the MCP Log export, select 15 'Critical' security alerts from the last quarter.\n2. **Transactional Review**:\n   - [ ] Verify an Incident Ticket was created for each alert.\n   - [ ] Confirm the alert was acknowledged within 30 minutes (per SLA).\n   - [ ] Inspect evidence of closure/remediation in the Ticketing System.\n\n### Quality Criteria\n- 100% of Critical alerts must have an associated ticket and resolution notes.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 750
+        },
+        "data": {
+          "label": "7. Redundancy & Failover Testing",
+          "description": "Test redundancy and failover capabilities of core equipment.",
+          "instructions": "### Objective\nVerify high availability of network services.\n\n### Procedure\n1. Obtain failover test logs or DR exercise reports from Step 1.\n2. **Log Inspection**: Identify all actual failover events in the MCP uptime logs for the past 6 months.\n3. **Attribute Test**:\n   - [ ] Verify the failover triggered automatically.\n   - [ ] Verify the Recovery Time Objective (RTO) was met.\n   - [ ] Confirm the system failed back to primary once the issue was resolved.\n\n### Quality Criteria\n- Redundant paths must show 99.9% uptime in MCP metrics.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-8",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 390
+        },
+        "data": {
+          "label": "8. Document Findings & Draft Report",
+          "description": "Consolidate findings and draft the audit report.",
+          "instructions": "### Objective\nSynthesize test results into a formal report.\n\n### Procedure\n1. Aggregate exceptions identified in Steps 3 through 7.\n2. **Quantify Risk**: Calculate error rates for each transactional test (e.g., \"15% of sampled firewall rules lacked justification\").\n3. Draft management recommendations for each finding.\n4. Prepare the executive summary with overall network security posture rating.\n\n### Expected Outputs\n- [ ] Audit Findings Matrix\n- [ ] Draft Network Infrastructure Audit Report",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 100
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-7",
+        "source": "step-2",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-8",
+        "source": "step-3",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-8",
+        "source": "step-4",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-8",
+        "source": "step-5",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-8",
+        "source": "step-2",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e7-8",
+        "source": "step-7",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

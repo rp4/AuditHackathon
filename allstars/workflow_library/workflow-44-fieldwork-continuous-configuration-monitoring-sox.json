@@ -1,0 +1,152 @@
+{
+  "name": "Fieldwork: Continuous Configuration Monitoring (SOX)",
+  "description": "Workflow for continuous monitoring of key SOX ERP configurations like 3-way match, override settings, and password policies. Automated alerting for unauthorized changes.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "Inventory Key SOX Configurations",
+          "description": "Define specific fields (3-way match, override, password settings) to monitor.",
+          "instructions": "# Inventory Key SOX Configurations\n\n## Objective\nIdentify the specific application configuration fields that represent critical SOX controls to ensure monitoring efforts are focused on high-risk areas.\n\n## Prerequisites\n- Access to ERP system configuration documentation (e.g., SAP, Oracle, NetSuite)\n- Control Matrix (RCM) identifying automated controls\n\n## Procedure\n### Step-by-step instructions\n1. **Identify High-Risk Configurations**\n   - Review the Risk Control Matrix for automated application controls.\n   - List key configuration tables/fields (e.g., 3-way match toggles, supplier setup approval workflows, password length/complexity).\n\n2. **Map Configurations to Controls**\n   - Document the specific control objective each configuration supports.\n   - Define the 'Allowed' or 'Compliant' state for each field.\n\n### Key considerations\n- Focus on configurations that don't have a rigid pipeline/version control process.\n- Prioritize settings that, if changed, bypass key segregation of duties (SoD) or data integrity controls.\n\n## Expected Outputs\n- [ ] List of high-risk configuration fields to be monitored\n- [ ] Mapping document (Configuration field to Control Objective)\n\n## Quality Criteria\n- All automated controls in the RCM are mapped to a monitorable configuration where possible.\n- Justification provided for excluded configurations.\n"
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 440,
+          "y": 60
+        },
+        "data": {
+          "label": "Establish Configuration Baseline",
+          "description": "Capture and confirm the 'Gold Standard' current configuration state.",
+          "instructions": "# Establish Configuration Baseline\n\n## Objective\nEstablish a validated 'Gold Standard' for the monitored configurations to serve as the baseline for all future comparisons.\n\n## Prerequisites\n- Completed inventory of key configurations from Step 1\n- Access to extract current system values\n\n## Procedure\n### Step-by-step instructions\n1. **Extract Current Values**\n   - Pull current live configuration metadata from the ERP system for all fields identified in the inventory.\n\n2. **Validate Against Control wording**\n   - Compare current settings against control requirements.\n   - If deviations exist, remediation must occur *before* baselining.\n\n3. **Obtain Management Sign-off**\n   - Present the extracted values to the relevant process owners.\n   - Secure formal approval that this state represents the intended and compliant configuration.\n\n### Key considerations\n- Ensure the baseline capture date is documented.\n- Any intentional deviations (exceptions) must be clearly documented in the baseline record.\n\n## Expected Outputs\n- [ ] Validated baseline configuration file/table\n- [ ] Management approval record\n\n## Quality Criteria\n- The baseline is free of known non-compliant settings.\n- All included configurations have been verified by the respective process owners.\n"
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 440,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 840,
+          "y": 60
+        },
+        "data": {
+          "label": "Automated Monitoring",
+          "description": "Set up recurring metadata extraction from ERP configuration tables.",
+          "instructions": "# Daily Automated Monitoring\n\n## Objective\nImplement a recurring, automated mechanism to ingest configuration metadata to allow for timely detection of changes.\n\n## Procedure\n### Step-by-step instructions\n1. **Develop Extraction Logic**\n   - Using the MCP to query the specific configuration tables daily.\n   - Ensure the extraction includes the field name, current value, last modified date, and last modified user (if available).\n\n### Key considerations\n- Minimize performance impact on the ERP by querying only the necessary tables.\n- Ensure the extraction process itself is secured and logged.\n\n## Expected Outputs\n- [ ] Automated extraction scripts/connectors\n- [ ] Raw configuration log/snapshot\n\n## Quality Criteria\n- Data is extracted without manual intervention.\n- Automated failure alerts are configured and functional.\n"
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 840,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Deviation Analysis & Alerting",
+          "description": "Automate the comparison against the baseline and trigger alerts for changes.",
+          "instructions": "# Deviation Analysis & Alerting\n\n## Objective\nAutomatically detect and report any deviations from the established baseline to ensure rapid response to unauthorized changes.\n\n## Prerequisites\n- Baseline configuration (from Step 2)\n- Newly extracted snapshot data (from Step 3)\n\n## Procedure\n### Step-by-step instructions\n1. **Define Comparison Rules**\n   - Implement logic to compare the 'Snapshot' against the 'Gold Standard Baseline'.\n   - Identify any 'Mismatch' where a value has changed.\n\n2. **Trigger Alerts**\n   - Configure an automated notification (Email, Slack, or ticketing system) for any detected mismatch.\n   - Include the Field Name, Old Value, New Value, and Timestamp in the alert.\n\n### Key considerations\n- Avoid 'alert fatigue' by grouping related changes into a single notification.\n\n## Expected Outputs\n- [ ] Comparison engine/logic\n- [ ] Alerting dashboard or notification logs\n\n## Quality Criteria\n- All changes from the baseline are detected.\n- Alerts are delivered to the correct stakeholders within 24 hours of the change.\n"
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 50
+        },
+        "data": {
+          "label": "Remediation & Documentation",
+          "description": "Link changes to ITSM change requests and document the resolution.",
+          "instructions": "# Remediation & Documentation\n\n## Objective\nInvestigate, resolve, and document all configuration deviations to maintain the integrity of the SOX control environment.\n\n## Prerequisites\n- Alert notification of a configuration deviation\n- Access to Change Management logs (e.g., ServiceNow, Jira)\n\n## Procedure\n### Step-by-step instructions\n1. **Investigate Deviation**\n   - Identify the user who made the change.\n   - Search the Change Management system for an approved ticket corresponding to the change.\n\n2. **Categorize and Resolve**\n   - **Authorized Change**: If a ticket exists, link the alert to the ticket and document the validation.\n   - **Unauthorized Change**: If no ticket exists, initiate an incident report. Revert the configuration to the baseline state if necessary.\n\n3. **Update Baseline (If Applicable)**\n   - If the change was a permanent, approved improvement, update the 'Gold Standard' baseline to reflect the new state.\n\n### Key considerations\n- Document the 'root cause' of unauthorized changes (e.g., training issue, bypass of process).\n- Professional skepticism: Ensure the person making the change wasn't also the person approving it.\n\n## Expected Outputs\n- [ ] Completed remediation log for each alert\n- [ ] Incident reports for unauthorized changes\n\n## Quality Criteria\n- 100% of alerts are investigated and closed.\n- Documentation provides a clear audit trail for external auditors.\n"
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "edge-4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

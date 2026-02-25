@@ -1,0 +1,127 @@
+{
+  "name": "Fieldwork: Business Continuity / Disaster Recovery Planning Program Audit",
+  "description": "AI-enabled workflow to automate the assessment of Business Continuity Planning (BCP) programs for compliance with the FFIEC IT Examination Handbook on Business Continuity Management. This system ingests documentation and compares it against FFIEC principles to identify deficiencies.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "Source Ingestion",
+          "description": "Automatically ingests BCP policy documents, BIA reports, BC plans, DR plans, and historical exercise results.",
+          "instructions": "Upload all relevant BCP/DRP documentation, including policies, Business Impact Analysis (BIA) reports, Disaster Recovery (DR) plans, and logs from previous tabletop exercises or tests. Ensure files are in a readable format (PDF, DOCX).",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "Indexing & Feature Extraction",
+          "description": "AI models analyze content to extract RTOs, RPOs, critical business functions, interdependency mappings, and governance structures.",
+          "instructions": "Review the extracted features from the ingested documents. The AI will identify Recovery Time Objectives (RTOs), Recovery Point Objectives (RPOs), and critical business functions. Verify the accuracy of these extracted attributes against the source documents.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Regulatory Reconciliation",
+          "description": "Cross-reference program features against FFIEC IT Examination Handbook requirements.",
+          "instructions": "The system will compare the extracted BCP features against the FFIEC Business Continuity Management booklet principles. Review the alignment across governance, risk assessment, and resilience strategies.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Gap Identification & Reporting",
+          "description": "Identify discrepancies and generate an automated audit report with prioritized findings.",
+          "instructions": "Review the identified gaps (e.g., missing recovery targets or outdated testing). Generate the final audit report summarizing deficiencies and misalignments with FFIEC standards.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

@@ -1,0 +1,237 @@
+{
+  "name": "Fieldwork: Membership and Billing Audit Work Program",
+  "description": "Audit work program for Membership and Billing covering membership accuracy, billing rates, adjustments, and reconciliations.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 40,
+          "y": 300
+        },
+        "data": {
+          "label": "Population Extraction (MCP)",
+          "description": "Extract and validate the full population of members and billing records using MCP.",
+          "instructions": "# Population Extraction (MCP)\n\n## Objective\nExtract the complete and accurate population of membership and billing records to serve as the basis for transactional testing.\n\n## Procedure\n1. **Define Extraction Criteria**: Specify the audit period (e.g., FY2023) and required data fields (Member ID, Join Date, Billing Rate, Transaction Date, Adjustments).\n2. **Execute MCP Extraction**: Point the Master Control Program (MCP) to the membership database and billing system to extract the full datasets.\n3. **Data Integrity Check**: \n   - Reconcile total billing transaction amounts to the General Ledger.\n   - Perform a count check to ensure all active member IDs are captured.\n   - Scan for duplicates or null values in key attributes.\n\n## Expected Outputs\n- [ ] Validated Population File (CSV/XLS)\n- [ ] Reconciliation Report (System vs. GL)",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 40,
+          "y": 300
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 460,
+          "y": 40
+        },
+        "data": {
+          "label": "Membership Accuracy Testing",
+          "description": "Test membership records for accuracy and proper documentation.",
+          "instructions": "# Membership Accuracy Testing\n\n## Objective\nEnsure that membership records are accurate, authorized, and supported by valid documentation.\n\n## Procedure\n1. **Sample Selection**: Select a statistically significant sample from the population of active members extracted in Step 1.\n2. **Attribute Testing**: For each sampled member, inspect the membership application or digital enrollment record.\n3. **Verification**: \n   - Verify the name, contact info, and start date match the system.\n   - Confirm documented approval for the membership tier and any discounted rates.\n   - Ensure a signed membership agreement is on file.\n\n## Quality Criteria\n- Minimum 95% confidence level for sampling.\n- All exceptions must be documented with the specific attribute that failed.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 40
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "Billing Transaction Testing",
+          "description": "Verify billing transactions and adherence to approved rates.",
+          "instructions": "# Billing Transaction Testing\n\n## Objective\nConfirm that billing transactions are accurate, timely, and reflect approved rates.\n\n## Procedure\n1. **Sample Selection**: Select a sample of billing transactions from the population extracted in Step 1.\n2. **Rate Validation**: Cross-reference the billed rate against the official board-approved rate card or contract for that membership tier.\n3. **Recalculation**: Independently recalculate the billing amount (Base Rate + Taxes - Approved Discounts).\n4. **Timing Check**: Verify the billing date falls within the period the member was marked as 'Active' in the system.\n\n## Expected Outputs\n- [ ] Billing Recalculation Worksheet\n- [ ] List of Rate Discrepancies",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "Adjustments & Refunds Testing",
+          "description": "Test approvals and justifications for refunds and adjustments.",
+          "instructions": "# Adjustments & Refunds Testing\n\n## Objective\nEnsure that all manual adjustments and refunds are valid, justified, and properly authorized.\n\n## Procedure\n1. **Identify Population**: Isolate all 'Credit', 'Adjustment', or 'Refund' transaction types from the dataset.\n2. **Sample Selection**: Select a sample focusing on high-dollar or manual adjustment entries.\n3. **Documentation Review**: Inspect evidence of management approval for each adjustment.\n4. **Justification Check**: Verify the business reason (e.g., error correction, cancellation) matches the supporting documentation (email, ticket, or form).\n\n## Quality Criteria\n- Adjustments must be signed off by a supervisor independent of the billing entry clerk.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 460,
+          "y": 560
+        },
+        "data": {
+          "label": "Account Reconciliation Review",
+          "description": "Review monthly reconciliations for evidence of review and resolution.",
+          "instructions": "# Account Reconciliation Review\n\n## Objective\nEvaluate the effectiveness of the reconciliation process between the membership sub-ledger and the General Ledger.\n\n## Procedure\n1. **Sample Selection**: Select a sample of 3-6 monthly reconciliations from the audit period.\n2. **Inspection**:\n   - Verify the reconciliation was performed by the assigned preparer.\n   - Inspect evidence of independent review and sign-off by a manager.\n3. **Resolution Testing**: Trace significant reconciling items to their ultimate resolution in subsequent periods. Ensure no items remain 'open' without justification for >60 days.\n\n## References\n- COSO Control Activity: Segregation of Duties and Reconciliations.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 560
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 305
+        },
+        "data": {
+          "label": "Audit Findings Summary",
+          "description": "Summarize audit findings and conclusions.",
+          "instructions": "# Audit Findings Summary\n\n## Objective\nConsolidate testing results into a cohesive report for management.\n\n## Procedure\n1. **Exception Aggregation**: Pull all failed attributes and discrepancies from Steps 2 through 5.\n2. **Impact Analysis**: Quantify the financial impact of billing errors and the potential risk of unauthorized membership changes.\n3. **Root Cause Identification**: Determine if errors are systemic (IT issue) or manual (human error).\n4. **Conclusion**: Formulate an overall opinion on the effectiveness of the Membership and Billing control environment.\n\n## Expected Outputs\n- [ ] Compiled Audit Findings Report\n- [ ] Management Recommendations",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 280,
+        "height": 100
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

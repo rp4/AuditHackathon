@@ -1,0 +1,287 @@
+{
+  "name": "Fieldwork: Treasury Security - Transactional Audit Work Program",
+  "description": "Transactional audit workflow for Treasury Security focusing on access controls, SOD, and privileged monitoring with automated data extraction procedures.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 390
+        },
+        "data": {
+          "label": "1. Data Extraction: User Population",
+          "description": "Extract the full population of users and permissions from the Treasury Management System (TMS).",
+          "instructions": "# Extract Treasury System Population\n\n## Objective\nObtain a complete and accurate dataset of all individuals with access to the Treasury system to serve as the foundation for testing.\n\n## Procedure\n1. **Connect to TMS Data Source:** Use the available MCP connector or database export tool to access the `SYS_USER_MASTER` and `USER_ROLE_ASSIGNMENTS` tables.\n2. **Extract Attributes:** Ensure the following fields are captured for the entire audit period:\n   - `UserID` (Unique Identifier)\n   - `Full_Name`\n   - `Employee_ID` (to link with HR data)\n   - `Role_Name` / `Permission_Set`\n   - `Account_Status` (Active/Inactive)\n   - `Last_Login_Timestamp`\n   - `Account_Creation_Date`\n3. **Data Integrity Check:** Perform a count check against the system's own 'Total Users' report to ensure no records were dropped during extraction.\n\n## Expected Output\n- A cleaned CSV or DataFrame containing the full population of treasury system users.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "2. SOD Conflict Analysis",
+          "description": "Analyze the user population for conflicting roles that violate Segregation of Duties.",
+          "instructions": "# SOD Conflict Analysis\n\n## Objective\nVerify that no single user has permissions that allow them to control a transaction from initiation to completion.\n\n## Procedure\n1. **Define SOD Matrix:** Load the predefined Treasury SOD Risk Matrix (e.g., Conflict: *Initiate Wire Transfer* + *Approve Wire Transfer*).\n2. **Execute Cross-Check:** Using the `UserID` and `Role_Name` from the Population (Step 1), run a join to identify users assigned to multiple conflicting roles.\n3. **Attribute Analysis:** For every hit, identify the specific conflicting permissions:\n   - `User_ID`\n   - `Role_A` (Initiation)\n   - `Role_B` (Approval/Release)\n4. **Identify Violations:** Flag all instances where a user has 'Active' status for both roles.\n\n## Expected Output\n- List of SOD violations with user details and specific conflicting roles.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Access Appropriateness Testing",
+          "description": "Perform attribute-based testing on a sample of users to verify least-privilege compliance.",
+          "instructions": "# Access Appropriateness Testing\n\n## Objective\nConfirm that users have only the minimum access necessary to perform their job functions.\n\n## Procedure\n1. **Sample Selection:** From the population in Step 1, select a random sample (e.g., 25 users).\n2. **Attribute Matching:** Link the `Employee_ID` to the HRIS dataset to obtain `Job_Title` and `Department`.\n3. **Verify Authorization:** Compare the `Role_Name` assigned in TMS with the user's `Job_Title`.\n   - *Example:* Does a \"Junior Accountant\" have \"System Administrator\" or \"Super User\" access?\n4. **Inspect Approval Evidence:** For the sampled users, search for the original Access Request form or ticket that authorized their current permission level.\n\n## Expected Output\n- Sample testing sheet with 'Pass/Fail' for access appropriateness per user.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Terminated User Access Review",
+          "description": "Identify terminated employees who still retain active system access.",
+          "instructions": "# Terminated User Access Review\n\n## Objective\nEnsure that treasury system access is revoked immediately upon employee termination to prevent unauthorized entry.\n\n## Procedure\n1. **Obtain Leavers List:** Extract a list of all employees terminated during the audit period from the HRIS system (Include `Employee_ID` and `Termination_Date`).\n2. **Transactional Join:** Perform a Left Join between the HR Leavers List and the TMS User Population (Step 1) on `Employee_ID`.\n3. **Filter Exceptions:** Identify records where:\n   - `TMS_Status` = 'Active' \n   - AND `Termination_Date` < `Current_Date`.\n4. **Calculate Latency:** For any hits, calculate the number of days the account remained active post-termination.\n\n## Expected Output\n- List of \"Ghost\" accounts (terminated but active) with latency days calculated.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "5. Privileged Access Log Review",
+          "description": "Review audit logs for high-risk actions performed by privileged accounts.",
+          "instructions": "# Privileged Access Log Inspection\n\n## Objective\nMonitor activities of users with administrative rights to ensure no unauthorized system changes or overrides occurred.\n\n## Procedure\n1. **Extract Audit Logs:** Pull the `TMS_AUDIT_TRAIL` table.\n2. **Filter Critical Actions:** Focus on high-risk transaction types:\n   - `SYSTEM_CONFIG_CHANGE`\n   - `MANUAL_JOURNAL_OVERRIDE`\n   - `USER_PERMISSION_MODIFICATION`\n   - `BANK_ACCOUNT_DETAIL_UPDATE`\n3. **Analyze Attributes:** Ensure every privileged action is linked to a unique `Admin_UserID` and has a corresponding `Change_Ticket_ID`.\n4. **Detect Self-Approvals:** Flag any instances where an admin modified their own permissions or settings.\n\n## Expected Output\n- Exception report of unmapped or unauthorized privileged actions.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 730
+        },
+        "data": {
+          "label": "6. Periodic Review Verification",
+          "description": "Inspect evidence of periodic management reviews of system access.",
+          "instructions": "# Periodic Access Review Verification\n\n## Objective\nValidate that management performs recurring reviews of user access to maintain a secure environment.\n\n## Procedure\n1. **Request Evidence:** Obtain the documentation for the last two 'Quarterly User Access Reviews'.\n2. **Verify Reviewer Authority:** Check that the `Reviewer_Name` is an authorized Department Head or IT Owner.\n3. **Trace Remediation:** Select 5 users marked for \"Revocation\" or \"Role Change\" in the review document.\n4. **Verify Implementation:** Search for those 5 users in the `TMS_AUDIT_TRAIL` to confirm the access was actually changed/removed within 5 business days of the review.\n\n## Expected Output\n- Verification results for the periodic review control effectiveness.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "7. Identify Audit Findings",
+          "description": "Consolidate all exceptions and determine the root cause and impact of discovered issues.",
+          "instructions": "# Identify and Document Findings\n\n## Objective\nSynthesize the raw data from testing into actionable audit findings.\n\n## Procedure\n1. **Consolidate Exceptions:** Gather all \"Fails\" and \"Exceptions\" from Steps 2, 3, 4, 5, and 6.\n2. **Analyze Root Cause:** For each exception, determine if it was a:\n   - Process failure (No policy)\n   - Control failure (Policy exists but wasn't followed)\n   - System failure (Technical glitch)\n3. **Assess Risk Impact:** Quantify the risk. (e.g., \"3 terminated users with active access created a risk of unauthorized funds transfer up to $X\").\n4. **Draft Condition/Criteria/Cause/Effect:** Format each finding for the final report.\n\n## Expected Output\n- A compiled list of audit findings with severity ratings.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-8",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 390
+        },
+        "data": {
+          "label": "8. Final Issue Report",
+          "description": "Generate the final Audit Issue Report with management action plans.",
+          "instructions": "# Generate Treasury Security Issue Report\n\n## Objective\nCommunicate the audit results to stakeholders and secure commitment for remediation.\n\n## Procedure\n1. **Compile Executive Summary:** Summarize the overall security posture of the Treasury system based on testing results.\n2. **Draft Issue Details:** Include the detailed findings from Step 7.\n3. **Assign Severities:** \n   - **High:** Significant SOD or termination lags.\n   - **Medium:** Minor documentation gaps.\n   - **Low:** Process improvements.\n4. **Management Action Plans:** Include spaces for management to provide remediation dates and owners.\n\n## Expected Output\n- Final Treasury Security Audit Report.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-6",
+        "source": "step-1",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-7",
+        "source": "step-2",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-7",
+        "source": "step-3",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-7",
+        "source": "step-4",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-7",
+        "source": "step-5",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e7-8",
+        "source": "step-7",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

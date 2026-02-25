@@ -1,0 +1,275 @@
+{
+  "name": "Fieldwork: System Pre-Implementation Audit Workflow",
+  "description": "A comprehensive audit workflow for System Pre-Implementation, focusing on SDLC compliance, testing rigor, and security design with integrated data extraction via MCP.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 305
+        },
+        "data": {
+          "label": "MCP Connection & Data Scoping",
+          "description": "Set up MCP connections to project management and change control systems.",
+          "instructions": "# MCP Connection & Data Scoping\n\n## Objective\nEstablish secure connections to project data sources to enable transactional testing and population analysis.\n\n## Prerequisites\n- Administrative access to project management tools (Jira, ADO, ServiceNow).\n- Defined audit period and system scope.\n\n## Procedure\n1. **Configure MCP Data Connectors**\n   - Point MCP to the project management database or API.\n   - Target datasets: 'Project Tasks', 'Change Requests', 'Milestone Approvals'.\n2. **Extract Population**\n   - Extract the full population of system change requests for the pre-implementation phase.\n   - Attributes: ID, Status, Priority, Assigned Developer, Approval Date, Change Type.\n3. **Validate Data Completeness**\n   - Reconcile the extracted record count against the system's internal reports.\n\n## Expected Outputs\n- [ ] Active MCP connection to project data.\n- [ ] Population of system changes/tasks for sampling.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 305
+        },
+        "data": {
+          "label": "SDLC Governance & Project Plan Review",
+          "description": "Verify that system development follows the approved SDLC framework.",
+          "instructions": "# SDLC Governance Review\n\n## Objective\nAssess whether the project adheres to the organization's approved Software Development Life Cycle (SDLC) policy.\n\n## Procedure\n1. **Analyze Project Plans**\n   - Use MCP to pull the Project Charter and SDLC documentation.\n   - Verify inclusion of required phases (Design, Build, Test, Deploy).\n2. **Transactional Verification**\n   - Query the 'Milestone' dataset via MCP.\n   - Attributes: Milestone Name, Planned Date, Actual Date, Sign-off Authority.\n3. **Assess Compliance**\n   - Compare actual project progression against the standard SDLC checklist.\n\n## Expected Outputs\n- [ ] Analysis of SDLC phase compliance.\n- [ ] Evidence of phase-gate approvals.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Transactional Testing Verification",
+          "description": "Sample and verify unit and integration testing evidence.",
+          "instructions": "# Transactional Testing Verification\n\n## Objective\nConfirm that technical testing (Unit & Integration) was performed comprehensively before proceeding to UAT.\n\n## Procedure\n1. **Define Population**\n   - Extract the population of all automated and manual 'Test Cases' from the testing tool via MCP.\n2. **Select Sample**\n   - Select a sample of 25 test cases, focusing on 'High' priority functional requirements.\n3. **Attribute Testing**\n   - Verify the following for each sample item:\n     - Test Result = 'Pass'.\n     - Evidence of re-testing for initial 'Fail' results.\n     - Tester ID is different from the Developer ID (Segregation of Duties).\n\n## Expected Outputs\n- [ ] Sample testing worksheet.\n- [ ] Summary of unit/integration test coverage.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "UAT Sign-off & Completion Audit",
+          "description": "Verify UAT completion and business sign-offs.",
+          "instructions": "# UAT Sign-off & Completion Audit\n\n## Objective\nEnsure the business has formally accepted the system and all critical defects are resolved.\n\n## Procedure\n1. **Extract UAT Population**\n   - Use MCP to pull all UAT test scripts and defect logs.\n2. **Review Defect Resolution**\n   - Filter the population for 'Severity 1' and 'Severity 2' defects.\n   - Verify that 100% of high-severity defects are marked as 'Closed' or 'Deferred with Approval'.\n3. **Validate Sign-off**\n   - Inspect digital signatures/approvals in the system for User Acceptance.\n\n## Expected Outputs\n- [ ] UAT completion summary.\n- [ ] Evidence of formal business acceptance.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 300,
+        "height": 100
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "Security Architecture & Access Review",
+          "description": "Audit the design of security controls and access provisioning.",
+          "instructions": "# Security & Access Design Audit\n\n## Objective\nConfirm that security requirements and access controls are designed into the system before go-live.\n\n## Procedure\n1. **Review Security Requirements**\n   - Extract the 'Security Design Document' from the project repository.\n2. **Transactional Access Review**\n   - Use MCP to query the 'Pre-Go-Live User List' or 'Role Map'.\n   - Attributes: Role Name, Permission Level, Inherited Rights.\n3. **Verification**\n   - Verify that the 'Least Privilege' principle is applied to the default role configurations.\n   - Confirm that security requirements (Encryption, MFA, Logging) are documented as 'Ready'.\n\n## Expected Outputs\n- [ ] Security design assessment.\n- [ ] Role-based access control (RBAC) validation.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 560
+        },
+        "data": {
+          "label": "Backup & DR Design Validation",
+          "description": "Evaluate backup and disaster recovery plans.",
+          "instructions": "# Backup & DR Design Validation\n\n## Objective\nVerify that the system is recoverable and backup schedules meet business RTO/RPO requirements.\n\n## Procedure\n1. **Extract Configuration Logs**\n   - Use MCP to inspect the staging/production environment configuration files for backup schedules.\n2. **Audit Attributes**\n   - Verify:\n     - Frequency (e.g., Daily Incremental, Weekly Full).\n     - Retention period aligns with policy.\n     - Off-site/Cloud replication is enabled.\n3. **Inspect DR Plan**\n   - Review the Disaster Recovery document and verify a 'DR Test' is scheduled.\n\n## Expected Outputs\n- [ ] Backup configuration audit report.\n- [ ] DR readiness assessment.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 293,
+        "height": 100
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 305
+        },
+        "data": {
+          "label": "Identify Findings & Control Gaps",
+          "description": "Consolidate all identified issues and control gaps.",
+          "instructions": "# Identify Findings & Control Gaps\n\n## Objective\nConsolidate results from all testing steps to identify systemic risks and control failures.\n\n## Procedure\n1. **Review Step Results**\n   - Aggregrate failures from SDLC, Testing, Security, and DR steps.\n2. **Risk Assessment**\n   - For each failure, determine the Risk Rating (High, Medium, Low) based on impact and likelihood.\n3. **Management Discussion**\n   - Document preliminary findings for discussion with project stakeholders.\n\n## Expected Outputs\n- [ ] Draft finding descriptions.\n- [ ] Risk-ranked observations.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 317,
+        "height": 100
+      },
+      {
+        "id": "step-8",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 305
+        },
+        "data": {
+          "label": "Final Audit Issue Report",
+          "description": "Generate the final audit report for the pre-implementation review.",
+          "instructions": "# Final Audit Issue Report\n\n## Objective\nFormalize the audit results into a report for executive and project management.\n\n## Procedure\n1. **Draft Issue Report**\n   - Use the template provided in the canvas to structure the findings:\n     - Condition (What happened)\n     - Criteria (What should have happened)\n     - Cause (Why it happened)\n     - Effect (Risk)\n     - Recommendation\n2. **Final Review**\n   - Ensure all findings are supported by the MCP data extractions performed in previous steps.\n\n## Expected Outputs\n- [ ] Compiled Audit Issue Report.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-7",
+        "source": "step-3",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-7",
+        "source": "step-4",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-7",
+        "source": "step-5",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e7-8",
+        "source": "step-7",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

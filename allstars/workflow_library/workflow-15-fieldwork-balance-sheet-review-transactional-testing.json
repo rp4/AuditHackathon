@@ -1,0 +1,193 @@
+{
+  "name": "Fieldwork: Balance Sheet Review & Transactional Testing",
+  "description": "A transactional audit workflow for Balance Sheet review, focusing on reconciliations, AR aging, fixed assets, and accruals with embedded data extraction procedures.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 305
+        },
+        "data": {
+          "label": "Data Extraction & Population Setup (MCP)",
+          "description": "Extract the full population of balance sheet accounts, reconciliations, and sub-ledgers from the MCP.",
+          "instructions": "# Data Extraction & Population Setup (MCP)\n\n## Objective\nTo ensure a complete and accurate population of financial data is extracted from the Master Control Panel (MCP) for testing.\n\n## Procedure\n1. **Connect to MCP**: Access the data extraction module for the current audit period.\n2. **Extract Populations**:\n   - **General Ledger (GL)**: Full trial balance and transaction detail for all Balance Sheet accounts.\n   - **AR Aging Report**: Detail including customer name, invoice date, amount, and aging buckets.\n   - **Fixed Asset Register**: All additions, disposals, and depreciation for the period.\n   - **Accrual Listing**: Detailed list of all year-end accruals and reserves.\n3. **Attribute Verification**: Ensure the following fields are present for each record:\n   - Unique Transaction ID\n   - Posting Date\n   - Amount (Debit/Credit)\n   - Account Code\n   - Approver ID\n4. **Data Integrity Check**: Reconcile the extracted sub-ledger totals to the General Ledger control accounts.\n\n## Expected Outputs\n- [ ] Cleaned dataset for AR, FA, and Accruals.\n- [ ] Population reconciliation summary (Sub-ledger vs GL).",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 460,
+          "y": 40
+        },
+        "data": {
+          "label": "Reconciliation Re-performance",
+          "description": "Select and reperform calculations for key balance sheet account reconciliations.",
+          "instructions": "# Reconciliation Re-performance\n\n## Objective\nTo verify that key balance sheet reconciliations are performed accurately, timely, and reviewed by management.\n\n## Procedure\n1. **Sample Selection**: Using the population from Step 1, select a sample of X key account reconciliations (e.g., Cash, Suspense, Intercompany).\n2. **Re-performance**: \n   - Independently recalculate the reconciliation totals.\n   - Verify the mathematical accuracy of the schedules.\n3. **Control Inspection**:\n   - Inspect the 'Preparer' and 'Reviewer' signatures/timestamps.\n   - Verify that the review occurred within the required policy timeframe (e.g., within 10 days of month-end).\n4. **Attributes to Test**:\n   - Preparer ID/Name\n   - Reviewer ID/Name\n   - Date of Review\n   - Variance Amount (if any)\n\n## Expected Outputs\n- [ ] Testing worksheet with re-performance results.\n- [ ] Exception log for missing or late approvals.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 460,
+          "y": 40
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Reconciling Items Testing",
+          "description": "Trace reconciling items to supporting documentation and verify subsequent clearing.",
+          "instructions": "# Reconciling Items Testing\n\n## Objective\nTo ensure that reconciling items are valid, supported, and cleared in a timely manner.\n\n## Procedure\n1. **Item Selection**: From the sample of reconciliations in Step 2, select a sample of specific reconciling items (e.g., outstanding checks, deposits in transit, manual adjustments).\n2. **Support Verification**:\n   - Trace the item to underlying documentation (bank statement, invoice, journal voucher).\n   - Ensure the item is a valid reconciling difference and not an error.\n3. **Subsequent Clearing**:\n   - Inspect the subsequent month’s GL or bank statement to verify that the item cleared.\n   - For items that haven't cleared, evaluate the aging and the reason for the delay.\n\n## Expected Outputs\n- [ ] List of tested reconciling items with supporting evidence links.\n- [ ] Evaluation of long-outstanding items.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "AR Aging & Collections Testing",
+          "description": "Analyze AR aging and test overdue balances for recoverability.",
+          "instructions": "# AR Aging & Collections Testing\n\n## Objective\nTo verify the existence and valuation of Accounts Receivable balances, focusing on large and overdue accounts.\n\n## Procedure\n1. **Sampling**: From the AR Aging population (Step 1), select a sample of:\n   - Large balances (Top 10 by value).\n   - Overdue balances (>90 days).\n2. **Transactional Testing**:\n   - **Invoicing**: Trace the balance to the original sales invoice and shipping documents.\n   - **Cash Receipts**: Inspect the bank statement or cash receipt journal for subsequent payment by the customer.\n3. **Valuation Check**:\n   - For unpaid overdue balances, review communication with the customer.\n   - Evaluate if a specific reserve is required for the balance.\n\n## Expected Outputs\n- [ ] AR testing template with invoice and payment verification.\n- [ ] Recommendations for Bad Debt Allowance if applicable.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "Fixed Asset Additions Testing",
+          "description": "Verify fixed asset additions against invoices and approvals.",
+          "instructions": "# Fixed Asset Additions Testing\n\n## Objective\nTo ensure fixed asset additions are valid, accurately recorded, and properly authorized.\n\n## Procedure\n1. **Sampling**: Select a sample of fixed asset additions from the Register (Step 1) based on a materiality threshold.\n2. **Vouching**:\n   - Trace the addition to the vendor invoice to verify cost and asset description.\n   - Confirm the asset was capitalized in the correct period.\n3. **Authorization**:\n   - Inspect the Purchase Requisition or Capital Expenditure (CAPEX) approval form.\n   - Verify approval levels match the corporate delegation of authority.\n4. **Register Entry**:\n   - Confirm the asset is correctly recorded in the Fixed Asset Register with the correct depreciation life and method.\n\n## Expected Outputs\n- [ ] Vouching workpaper for FA additions.\n- [ ] Summary of authorization exceptions.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "Accruals & Reserves Testing",
+          "description": "Test accruals and reserves for calculation accuracy and approval.",
+          "instructions": "# Accruals & Reserves Testing\n\n## Objective\nTo ensure accruals and reserves are complete, accurately calculated, and approved by management.\n\n## Procedure\n1. **Sampling**: Select a sample of accruals from the list (Step 1), focusing on significant estimates (e.g., bonus accruals, legal reserves, tax provisions).\n2. **Calculation Re-performance**:\n   - Obtain the supporting calculation/spreadsheet from the business owner.\n   - Re-perform the calculation logic and check for formula errors.\n   - Verify the reasonableness of the underlying assumptions.\n3. **Approval Verification**:\n   - Inspect evidence of management review and approval for the accrual amount.\n4. **Subsequent Review**:\n   - Compare the accrual to actual payments made in the subsequent period to assess accuracy.\n\n## Expected Outputs\n- [ ] Accrual calculation review workpaper.\n- [ ] Assessment of management estimates and assumptions.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-6",
+        "source": "step-1",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "name": "Fieldwork: Executive Compensation Transactional Audit",
+  "description": "A transactional audit work program for Executive Compensation, including data extraction, recalculation, and COSO alignment.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 135
+        },
+        "data": {
+          "label": "1. Population Extraction & Reconciliation",
+          "description": "Obtain the full population of executive compensation records.",
+          "instructions": "# Data Acquisition & Population Validation\n\n## Objective\nTo ensure a complete and accurate population of executive compensation arrangements is extracted for audit testing.\n\n## Prerequisites\n- Access to the Master Compensation Profile (MCP) or HRIS.\n- General Ledger access for payroll reconciliation.\n\n## Procedure\n1. **Extract Population**: Query the MCP for all active executive compensation records for the current fiscal year.\n2. **Data Attributes**: Ensure the extract includes: Executive ID, Name, Title, Base Salary, Target Incentive %, Actual Payout, and assigned KPIs.\n3. **Reconcile**: Perform a top-down reconciliation of the total executive compensation expense in the MCP to the General Ledger.\n\n## Quality Criteria\n- 100% of executives identified in the proxy statement/org chart must be present.\n- Reconciliation variance should be zero or documented with valid timing differences.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 135
+        },
+        "data": {
+          "label": "2. Sampling & Attribute Definition",
+          "description": "Define sample sizes and audit attributes for testing.",
+          "instructions": "# Sample Selection & Attribute Definition\n\n## Objective\nEstablish a representative sample of executives and define the specific transactional attributes to be tested.\n\n## Procedure\n1. **Sample Selection**: Using the population from Step 1, select a sample of [X] executives (e.g., top 5 by pay, plus 5-10 random).\n2. **Define Attributes**: For each sample, the following attributes must be verified:\n   - Evidence of Compensation Committee approval.\n   - Calculation accuracy of incentive payouts.\n   - Traceability of KPIs to source data.\n   - Compliance with the individual's employment agreement.\n\n## Expected Outputs\n- Sample listing with unique identifiers.\n- Testing workpaper template with defined pass/fail criteria for each attribute.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Approval & Authorization Testing",
+          "description": "Verify formal authorization of compensation levels.",
+          "instructions": "# Executive Compensation Approval Testing\n\n## Objective\nVerify that all elements of executive compensation were formally reviewed and approved by the authorized governing body.\n\n## Procedure\n1. **Inspect Minutes**: Obtain and inspect Compensation Committee meeting minutes for the period under review.\n2. **Vouch Approvals**: For the selected sample of executives, vouch their base salary and incentive targets to the specific minute entry or resolution where they were approved.\n3. **Check Authority**: Verify that the approval levels align with the company's Delegation of Authority (DoA) matrix.\n\n## Quality Criteria\n- Each sample must have a direct link to a signed committee resolution or meeting minute.\n- Approvals must pre-date the effective date of the compensation change.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "4. Transactional Recalculation",
+          "description": "Independently recalculate incentive payouts based on metrics.",
+          "instructions": "# Incentive Payout Recalculation\n\n## Objective\nEnsure the accuracy of incentive payouts by independently re-performing the calculation logic.\n\n## Procedure\n1. **Identify Formula**: Obtain the approved incentive plan document for the year.\n2. **Extract Metrics**: Pull the actual performance results (KPIs) used for the payout (e.g., EBITDA, Revenue, ESG targets).\n3. **Recalculate**: Using the formula: `Base Salary * Target % * Performance Multiplier`, independently calculate the payout for each executive in the sample.\n4. **Compare**: Compare the calculated amount to the actual amount paid in the payroll system.\n\n## Transactional Attributes\n- Base Salary (from MCP)\n- Performance Multiplier (from KPI results)\n- Actual Payout (from Payroll)\n\n## Expected Outputs\n- Recalculation schedule showing variances between 'System Calculated' and 'Auditor Calculated' amounts.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 220
+        },
+        "data": {
+          "label": "5. KPI Integrity Verification",
+          "description": "Trace KPI results to underlying financial and operational data.",
+          "instructions": "# KPI Source Data Tracing\n\n## Objective\nVerify the integrity of the data used to determine incentive payouts.\n\n## Procedure\n1. **Source Selection**: For the KPIs used in the calculation (Step 4), identify the primary source system (e.g., ERP for financial metrics, CRM for operational metrics).\n2. **Trace to Source**: Trace the performance results back to audited financial statements or system-generated reports.\n3. **Validate Adjustments**: If 'Adjusted' EBITDA or other non-GAAP metrics were used, inspect the documented bridge and ensure the adjustments were permitted under the plan terms.\n\n## Quality Criteria\n- KPI values must tie exactly to underlying records without unauthorized manual overrides.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 135
+        },
+        "data": {
+          "label": "6. COSO Framework Best Practice Review",
+          "description": "Assess the compensation process against COSO Framework components.",
+          "instructions": "# COSO Framework Alignment Review\n\n## Objective\nVerify that the executive compensation process adheres to COSO Internal Control - Integrated Framework best practices.\n\n## Procedure\n1. **Control Environment (Principle 5)**: Assess if management has established clear accountabilities for compensation decisions.\n2. **Control Activities (Principle 10)**: Verify if control activities (approvals, reconciliations, reviews) are sufficiently robust to mitigate the risk of inaccurate payouts.\n3. **Information & Communication (Principle 13)**: Check if the Compensation Committee receives relevant, high-quality data to make informed decisions.\n4. **Conclusion**: Document whether the control design for executive compensation supports an effective system of internal control.\n\n## References\n- COSO Internal Control - Integrated Framework (2013).",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 2050,
+          "y": 135
+        },
+        "data": {
+          "label": "7. Final Reporting",
+          "description": "Finalize the audit findings and report.",
+          "instructions": "# Reporting & Issue Finalization\n\n## Objective\nSummarize the results of the transactional testing and COSO review into a final report.\n\n## Procedure\n1. **Summarize Exceptions**: Compile all variances found in recalculations or missing approvals.\n2. **Root Cause Analysis**: For any identified issues, determine the root cause (e.g., system logic error, manual override).\n3. **Management Response**: Present findings to the Compensation and Benefits department for response and remediation plans.\n4. **Final Report**: Finalize the audit report with an overall conclusion on the effectiveness of executive compensation controls.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 280,
+        "height": 100
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

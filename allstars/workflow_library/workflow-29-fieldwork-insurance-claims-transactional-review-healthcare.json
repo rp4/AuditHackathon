@@ -1,0 +1,225 @@
+{
+  "name": "Fieldwork: Insurance Claims Transactional Review (Healthcare)",
+  "description": "Comprehensive audit of healthcare insurance claims focusing on duplicate detection, payment accuracy, and approval authority using transactional data analysis.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 305
+        },
+        "data": {
+          "label": "1. Data Population Extraction (MCP)",
+          "description": "Extract the full population of paid insurance claims for the period under review using MCP.",
+          "instructions": "# Data Extraction & Population Setup\n\n## Objective\nEstablish a complete and accurate population of paid claims to serve as the basis for transactional testing.\n\n## Procedure\n1. **MCP Connection**: Point MCP to the claims database (SQL/Oracle) or flat file repository.\n2. **Data Extraction**: Extract 100% of claims with status 'PAID' within the specified audit period.\n3. **Attribute Mapping**: Ensure the following attributes are captured for every record:\n   - Claim ID, Patient ID, Provider ID, Date of Service (DOS).\n   - Procedure Code (CPT/HCPCS), Diagnosis Code (ICD-10).\n   - Billed Amount, Allowed Amount, Paid Amount.\n   - Approval User ID, Approval Date, Payment Date.\n4. **Reconciliation**: Tie the total count and dollar amount of the extract to the General Ledger or Claims Subledger.\n\n## Expected Outputs\n- Population Reconciliation Report\n- Cleaned dataset ready for sampling/analysis",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 440,
+          "y": 60
+        },
+        "data": {
+          "label": "2. Duplicate Claim Testing",
+          "description": "Analyze the population for duplicate claim indicators.",
+          "instructions": "# Duplicate Claim Detection\n\n## Objective\nIdentify potential duplicate payments made for the same service to the same provider for the same patient.\n\n## Procedure\n1. **Population Analysis**: Use MCP/Analyzer to identify records where Patient ID, Provider ID, Date of Service, and Procedure Code are identical.\n2. **Sample Selection**: From the identified 'Suspected Duplicates', select a sample of X claims for manual verification.\n3. **Verification**: Inspect original claim images and remittance advices to determine if the duplicate was identified/recovered by the system or if a double payment occurred.\n\n## Expected Outputs\n- Duplicate Analysis Report\n- List of confirmed duplicate payments",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 440,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Payment Recalculation",
+          "description": "Recalculate payments based on contract terms and policy.",
+          "instructions": "# Claim Payment Recalculation\n\n## Objective\nVerify that claims were calculated automatically and accurately based on policy terms.\n\n## Procedure\n1. **Sample Selection**: Select a statistical sample (e.g., 25-40 items) from the population.\n2. **Attribute Verification**: For each sample, identify the associated Payer Contract or Policy Schedule.\n3. **Recalculation**: Independently recalculate the 'Paid Amount' based on:\n   - Allowed Amount per procedure code.\n   - Deductibles and Co-insurance applied.\n   - Coordination of Benefits (COB) if applicable.\n4. **Comparison**: Compare the independent recalculation to the system-calculated Paid Amount.\n\n## Expected Outputs\n- Recalculation Worksheet\n- Exception Log (Variances > $0)",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Approval Threshold Testing",
+          "description": "Verify claims approvals were within documented authority limits.",
+          "instructions": "# Approval Authority Testing\n\n## Objective\nEnsure high-dollar claims were approved by personnel with appropriate delegation of authority.\n\n## Procedure\n1. **Filter Population**: Isolate all claims where 'Paid Amount' exceeds the base adjudicator threshold (e.g., >$10,000).\n2. **Sample Selection**: Select a sample of claims from this high-dollar stratum.\n3. **Attribute Review**: Match the Approval User ID from the dataset to the 'Delegation of Authority' matrix.\n4. **Evidence Inspection**: Verify electronic signatures or workflow approval logs show the correct hierarchy approved the transaction.\n\n## Expected Outputs\n- Approval Authority Exception Report",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "5. Exception/Refund Review",
+          "description": "Review system-generated exception and refund reports.",
+          "instructions": "# Exception & Refund Review\n\n## Objective\nAssess the effectiveness of system edits and the handling of claim refunds/voids.\n\n## Procedure\n1. **Report Extraction**: Obtain system logs for 'Claim Exceptions' and 'Refunds/Voids' for the period.\n2. **Transactional Check**: For a sample of refunds, verify the refund was correctly applied to the original Claim ID and that the 'Paid' status was updated to 'Voided/Recovered'.\n3. **Edits Review**: Review system edit logs to ensure 'Duplicate Detected' flags were investigated by supervisors.\n\n## Expected Outputs\n- Refund Integrity Report",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 305
+        },
+        "data": {
+          "label": "6. Issue Findings & Report",
+          "description": "Consolidate findings from all transactional tests into a final report.",
+          "instructions": "# Compiled Issue Findings & Reporting\n\n## Objective\nSummarize the results of the audit engagement and communicate findings to stakeholders.\n\n## Procedure\n1. **Aggregate Findings**: Collect all exceptions and variances identified in Steps 2, 3, 4, and 5.\n2. **Severity Assessment**: Categorize each finding (e.g., High, Medium, Low) based on financial impact and risk of recurrence.\n3. **Root Cause Analysis**: Identify if failures were systemic (system edit failures) or manual (override errors).\n4. **Draft Report**: Compile the findings into the standard Audit Report template, including Management Responses.\n\n## Expected Outputs\n- Final Audit Report\n- Audit Issue Memo\n- Management Action Plan",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

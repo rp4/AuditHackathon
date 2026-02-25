@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bluth Company Audit Data MCP</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <img src="images/bluthlogo.jpg" alt="Bluth Company Logo" class="logo">
+      <div class="header-text">
+        <h1>Bluth Company Audit Data MCP</h1>
+        <p class="tagline">Mock audit data for AI agent testing</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Stats Cards -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="total-records">-</div>
+          <div class="stat-label">Total Records</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="total-entities">-</div>
+          <div class="stat-label">Data Entities</div>
+        </div>
+        <div class="stat-card stat-card-highlight">
+          <div class="stat-value" id="mcp-tools-count">-</div>
+          <div class="stat-label">MCP Tools</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data Explorer -->
+    <section class="section">
+      <h2 class="section-title">Data Explorer</h2>
+      <div class="explorer-controls">
+        <div class="select-wrapper">
+          <label for="table-select">Select Entity:</label>
+          <select id="table-select">
+            <option value="">Loading tables...</option>
+          </select>
+        </div>
+        <button id="download-csv" class="btn btn-primary" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download CSV
+        </button>
+      </div>
+
+      <div id="table-info" class="table-info" style="display: none;">
+        <span id="record-count">0 records</span>
+        <span class="separator">|</span>
+        <span id="table-description">-</span>
+      </div>
+
+      <div class="table-container">
+        <div id="loading" class="loading" style="display: none;">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+        <div id="table-wrapper">
+          <p class="placeholder-text">Select an entity from the dropdown to preview data</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCP Documentation -->
+    <section class="section">
+      <h2 class="section-title">MCP Integration</h2>
+
+      <div class="mcp-info">
+        <div class="endpoint-box">
+          <label>MCP Endpoint:</label>
+          <div class="endpoint-url">
+            <code id="mcp-endpoint">https://data.auditswarm.com/mcp</code>
+            <button id="copy-endpoint" class="btn btn-small" title="Copy to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="tools-grid">
+          <h3>Available MCP Tools</h3>
+          <div class="tools-list">
+            <div class="tool-card">
+              <div class="tool-name">get_schema</div>
+              <div class="tool-desc">Get database schema with all tables, columns, types, and row counts. Call this first to discover available data.</div>
+            </div>
+            <div class="tool-card">
+              <div class="tool-name">query_data</div>
+              <div class="tool-desc">Query any table with filtering, sorting, and pagination. Supports SQL WHERE clauses and ORDER BY.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-section">
+          <h3>Example Requests</h3>
+
+          <h4 style="margin-top: 1rem; font-size: 0.95rem; font-weight: 600;">1. Get Schema (discover all tables)</h4>
+          <div class="code-block">
+            <pre><code>curl -X POST "https://data.auditswarm.com/mcp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_schema",
+      "arguments": {}
+    }
+  }'</code></pre>
+            <button id="copy-example-1" class="btn btn-small" title="Copy to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+
+          <h4 style="margin-top: 1.5rem; font-size: 0.95rem; font-weight: 600;">2. Query Data (find related party vendors)</h4>
+          <div class="code-block">
+            <pre><code>curl -X POST "https://data.auditswarm.com/mcp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "query_data",
+      "arguments": {
+        "table": "Vendors",
+        "filter": "isRelatedParty = 1",
+        "limit": 10
+      }
+    }
+  }'</code></pre>
+            <button id="copy-example-2" class="btn btn-small" title="Copy to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p class="footer-quote">"There's always money in the banana stand"</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
