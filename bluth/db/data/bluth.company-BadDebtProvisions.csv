@@ -1,0 +1,11 @@
+ID,provisionId,customer_ID,invoiceRef,originalAmount,provisionAmount,provisionPercent,agingBucket,provisionDate,reviewedBy,customerFinancialStatus,writeOffDate,writeOffApprovedBy,recoveryAmount
+bdp001,BDP-001,cust002,INV-AR-001,350000.00,17500.00,5.00,30-60,2024-12-31,Michael Bluth,Good,,,0.00
+bdp002,BDP-002,cust003,INV-AR-002,180000.00,9000.00,5.00,Current,2024-12-31,Michael Bluth,Good,,,0.00
+bdp003,BDP-003,cust004,INV-AR-003,25000.00,1250.00,5.00,Current,2024-12-31,Lindsay Bluth,Good,,,0.00
+bdp004,BDP-004,cust005,INV-AR-004,85000.00,8500.00,10.00,60-90,2024-12-31,Michael Bluth,Watchlist,,,0.00
+bdp005,BDP-005,cust010,INV-AR-005,420000.00,21000.00,5.00,30-60,2024-12-31,Michael Bluth,Good,,,0.00
+bdp006,BDP-006,cust008,INV-AR-006,500000.00,0.00,0.00,120+,2024-12-31,GOB Bluth,Distressed,,,0.00
+bdp007,BDP-007,cust006,INV-AR-007,150000.00,7500.00,5.00,Current,2024-12-31,Michael Bluth,Good,,,0.00
+bdp008,BDP-008,cust009,INV-AR-008,45000.00,4500.00,10.00,60-90,2024-12-31,Michael Bluth,Watchlist,,,0.00
+bdp009,BDP-009,cust011,INV-AR-009,35000.00,35000.00,100.00,120+,2024-06-30,Michael Bluth,Bankrupt,2024-09-15,Michael Bluth,0.00
+bdp010,BDP-010,cust007,INV-AR-010,22000.00,1100.00,5.00,Current,2024-12-31,Lindsay Bluth,Good,,,0.00

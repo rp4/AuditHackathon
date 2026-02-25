@@ -1,0 +1,11 @@
+documentId,documentType,title,department,version,lastReviewDate,nextReviewDate,approvedBy,status
+bcp001,Policy,Enterprise Business Continuity Policy,Executive,v3.0,2024-01-15,2025-01-15,Michael Bluth,Current
+bcp002,BIA,Business Impact Analysis - Finance,Finance,v2.1,2024-03-01,2025-03-01,Michael Bluth,Current
+bcp003,BCP,Business Continuity Plan - Corporate Office,Operations,v2.0,2024-02-15,2025-02-15,Michael Bluth,Current
+bcp004,DRP,Disaster Recovery Plan - SAP ERP,IT,v1.5,2024-04-01,2025-04-01,Michael Bluth,Current
+bcp005,ExerciseCalendar,2024 Exercise Schedule,Operations,v1.0,2024-01-10,2025-01-10,Michael Bluth,Current
+bcp006,ExerciseReport,2024 Q1 Exercise Results,Operations,v1.0,2024-04-15,2025-04-15,Michael Bluth,Current
+bcp007,BIA,Business Impact Analysis - Construction,Construction,v0.1,2023-06-01,2024-06-01,George Bluth Sr,Draft
+bcp008,DRP,Disaster Recovery Plan - Legacy Banana Stand POS,IT,v1.0,2019-01-15,2020-01-15,George Bluth Sr,Expired
+bcp009,BCP,Business Continuity Plan - Banana Stand Operations,Operations,v0.0,,,George Michael Bluth,Missing
+bcp010,Policy,Enterprise BCP Policy - Original,Executive,v1.0,2021-03-01,2022-03-01,George Bluth Sr,Expired

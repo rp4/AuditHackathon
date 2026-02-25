@@ -1,0 +1,13 @@
+cr_vulnid,cr_severity,cr_cve,cr_cvss,cr_system,cr_hostname,cr_ipaddress,cr_description,cr_discovereddate,cr_duedate,cr_remediationdate,cr_status,cr_daysopen,cr_owner,cr_owneremail,cr_notes
+VULN-001,Critical,CVE-2024-1234,9.8,SAP_PROD,sap-prod-01,10.0.1.10,Remote Code Execution,2024-06-01,2024-06-15,,Open,193,IT Team,it@bluthcompany.com,6+ months unpatched - CRITICAL
+VULN-002,Critical,CVE-2024-5678,9.1,Fakeblock_DB,fakeblock-db-01,10.0.2.20,SQL Injection,2024-09-01,2024-09-15,,Open,101,George Michael Bluth,georgemichael@bluthcompany.com,Owner says its fine
+VULN-003,High,CVE-2024-9012,8.5,VPN_Gateway,vpn-gw-01,10.0.0.1,Authentication Bypass,2024-10-01,2024-10-15,,Open,71,IT Team,it@bluthcompany.com,Allows Mexico access
+VULN-004,Medium,CVE-2024-3456,6.5,Email_Server,mail-01,10.0.3.30,Information Disclosure,2024-11-01,2024-11-30,2024-11-25,Remediated,0,IT Team,it@bluthcompany.com,Patched on time
+VULN-005,Critical,CVE-2024-7890,9.8,Domain_Controller,dc-01,10.0.0.5,Privilege Escalation,2024-07-01,2024-07-15,,Open,163,IT Team,it@bluthcompany.com,How GOB got admin
+VULN-006,High,CVE-2024-2468,7.5,Web_Server,web-01,10.0.4.40,XSS Vulnerability,2024-08-15,2024-08-30,,Open,118,IT Team,it@bluthcompany.com,Website vulnerable
+VULN-007,Medium,CVE-2024-1357,5.5,FileShare,file-01,10.0.5.50,Local Privilege Escalation,2024-10-15,2024-11-15,,Open,57,IT Team,it@bluthcompany.com,
+VULN-008,Critical,CVE-2024-8901,10.0,Banana_Stand_POS,pos-01,10.0.6.60,Payment Card Exposure,2024-11-15,2024-11-22,,Open,26,GOB Bluth,gob@bluthcompany.com,PCI-DSS violation
+VULN-009,Low,CVE-2024-4567,3.5,Cartography_System,maps-01,10.0.7.70,Denial of Service,2024-12-01,2024-12-31,,Open,10,Buster Bluth,buster@bluthcompany.com,System unused 5 years
+VULN-010,High,CVE-2024-6789,8.0,Magic_Supplies_DB,magic-db-01,10.0.8.80,Authentication Bypass,2024-11-01,2024-11-15,,Open,40,GOB Bluth,gob@bluthcompany.com,Magic inventory system
+VULN-011,Critical,CVE-2024-0001,9.5,SAP_PROD,sap-prod-01,10.0.1.10,Zero-Day Exploit,2024-12-15,2024-12-16,,Open,16,IT Team,it@bluthcompany.com,Known exploit - URGENT
+VULN-012,Medium,CVE-2024-9999,6.0,HR_System,hr-01,10.0.9.90,Improper Access Control,2024-12-10,2025-01-10,,Open,1,IT Team,it@bluthcompany.com,All employee records viewable
