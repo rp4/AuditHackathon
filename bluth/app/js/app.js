@@ -78,7 +78,7 @@ function populateTableSelector(tables) {
   const select = document.getElementById('table-select');
   select.innerHTML = '<option value="">-- Select an entity --</option>';
 
-  tables.forEach(table => {
+  tables.sort((a, b) => a.name.localeCompare(b.name)).forEach(table => {
     const option = document.createElement('option');
     option.value = table.name;
     option.textContent = `${table.name} (${table.count} records)`;
