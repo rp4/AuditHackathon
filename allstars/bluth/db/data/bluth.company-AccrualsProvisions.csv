@@ -1,9 +1,0 @@
-ID,accrualId,description,vendor_ID,glAccount_ID,amount,accrualDate,reversalDate,isReversed,supportingDoc,basis
-acr001,ACR-001,Q4 2024 legal fees accrual - Zuckerkorn,v002,gl016,45000.00,2024-12-31,2025-01-31,true,DOC-ACR001,Invoice
-acr002,ACR-002,December 2024 HVAC maintenance accrual,v014,gl016,8500.00,2024-12-31,2025-01-15,true,DOC-ACR002,Contract
-acr003,ACR-003,Q4 2024 Parmesan PI retainer accrual,v018,gl016,12000.00,2024-12-31,2025-01-31,true,DOC-ACR003,Contract
-acr004,ACR-004,Year-end construction cost accrual - Sitwell,v001,gl016,75000.00,2024-12-31,2025-02-15,true,DOC-ACR004,Invoice
-acr005,ACR-005,Carl Weathers consulting accrual - acting lessons,v019,gl016,6500.00,2024-12-31,2025-01-31,true,DOC-ACR005,Estimate
-acr006,ACR-006,Iraq construction contingency provision,v013,gl016,200000.00,2024-12-31,,false,,None
-acr007,ACR-007,Year-end Austero property management accrual,v020,gl016,22000.00,2024-12-31,2025-01-31,true,DOC-ACR007,Invoice
-acr008,ACR-008,Q4 2023 utilities accrual - never reversed,v014,gl016,15000.00,2023-12-31,,false,DOC-ACR008,Estimate

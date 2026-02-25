@@ -1,4 +1,0 @@
-ID,countId,location,countDate,expectedBalance,actualBalance,variance,countedBy,witnessedBy,notes
-pcc001,PCC-001,Bluth Company HQ - Newport Beach,2025-01-15,500.00,485.00,-15.00,Michael Bluth,External Auditor,Minor variance within tolerance - no issues noted
-pcc002,PCC-002,Banana Stand - Balboa Island,2025-01-15,5000.00,255000.00,250000.00,External Auditor,Michael Bluth,THERE IS ALWAYS MONEY IN THE BANANA STAND - $250K found hidden in walls and lining of stand
-pcc003,PCC-003,Mexico Office - Cabo San Lucas,2025-01-15,1000.00,0.00,-1000.00,External Auditor,Local Staff,Safe was completely empty - no explanation provided - local manager unavailable

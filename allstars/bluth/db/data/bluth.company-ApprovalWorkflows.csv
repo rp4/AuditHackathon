@@ -1,6 +1,0 @@
-ID,workflowId,workflowName,systemName,creatorRole,approverRole,approvalThreshold,isActive,lastModifiedDate,lastModifiedBy
-aw001,AW-001,Standard JE Approval,SAP_ERP,GL_ACCOUNTANT,FINANCE_MANAGER,25000.00,true,2024-01-15,Michael Bluth
-aw002,AW-002,High Value JE Approval,SAP_ERP,GL_ACCOUNTANT,FINANCE_DIRECTOR,100000.00,true,2024-01-15,Michael Bluth
-aw003,AW-003,Expense Report Approval,ExpenseSystem,EXPENSE_USER,EXPENSE_APPROVER,5000.00,true,2024-01-15,Michael Bluth
-aw004,AW-004,Self-Service Expense Workflow,ExpenseSystem,EXPENSE_ADMIN,EXPENSE_ADMIN,50000.00,true,2024-07-20,GOB Bluth
-aw005,AW-005,Wire Transfer Approval,Banking,BANKING_USER,BANKING_APPROVER,10000.00,true,2024-01-15,Michael Bluth

@@ -1,9 +1,0 @@
-ID,confirmationId,customer_ID,confirmationDate,requestedBalance,confirmedBalance,difference,responseType,disputeReason,followUpAction
-arc001,ARC-001,cust001,2025-01-15,2500000.00,0.00,2500000.00,NoResponse,,Third confirmation request sent - no response after 3 attempts
-arc002,ARC-002,cust002,2025-01-15,350000.00,150000.00,200000.00,DisputePartial,Customer claims $200K relates to barter/land swap arrangement not a receivable,Investigate barter transaction - may need reclassification
-arc003,ARC-003,cust003,2025-01-15,180000.00,180000.00,0.00,Confirmed,,No action needed
-arc004,ARC-004,cust005,2025-01-15,85000.00,72000.00,13000.00,Confirmed,,Investigate $13K difference - customer confirms lower balance
-arc005,ARC-005,cust006,2025-01-15,150000.00,165000.00,-15000.00,Confirmed,,Customer confirms higher balance than books - potential unrecorded revenue
-arc006,ARC-006,cust008,2025-01-15,500000.00,0.00,500000.00,NoResponse,,Saddam Holdings - unable to contact customer in Iraq
-arc007,ARC-007,cust010,2025-01-15,420000.00,420000.00,0.00,Confirmed,,No action needed
-arc008,ARC-008,cust009,2025-01-15,45000.00,45000.00,0.00,Confirmed,,No action needed
