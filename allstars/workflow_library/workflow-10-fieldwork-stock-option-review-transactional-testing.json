@@ -1,0 +1,327 @@
+{
+  "name": "Fieldwork: Stock Option Review & Transactional Testing",
+  "description": "A comprehensive audit workflow for reviewing stock option grants, exercises, and regulatory compliance, featuring transactional testing procedures and MCP data integration.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 390
+        },
+        "data": {
+          "label": "1. MCP Data Connectivity",
+          "description": "Establish secure connections to HRIS, Payroll, and Equity Management systems via MCP.",
+          "instructions": "# Establish Data Connections (MCP)\n\n## Objective\nTo enable automated data extraction by connecting the audit environment to the primary systems of record for equity and human resources.\n\n## Prerequisites\n- Administrative or Auditor-level API/Read access to Equity Platforms (e.g., Carta, Shareworks).\n- Access to HRIS (e.g., Workday, SuccessFactors) and Payroll (e.g., ADP).\n- MCP connector configuration details.\n\n## Procedure\n1. **Configure MCP Connections**\n   - Use the MCP interface to point to the `Equity_Subledger` and `HR_Master_File`.\n   - Validate connectivity by running a test query (e.g., count of active employees).\n2. **Map Data Attributes**\n   - Ensure the following fields are mapped: Employee ID, Grant Date, Exercise Date, Strike Price, Fair Market Value (FMV), and Status.\n\n## Expected Outputs\n- [ ] Active MCP connection to Equity Platform\n- [ ] Active MCP connection to HRIS/Payroll\n- [ ] Data mapping document\n\n## Quality Criteria\n- Data integrity check: Row counts in MCP should match system reports.\n- Security: Credentials must be handled via secure vaulting.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "2. Population & Sampling",
+          "description": "Extract the full population and select samples for transactional testing.",
+          "instructions": "# Population Validation & Sampling\n\n## Objective\nTo ensure the completeness of the stock option dataset and select a statistically significant sample for testing.\n\n## Procedure\n1. **Extract Population**\n   - Run a query through MCP to extract all grants and exercises during the audit period.\n2. **Reconcile Population**\n   - Reconcile the total number of grants to the Board of Directors' minutes.\n3. **Generate Sample**\n   - Apply a random sampling methodology (or haphazard) to select 25-40 items for Grants and 25-40 for Exercises.\n\n## Expected Outputs\n- [ ] Full population export (CSV/JSON)\n- [ ] Completeness reconciliation report\n- [ ] Selected sample list for testing",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Grant Approval & Valuation",
+          "description": "Verify that stock option grants are properly approved and valued.",
+          "instructions": "# Test of Stock Option Grants\n\n## Objective\nVerify that grants were issued in accordance with the Equity Incentive Plan and properly approved by the Board.\n\n## Procedure\n1. **Verify Approval**\n   - For the selected sample, inspect the Board or Compensation Committee minutes.\n   - Confirm the grant date in the system matches the approval date (or later).\n2. **Valuation Testing**\n   - Re-calculate the Fair Market Value (FMV) used for the grant.\n   - Verify Black-Scholes model inputs (Volatility, Risk-free rate, etc.) against market data.\n\n## Expected Outputs\n- [ ] Grant testing workpaper\n- [ ] Evidence of Board approval for each sample item\n- [ ] Valuation recalculation results",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "4. Exercise & Tax Review",
+          "description": "Trace exercise transactions to cash receipts and payroll tax records.",
+          "instructions": "# Test of Stock Option Exercises\n\n## Objective\nConfirm that exercise transactions resulted in appropriate cash inflows and tax withholdings.\n\n## Procedure\n1. **Trace to Cash**\n   - Trace the exercise price payment for each sample item to bank statements or cash receipt logs.\n2. **Verify Tax Withholding**\n   - Use MCP to join Exercise data with Payroll data.\n   - Verify that statutory tax withholdings (Federal, State, FICA) were calculated and recorded.\n\n## Expected Outputs\n- [ ] Exercise testing workpaper\n- [ ] Reconciliation of cash receipts to system records\n- [ ] Payroll tax validation report",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "5. Transfer Agent Reconciliation",
+          "description": "Reconcile internal records to the Transfer Agent's reports.",
+          "instructions": "# Equity Reconciliation Review\n\n## Objective\nEnsure the internal equity sub-ledger matches external records provided by the transfer agent.\n\n## Procedure\n1. **Obtain External Report**\n   - Download the Transfer Agent's month-end/quarter-end report.\n2. **Reconcile Totals**\n   - Compare \"Total Outstanding Options\" in the internal system (via MCP) to the Transfer Agent report.\n   - Investigate any variances exceeding the materiality threshold.\n\n## Expected Outputs\n- [ ] Reconciliation workpaper\n- [ ] List of reconciling items and explanations",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 840,
+          "y": 560
+        },
+        "data": {
+          "label": "6. SEC Filing Review",
+          "description": "Review SEC filings (Form 3, 4, 5) for timeliness and accuracy.",
+          "instructions": "# Regulatory Filing Compliance\n\n## Objective\nVerify that equity transactions for insiders were reported to the SEC as required.\n\n## Procedure\n1. **Identify Insiders**\n   - Filter the grant/exercise population for Section 16 officers.\n2. **Inspect EDGAR Filings**\n   - Search the SEC EDGAR database for Form 4 filings related to the sample items.\n   - Confirm filings were made within the 2-business-day window.\n\n## Expected Outputs\n- [ ] Regulatory compliance checklist\n- [ ] SEC filing date validation log",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 840,
+          "y": 560
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 730
+        },
+        "data": {
+          "label": "7. Termination Tracking",
+          "description": "Verify that options for terminated employees are cancelled in accordance with plan rules.",
+          "instructions": "# Termination & Cancellation Audit\n\n## Objective\nEnsure that unvested options are cancelled and vested options expire timely following employee termination.\n\n## Procedure\n1. **Identify Terminations**\n   - Use MCP to pull the list of terminations from HRIS.\n2. **Verify Cancellations**\n   - Cross-reference the termination list with the Equity sub-ledger.\n   - Confirm that unvested grants were marked \"Cancelled\" as of the termination date.\n\n## Expected Outputs\n- [ ] Termination testing workpaper\n- [ ] Exception report for active grants for former employees",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-8",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 390
+        },
+        "data": {
+          "label": "8. Identify Findings",
+          "description": "Aggregate exceptions and determine the severity of findings.",
+          "instructions": "# Identify Findings & Exceptions\n\n## Objective\nSummarize all testing exceptions identified during the fieldwork steps.\n\n## Procedure\n1. **Consolidate Results**\n   - Review workpapers from Steps 3 through 7.\n   - Categorize exceptions by risk area (e.g., Valuation, Timing, Documentation).\n2. **Evaluate Severity**\n   - Assess whether exceptions constitute a \"Control Deficiency,\" \"Significant Deficiency,\" or \"Material Weakness.\"\n\n## Expected Outputs\n- [ ] Summary of Audit Findings (SOAF)\n- [ ] Root cause analysis for key exceptions",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-9",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 390
+        },
+        "data": {
+          "label": "9. Issue Report",
+          "description": "Prepare the final audit report for management.",
+          "instructions": "# Final Issue Report\n\n## Objective\nCommunicate the results of the Stock Option Review to stakeholders and management.\n\n## Procedure\n1. **Draft Report Content**\n   - Include Executive Summary, Scope, Methodology, and Detailed Findings.\n2. **Management Response**\n   - Distribute findings to the Stock Admin/Payroll owners for remediation plans.\n3. **Finalize**\n   - Compile the final PDF report with all supporting evidence.\n\n## Expected Outputs\n- [ ] Final Audit Report\n- [ ] Remediation Action Plan (RAP)",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 299,
+        "height": 100
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-7",
+        "source": "step-2",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-8",
+        "source": "step-3",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-8",
+        "source": "step-4",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-8",
+        "source": "step-5",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-8",
+        "source": "step-6",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e7-8",
+        "source": "step-7",
+        "target": "step-8",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e8-9",
+        "source": "step-8",
+        "target": "step-9",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

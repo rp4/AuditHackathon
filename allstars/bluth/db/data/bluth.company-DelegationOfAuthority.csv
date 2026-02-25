@@ -1,0 +1,9 @@
+ID,doaId,employee_ID,approvalType,maxAmount,effectiveFrom,effectiveTo,isActive
+doa001,DOA-001,emp003,VendorMaster,500000.00,2020-01-01,,true
+doa002,DOA-002,emp003,Payment,250000.00,2020-01-01,,true
+doa003,DOA-003,emp001,VendorMaster,9999999.99,1973-01-15,,true
+doa004,DOA-004,emp002,VendorMaster,1000000.00,1995-01-01,,true
+doa005,DOA-005,emp002,Expense,500000.00,1995-01-01,,true
+doa006,DOA-006,emp023,VendorMaster,100000.00,2003-01-15,,true
+doa007,DOA-007,emp011,Payment,50000.00,2003-11-15,,true
+doa008,DOA-008,emp003,JournalEntry,500000.00,2020-01-01,,true

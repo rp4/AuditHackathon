@@ -1,0 +1,193 @@
+{
+  "name": "Fieldwork: Mobile Device Management (MDM) Audit Work Program",
+  "description": "A comprehensive audit workflow for testing Mobile Device Management (MDM) controls, including population extraction, sampling, and transactional testing of device configurations and security features.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "1. Obtain MDM Population",
+          "description": "Extract and validate the full population of mobile devices enrolled in the MDM solution.",
+          "instructions": "# Obtain MDM Device Population\n\n## Objective\nTo obtain a complete and accurate listing of all mobile devices managed by the organization's MDM solution to serve as the testing population.\n\n## Procedure\n1. **Extract Data**: Connect to the MDM administration console (e.g., Microsoft Intune, Jamf, VMware Workspace ONE).\n2. **Export Inventory**: Generate a report of all enrolled devices. Ensure the export includes the following transactional attributes:\n   - Device Name / ID\n   - Assigned User\n   - OS Type & Version\n   - Enrollment Date\n   - Encryption Status (Boolean)\n   - Compliance Status (Boolean)\n   - Last Check-in Timestamp\n3. **Data Integrity**: Compare the total count against the previous period or asset management records to ensure completeness.\n\n## Expected Outputs\n- Full CSV/Excel population file containing all MDM-enrolled devices and their current attributes.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 440,
+          "y": 40
+        },
+        "data": {
+          "label": "2. Sample Selection",
+          "description": "Select a sample of devices from the population for detailed attribute testing.",
+          "instructions": "# Sample Selection\n\n## Objective\nTo select a representative sample of devices for detailed verification of security controls.\n\n## Procedure\n1. **Define Sample Size**: Based on the population size (e.g., using a confidence level of 95%), determine the sample size (typically 25-40 items for a large population).\n2. **Random Selection**: Use a random number generator or audit software to select the specific Device IDs from the population obtained in Step 1.\n3. **Document Sample**: Create a \"Testing Worksheet\" containing the selected samples and the attributes to be verified.\n\n## Expected Outputs\n- Sampled list of devices ready for attribute testing.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 440,
+          "y": 40
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Configuration Testing",
+          "description": "Verify encryption and password enforcement for the sampled devices.",
+          "instructions": "# Test Configuration: Encryption & Passwords\n\n## Objective\nTo verify that the MDM solution effectively enforces encryption and complex password policies on all managed devices.\n\n## Procedure\n1. **Analyze Attributes**: For each device in the sample, inspect the 'Encryption Status' and 'Passcode Compliance' fields in the MDM data.\n2. **Verify Policy Enforcement**:\n   - Confirm `is_encrypted == True`.\n   - Confirm `passcode_compliant == True`.\n3. **Inspect Policy Config**: Navigate to the MDM configuration profiles and verify that the \"Require Password\" and \"Require Encryption\" settings are assigned to the groups containing the sampled devices.\n4. **Attributes to Extract**: `device_id`, `encryption_enabled`, `passcode_present`, `min_password_length`.\n\n## Expected Outputs\n- Completed testing worksheet documenting pass/fail for encryption and password controls.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "4. Security Feature Testing",
+          "description": "Verify detection of compromised devices and remote wipe functionality.",
+          "instructions": "# Security Feature Testing: Jail-break & Remote Wipe\n\n## Objective\nTo ensure the MDM detects compromised (jail-broken/rooted) devices and maintains remote wipe capabilities.\n\n## Procedure\n1. **Jail-break Detection**:\n   - For the sample, verify the `compromised_status` attribute.\n   - Confirm the MDM policy is configured to flag or block devices where `is_rooted` or `is_jailbroken` is detected.\n2. **Remote Wipe Verification**:\n   - Request evidence of the most recent \"Remote Wipe\" test performed by the IT Security team.\n   - Inspect the 'Wipe Log' or 'Action History' in the MDM for a successful `RemoteWipe` command execution on a test device.\n   - Verify the command status shows 'Completed' or 'Success'.\n\n## Expected Outputs\n- Evidence of jail-break detection policies and logs showing remote wipe execution.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 50
+        },
+        "data": {
+          "label": "5. Network Access Verification",
+          "description": "Verify that non-compliant devices are restricted from accessing corporate resources.",
+          "instructions": "# Network Access Control (NAC) Verification\n\n## Objective\nTo confirm that devices failing MDM compliance are barred from accessing the corporate network/resources.\n\n## Procedure\n1. **Identify Non-Compliant Devices**: From the population in Step 1, identify a small sub-sample of devices currently marked as 'Non-Compliant'.\n2. **Transactional Cross-Check**: \n   - Extract logs from the VPN or Network Access Control (NAC) system for the same timeframe.\n   - Search for the 'Non-Compliant' Device IDs or Usernames in the successful connection logs.\n3. **Verify Blocking**: Confirm that these devices were either denied access or redirected to a remediation portal.\n4. **Conditional Access**: Inspect Identity Provider (e.g., Azure AD) 'Conditional Access' logs to verify that the 'Require device to be marked as compliant' policy is being enforced.\n\n## Expected Outputs\n- Exception report (if any) showing non-compliant devices that successfully accessed corporate resources.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 2050,
+          "y": 50
+        },
+        "data": {
+          "label": "6. Compile Findings",
+          "description": "Summarize the audit findings and quantify risks.",
+          "instructions": "# Compile Findings and Reporting\n\n## Objective\nTo aggregate test results and communicate identified MDM security gaps to management.\n\n## Procedure\n1. **Summarize Results**: Total the number of devices tested vs. number of exceptions found for each control.\n2. **Quantify Risk**: Based on the exception rate in the sample, extrapolate the potential number of non-compliant devices in the total population.\n3. **Draft Issues**: For any failures (e.g., unencrypted devices, failed remote wipes), document the finding, root cause, and recommended remediation.\n4. **Final Review**: Ensure all workpapers are linked to the evidence extracted from the MDM and NAC systems.\n\n## Expected Outputs\n- Draft Audit Report / Finding Summary.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 309,
+        "height": 100,
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

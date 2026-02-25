@@ -1,0 +1,207 @@
+{
+  "name": "Planning: ELC Audit Work Program - MCP & COSO Integrated",
+  "description": "Entity-Level Controls (ELC) Audit Work Program with MCP Data Extraction and COSO Alignment. Testing covers Governance, Ethics Training, and Issue Resolution.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "data": {
+          "label": "1. MCP Data Extraction & Population Setup",
+          "description": "Extract full population and sample data from the Management Control Portal (MCP) to support attribute-based transactional testing.",
+          "instructions": "# MCP Data Extraction & Population Setup\n\n## Objective\nExtract full population and sample data from the Management Control Portal (MCP) to support attribute-based transactional testing.\n\n## Prerequisites\n- Access to MCP via AuditSwarm gateway.\n- Defined audit period.\n\n## Procedure\n1. **Connect to MCP** via AuditSwarm gateway.\n2. **Extract Populations**:\n   - 'Employee_Master' list for the current audit period.\n   - 'Policy_Acknowledgment_Logs' for 'Code of Conduct'.\n   - 'Training_Attendance_Records' filtered by 'Ethics Training'.\n   - 'Whistleblower_Incident_Log' including resolution status and dates.\n3. **Sampling Logic**:\n   - Run random sample generator on each population (Sample size based on confidence level 95%, Margin of Error 5%).\n   - Export sample lists with unique identifiers (Employee ID, Ticket ID) for downstream testing.\n\n## Quality Criteria\n- Population completeness verified against payroll/HR records.\n- Samples generated using statistically valid methodology.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "2. COSO Framework Alignment Verification",
+          "description": "Verify that the control environment and information/communication components align with COSO Principles using extracted data.",
+          "instructions": "# COSO Framework Alignment Verification\n\n## Objective\nVerify that the control environment and information/communication components align with COSO Principles.\n\n## Prerequisites\n- MCP Data Extraction (Step 1).\n\n## Procedure\n1. **Map Data to COSO Principles**:\n   - **Principle 1 (Integrity)**: Map CoC Acknowledgment logs to demonstrate communication of values.\n   - **Principle 2 (Oversight)**: Map Board minutes logs to demonstrate governance structure.\n   - **Principle 13 (Relevant Information)**: Map Ethics training data to demonstrate communication of internal control responsibilities.\n2. **Assess Coverage**: Evaluate if the extracted populations cover the entire organizational structure as required by the COSO 'Environment' component.\n3. **Gap Analysis**: Identify any high-risk departments or roles missing from the training/acknowledgment datasets.\n\n## Quality Criteria\n- Formal mapping of MCP datasets to specific COSO principles.\n- Identification of any structural control gaps.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Governance Oversight Review",
+          "description": "Inspect evidence of Board governance and Code of Conduct (CoC) formalization.",
+          "instructions": "# Governance Oversight & Policy Approval Review\n\n## Objective\nInspect evidence of Board governance and Code of Conduct (CoC) formalization.\n\n## Procedure\n1. **Inspect Board Minutes**: Obtain latest Board/Audit Committee logs and verify approval of the Code of Conduct.\n2. **Distribution Verification**: Confirm the CoC was distributed to all board members and executive leadership.\n3. **Oversight Continuity**: Cross-reference board meeting dates with policy revision dates to ensure timely oversight and approval of updates.\n\n## Expected Outputs\n- Verification of board approval date.\n- List of board members who received/acknowledged the policy.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "4. Ethics Training Testing",
+          "description": "Perform transactional attribute testing on employee acknowledgments and training records.",
+          "instructions": "# Ethics Communication & Training Testing\n\n## Objective\nPerform transactional attribute testing on employee acknowledgments and training records.\n\n## Procedure\n1. **Select Sample**: Use the employee sample generated in Step 1.\n2. **Attribute 1 (Acknowledgment)**: Inspect signed/digital acknowledgment for the CoC for each employee in the sample.\n3. **Attribute 2 (Training)**: Verify attendance at mandated Ethics Training sessions for the sample.\n4. **Exception Handling**: Document any missing acknowledgments or training absences.\n\n## Quality Criteria\n- 100% of sample tested for both attributes.\n- Error rate calculated and compared against tolerable threshold.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "5. Ethics Investigation Testing",
+          "description": "Verify the investigation and resolution lifecycle of reported ethics issues.",
+          "instructions": "# Ethics Issue Resolution Testing\n\n## Objective\nVerify the investigation and resolution lifecycle of reported ethics issues.\n\n## Procedure\n1. **Select Sample**: Use the incident sample from the Whistleblower Log generated in Step 1.\n2. **Attribute 1 (Timeliness)**: Evidence of initial investigation started within 48 hours of report.\n3. **Attribute 2 (Resolution)**: Documented resolution or closure by Compliance/Legal.\n4. **Attribute 3 (Reporting)**: Evidence of Board reporting for high-severity/executive-level issues.\n\n## Quality Criteria\n- Investigation timeline compliance.\n- Audit trail for resolution and management sign-off.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 220
+        },
+        "data": {
+          "label": "6. Final Audit Summary & Reporting",
+          "description": "Consolidate findings and assign risk ratings for the final report.",
+          "instructions": "# Final Audit Summary & Reporting\n\n## Objective\nConsolidate findings and assign risk ratings.\n\n## Procedure\n1. **Aggregate Findings**: Compile all exceptions from steps 3, 4, and 5.\n2. **Severity Assessment**: Assign risk ratings (High, Medium, Low) based on the significance of COSO principle deviations.\n3. **Draft Report**: Prepare the final Audit Memo detailing control effectiveness.\n\n## Expected Outputs\n- Compiled Findings Log.\n- Final Risk Assessment.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-4",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

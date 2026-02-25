@@ -1,0 +1,16 @@
+ID,reviewId,reviewDate,reviewedBy,systemUser_ID,accessAppropriate,comments,actionTaken
+uar001,UAR-001,2024-06-15,Michael Bluth,su003,true,Access appropriate for President and COO role,Certified
+uar002,UAR-002,2024-06-15,Michael Bluth,su005,true,Marketing access appropriate for VP of Charitable Affairs,Certified
+uar003,UAR-003,2024-06-15,Michael Bluth,su007,true,Developer access appropriate for Fakeblock development,Certified
+uar004,UAR-004,2024-06-15,Michael Bluth,su017,true,Project access appropriate for Construction Supervisor,Certified
+uar005,UAR-005,2024-06-15,Michael Bluth,su021,true,Banking admin appropriate for COO oversight,Certified
+uar006,UAR-006,2024-06-16,George Bluth Sr,su012,true,Barry needs GL access for legal billing reconciliation,Certified
+uar007,UAR-007,2024-06-16,Temp Reviewer,su013,true,Access looks fine,Certified
+uar008,UAR-008,2024-06-16,Michael Bluth,su011,true,Finance analyst access appropriate for FX intern duties,Certified
+uar009,UAR-009,2024-06-16,Lucille Bluth,su009,true,Basic access appropriate for Buster,Certified
+uar010,UAR-010,2024-06-17,GOB Bluth,su004,true,I need this access for my duties as VP,Certified
+uar011,UAR-011,2024-06-17,GOB Bluth,su024,true,Expense admin required for sales team management,Certified
+uar012,UAR-012,2024-06-17,Lucille Bluth,su008,true,Maeby handles studio finances so this is fine,Certified
+uar013,UAR-013,2024-06-17,Lucille Bluth,su014,true,Kitty needs executive assistant access,Certified
+uar014,UAR-014,2024-06-18,Michael Bluth,su019,true,Legal access appropriate for outside counsel,Certified
+uar015,UAR-015,2024-06-18,Michael Bluth,su015,true,Basic access appropriate for corporate investigator,Certified

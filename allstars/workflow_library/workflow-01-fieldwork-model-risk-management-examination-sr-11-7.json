@@ -1,0 +1,407 @@
+{
+  "name": "Fieldwork: Model Risk Management Examination (SR 11-7)",
+  "description": "Conduct engagement fieldwork to evaluate a bank’s Model Risk Management against SR 11-7, focusing on model development/implementation/use, validation (conceptual soundness, ongoing monitoring, outcomes analysis), and governance, policies, and controls. Outputs include structured assessments, preliminary findings, root causes, impact estimates, and initial conclusions aligned to the guidance.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "ingest-model-inventory",
+        "type": "artifact",
+        "position": {
+          "x": 0,
+          "y": 1200
+        },
+        "data": {
+          "label": "Ingest Model Inventory",
+          "description": "Produces a normalized inventory of models in scope.",
+          "instructions": "You are a Data Intake Specialist.\n\n**External Inputs Required:**\n- Current enterprise model inventory (in-use, under development, and retired)\n- Inventory fields (e.g., ID, owner, intended use, criticality, validation dates)\n\n**Task:**\nParse and normalize the model inventory to a consistent schema suitable for risk-based sampling and profiling.\n\n**Output:**\nA JSON file `model-inventory.json` with records:\n- `model_id`, `name`, `status` (in_use|development|retired), `owner`, `intended_use`, `criticality`, `risk_rating`, `vendor_or_inhouse`, `version`, `primary_data_sources`[], `last_validation_date`, `regulatory_use_flags`[]\n\nMaintain an inventory of models per SR 11-7 governance expectations.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 0,
+          "y": 1200
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "obtain-validation-artifacts",
+        "type": "artifact",
+        "position": {
+          "x": 0,
+          "y": 1440
+        },
+        "data": {
+          "label": "Index Validation Artifacts",
+          "description": "Produces an index of validation reports, monitoring logs, benchmarking, and backtesting.",
+          "instructions": "You are a Validation Evidence Librarian.\n\n**External Inputs Required:**\n- Model validation plans and reports (internal and vendor)\n- Back-testing results and outcomes analysis datasets\n- Benchmarking comparisons and performance monitoring logs\n- Change management records and model use reports\n\n**Task:**\nCreate a structured index linking each model to its validation and monitoring artifacts, capturing independence and recency.\n\n**Output:**\nA JSON file `validation-artifacts-index.json` with items:\n- `model_id`\n- `artifacts`: [{`type` (plan|report|backtest|benchmark|monitoring|change_log), `title`, `date`, `author`, `independence_flag` (true|false), `location_uri`}]\n\nAlign artifact coverage to SR 11-7 validation elements (conceptual soundness, ongoing monitoring, outcomes analysis).",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 0,
+          "y": 1440
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "gather-governance-docs",
+        "type": "artifact",
+        "position": {
+          "x": 20,
+          "y": 940
+        },
+        "data": {
+          "label": "Gather Governance Docs",
+          "description": "Produces an index of governance, policies, charters, and QAIP materials.",
+          "instructions": "You are a Governance Documentation Analyst.\n\n**External Inputs Required:**\n- Model risk policy, procedures, and standards\n- Board and risk committee charters/minutes referencing models\n- QAIP materials and internal audit reports over MRM\n\n**Task:**\nCatalog governance artifacts relevant to model risk management and validation independence.\n\n**Output:**\nA JSON file `governance-docs-index.json` containing:\n- `policies`: [{`name`, `version`, `effective_date`, `owner`, `sections`, `links`}]\n- `charters_minutes`: [{`body`, `date`, `topic`, `decisions`, `links`}]\n- `qaip_internal_audit`: [{`report_id`, `date`, `scope`, `findings`, `links`}]\n\nReference SR 11-7 section on governance, policies, and controls.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 20,
+          "y": 940
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "model-profile-dossiers",
+        "type": "artifact",
+        "position": {
+          "x": 400,
+          "y": 1180
+        },
+        "data": {
+          "label": "Compile Model Profiles",
+          "description": "Produces consolidated per-model dossiers for fieldwork testing.",
+          "instructions": "You are a Model Profiling Analyst.\n\n**Input Context:**\n1. The normalized inventory from `model-inventory.json`\n2. The validation/monitoring index from `validation-artifacts-index.json`\n\n**Task:**\nFor each sampled model, compile a profile capturing intended use, design/logic summary, assumptions/limitations, data quality considerations, validation coverage, and key dates.\n\n**Output:**\nA JSON file `model-profiles.json` with:\n- `profiles`: [{\n  `model_id`, `metadata`: {`name`, `owner`, `intended_use`, `status`, `criticality`},\n  `design_logic_summary`, `key_assumptions`[], `limitations`[],\n  `data_quality_notes`, `validation_artifacts`[], `implementation_systems`[]\n}]\n\nInclude uncertainty handling approaches (adjustments, complementary methods) per SR 11-7 development/implementation/use guidance.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 400,
+          "y": 1180
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "evaluate-conceptual-soundness",
+        "type": "artifact",
+        "position": {
+          "x": 1250,
+          "y": 1300
+        },
+        "data": {
+          "label": "Evaluate Conceptual Soundness",
+          "description": "Produces assessments of model design, theory, and variable selection.",
+          "instructions": "You are a Model Validation Reviewer.\n\n**Input Context:**\n1. The model dossiers from `model-profiles.json` containing design_logic_summary, assumptions, and limitations\n\n**Task:**\nAssess quality of design and construction; review documentation and empirical support for methods and variables; evaluate whether judgment used in construction is informed and consistent with research and industry practice.\n\n**Output:**\nA JSON file `conceptual-soundness.json` with:\n- `assessments`: [{`model_id`, `theory_design_review`, `variable_selection_review`, `assumption_justification`, `documentation_adequacy`, `issues`[], `severity` (low|moderate|high)}]\n\nReference SR 11-7 validation element “Evaluation of Conceptual Soundness.”",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 1250,
+          "y": 1300
+        }
+      },
+      {
+        "id": "evaluate-ongoing-monitoring",
+        "type": "artifact",
+        "position": {
+          "x": 1240,
+          "y": 1500
+        },
+        "data": {
+          "label": "Evaluate Ongoing Monitoring",
+          "description": "Produces assessments of monitoring controls, benchmarking, and change management.",
+          "instructions": "You are a Monitoring Controls Assessor.\n\n**Input Context:**\n1. The validation index from `validation-artifacts-index.json` (monitoring logs, change records, benchmarks)\n2. The model dossiers from `model-profiles.json`\n\n**Task:**\nConfirm appropriate implementation and performance monitoring; evaluate whether product/exposure/client/market changes require adjustment, redevelopment, or replacement; verify validity of scope extensions; assess benchmarking use.\n\n**Output:**\nA JSON file `ongoing-monitoring.json` with:\n- `assessments`: [{`model_id`, `monitoring_controls`, `change_management_effectiveness`, `benchmarking_practice`, `scope_extension_validity`, `issues`[], `severity`}]\n\nReference SR 11-7 validation element “Ongoing Monitoring.”",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 1240,
+          "y": 1500
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "evaluate-outcomes-analysis",
+        "type": "artifact",
+        "position": {
+          "x": 860,
+          "y": 1860
+        },
+        "data": {
+          "label": "Evaluate Outcomes Analysis",
+          "description": "Produces assessments of backtesting alignment and results vs actual outcomes.",
+          "instructions": "You are an Outcomes Analyst.\n\n**Input Context:**\n1. The validation index from `validation-artifacts-index.json` (backtesting datasets/results)\n2. The model dossiers from `model-profiles.json`\n\n**Task:**\nCompare model outputs to corresponding actual outcomes; verify backtesting frequencies match forecast horizons/performance windows; summarize breaches vs thresholds and triggers for recalibration.\n\n**Output:**\nA JSON file `outcomes-analysis.json` with:\n- `assessments`: [{`model_id`, `backtesting_window_alignment`, `results_summary`, `threshold_breaches`, `recalibration_triggers`, `issues`[], `severity`}]\n\nReference SR 11-7 validation element “Outcomes Analysis” and back-testing expectations.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 860,
+          "y": 1860
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "assess-implementation-and-use",
+        "type": "artifact",
+        "position": {
+          "x": 860,
+          "y": 740
+        },
+        "data": {
+          "label": "Assess Implementation & Use",
+          "description": "Produces tests of appropriateness of implementation and uses vs intended design.",
+          "instructions": "You are an Implementation & Use Tester.\n\n**Input Context:**\n1. The model dossiers from `model-profiles.json`\n2. The governance catalog from `governance-docs-index.json`\n3. The engagement context from `context-engagement.json`\n\n**Task:**\nVerify models are implemented as designed and used appropriately; confirm limitations/assumptions are understood by users; check compensating controls where uncertainty exists; identify misuse or scope creep.\n\n**Output:**\nA JSON file `implementation-use-tests.json` with:\n- `tests`: [{`model_id`, `deployment_architecture`, `authorized_use_cases`, `observed_use_cases`, `scope_extension_instances`, `limitations_communicated`, `compensating_controls`, `misuse_instances`, `issues`[], `severity`}]\n\nReference SR 11-7 section “Model Development, Implementation, and Use.”",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 860,
+          "y": 740
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "test-independence-of-validation",
+        "type": "artifact",
+        "position": {
+          "x": 1260,
+          "y": 920
+        },
+        "data": {
+          "label": "Test Validation Independence",
+          "description": "Produces an independence assessment of validation functions vs development/use.",
+          "instructions": "You are a Validation Independence Assessor.\n\n**Input Context:**\n1. The validation index from `validation-artifacts-index.json`\n2. The governance catalog from `governance-docs-index.json`\n\n**Task:**\nVerify validators are independent from development/use; review organizational separation, roles, incentives, and influence; identify conflicts and remediation.\n\n**Output:**\nA JSON file `validation-independence.json` with:\n- `assessments`: [{`model_id`, `independence_structure`, `validator_roles`, `org_separation_evidence`, `conflicts_found`, `remediation_actions`, `severity`}]\n\nReference SR 11-7 guidance on independence in validation.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 1260,
+          "y": 920
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "assess-model-uncertainty-adjustments",
+        "type": "artifact",
+        "position": {
+          "x": 1260,
+          "y": 1100
+        },
+        "data": {
+          "label": "Assess Uncertainty Adjustments",
+          "description": "Produces evaluations of conservative adjustments and complementary methods.",
+          "instructions": "You are a Model Uncertainty Evaluator.\n\n**Input Context:**\n1. The implementation/use tests from `implementation-use-tests.json`\n2. The model dossiers from `model-profiles.json`\n3. The outcomes analysis from `outcomes-analysis.json`\n\n**Task:**\nEvaluate whether uncertainty is appropriately handled (conservative adjustments, reduced reliance, or use of complementary approaches); if outputs feed public financial statements, confirm adjustments comply with GAAP.\n\n**Output:**\nA JSON file `uncertainty-adjustments.json` with:\n- `evaluations`: [{`model_id`, `adjustments_present`, `rationale`, `magnitude`, `documentation_quality`, `complementary_methods`, `gaap_compliance_flag`, `issues`[], `severity`}]\n\nReference SR 11-7 discussion of accounting for model uncertainty and GAAP footnote.",
+          "readOnly": false,
+          "isSelected": false
+        },
+        "width": 320,
+        "height": 165,
+        "positionAbsolute": {
+          "x": 1260,
+          "y": 1100
+        },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-ingest-model-inventory-model-profile-dossiers",
+        "source": "ingest-model-inventory",
+        "target": "model-profile-dossiers",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-obtain-validation-artifacts-model-profile-dossiers",
+        "source": "obtain-validation-artifacts",
+        "target": "model-profile-dossiers",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-model-profile-dossiers-evaluate-conceptual-soundness",
+        "source": "model-profile-dossiers",
+        "target": "evaluate-conceptual-soundness",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-obtain-validation-artifacts-evaluate-ongoing-monitoring",
+        "source": "obtain-validation-artifacts",
+        "target": "evaluate-ongoing-monitoring",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-model-profile-dossiers-evaluate-ongoing-monitoring",
+        "source": "model-profile-dossiers",
+        "target": "evaluate-ongoing-monitoring",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-obtain-validation-artifacts-evaluate-outcomes-analysis",
+        "source": "obtain-validation-artifacts",
+        "target": "evaluate-outcomes-analysis",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-model-profile-dossiers-evaluate-outcomes-analysis",
+        "source": "model-profile-dossiers",
+        "target": "evaluate-outcomes-analysis",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-model-profile-dossiers-assess-implementation-and-use",
+        "source": "model-profile-dossiers",
+        "target": "assess-implementation-and-use",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-gather-governance-docs-assess-implementation-and-use",
+        "source": "gather-governance-docs",
+        "target": "assess-implementation-and-use",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-obtain-validation-artifacts-test-independence-of-validation",
+        "source": "obtain-validation-artifacts",
+        "target": "test-independence-of-validation",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-gather-governance-docs-test-independence-of-validation",
+        "source": "gather-governance-docs",
+        "target": "test-independence-of-validation",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-assess-implementation-and-use-assess-model-uncertainty-adjustments",
+        "source": "assess-implementation-and-use",
+        "target": "assess-model-uncertainty-adjustments",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-model-profile-dossiers-assess-model-uncertainty-adjustments",
+        "source": "model-profile-dossiers",
+        "target": "assess-model-uncertainty-adjustments",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-evaluate-outcomes-analysis-assess-model-uncertainty-adjustments",
+        "source": "evaluate-outcomes-analysis",
+        "target": "assess-model-uncertainty-adjustments",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

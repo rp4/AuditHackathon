@@ -1,0 +1,26 @@
+cr_employeeid,cr_name,cr_department,cr_jobtitle,cr_manager,cr_hiredate,cr_terminationdate,cr_status,cr_isrelatedparty,cr_relatedpartytype,cr_salary,cr_email,cr_costcenter
+E001,George Bluth Sr,Executive,Founder and CEO (Incarcerated),,1973-01-15,,Active,Yes,Founder - Family,850000,george.sr@bluthcompany.com,CC001
+E002,Lucille Bluth,Executive,Executive Chairwoman,E001,1973-01-15,,Active,Yes,Spouse of Founder - Family,650000,lucille@bluthcompany.com,CC001
+E003,Michael Bluth,Executive,President and COO,E001,1992-06-01,,Active,Yes,Son of Founder - Family,425000,michael@bluthcompany.com,CC001
+E004,GOB Bluth,Sales,VP of Sales and Magic,E003,1995-03-15,,Active,Yes,Son of Founder - Family,275000,gob@bluthcompany.com,CC002
+E005,Lindsay Bluth Funke,Marketing,VP of Charitable Affairs,E003,1998-09-01,,Active,Yes,Daughter of Founder - Family,195000,lindsay@bluthcompany.com,CC003
+E006,Tobias Funke,Marketing,Consultant - Analrapist,E005,2002-01-10,,Active,Yes,Son-in-Law - Family,85000,tobias@bluthcompany.com,CC003
+E007,George Michael Bluth,Technology,Software Developer - Fakeblock,E003,2012-06-15,,Active,Yes,Grandson of Founder - Family,65000,georgemichael@bluthcompany.com,CC004
+E008,Maeby Funke,Entertainment,Studio Executive Liaison,E005,2010-09-01,,Active,Yes,Granddaughter of Founder - Family,125000,maeby@bluthcompany.com,CC003
+E009,Buster Bluth,Research,VP of Cartography,E002,1999-08-01,,Active,Yes,Son of Founder - Family,145000,buster@bluthcompany.com,CC005
+E010,Oscar Bluth,Operations,Consultant - Organic Farming,E001,2005-04-20,,Active,Yes,Brother of Founder - Family,95000,oscar@bluthcompany.com,CC006
+E011,Annyong Bluth,Finance,Foreign Exchange Intern,E002,2003-11-15,,Active,Yes,Adopted Son - Family (SPY),35000,annyong@bluthcompany.com,CC007
+E012,Barry Zuckerkorn,Legal,General Counsel,,1985-02-01,,Active,No,,450000,barry@zuckerkornlaw.com,CC008
+E013,Bob Loblaw,Legal,Associate General Counsel,E012,2006-03-01,2007-08-31,Terminated,No,,380000,bob@bobloblawlawblog.com,CC008
+E014,Kitty Sanchez,Executive,Executive Assistant to CEO,E001,1998-05-15,,Active,No,,75000,kitty@bluthcompany.com,CC001
+E015,Gene Parmesan,Security,Corporate Investigator,E003,2000-07-01,,Active,No,,95000,gene@parmesanpi.com,CC009
+E016,Carl Weathers,Consulting,Acting Coach and Consultant,E004,2004-02-15,,Active,No,,65000,carl@carlweathers.com,CC002
+E017,Lupe Garcia,Facilities,Housekeeper,E002,1995-01-10,,Active,No,,42000,lupe@bluthcompany.com,CC010
+E018,Mrs Featherbottom,Facilities,British Housekeeper,E002,2005-06-01,,Active,No,DUPLICATE - Same as Tobias,55000,featherbottom@bluthcompany.com,CC010
+E019,Steve Holt,Construction,Construction Supervisor,E004,2008-04-01,,Active,Yes,Illegitimate Son of GOB - Family,72000,steveholt@bluthcompany.com,CC011
+E020,Franklin Bluth,Entertainment,Ventriloquist Performer,E004,2003-09-15,,Active,No,GHOST EMPLOYEE - PUPPET,45000,franklin@bluthcompany.com,CC002
+E021,J Walter Weatherman,Training,Safety Training Consultant,E001,1980-01-01,,Active,No,,35000,jwalter@weathermanlessons.com,CC012
+E022,Wayne Jarvis,Legal,Outside Counsel - SEC Defense,,2003-01-15,,Active,No,Very serious,550000,wayne@jarvislaw.com,CC008
+E023,Tony Wonder,Entertainment,Magic Consultant,E004,2015-06-01,,Active,No,,95000,tony@wonder.com,CC002
+E024,Ann Veal,Intern,Executive Intern,E007,2012-01-15,,Active,No,Her?,0,ann@bluthcompany.com,CC004
+E025,Rita Leeds,Research,Special Projects,E003,2006-01-01,2006-06-30,Terminated,No,MRF Program,75000,rita@bluthcompany.com,CC005

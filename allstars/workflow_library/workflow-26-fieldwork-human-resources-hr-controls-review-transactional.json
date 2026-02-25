@@ -1,0 +1,215 @@
+{
+  "name": "Fieldwork: Human Resources (HR) Controls Review (Transactional)",
+  "description": "A transactional audit workflow for HR operations focusing on new hires, terminations, and pay rate changes with embedded testing procedures and data extraction steps.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 305
+        },
+        "data": {
+          "label": "1. Data Extraction (MCP)",
+          "description": "Extract full transaction populations from MCP for hires, terms, and pay changes.",
+          "instructions": "# HR Data Extraction & Population Validation\n\n## Objective\nTo obtain complete and accurate populations for all HR transactions occurring within the audit period to serve as the basis for testing.\n\n## Procedure\n1. **Connect to MCP/HRIS**: Access the Human Capital Management module.\n2. **Export Populations**: Extract the following datasets in CSV or Excel format:\n   - **New Hires**: All employees with a start date between [Start Date] and [End Date].\n   - **Terminations**: All employees with a termination date between [Start Date] and [End Date].\n   - **Pay Changes**: All records of base salary or hourly rate adjustments within the period.\n3. **Validate Completeness**: \n   - Reconcile total headcounts against the Payroll Register for the same period.\n   - Check for duplicate Employee IDs or missing date fields.\n\n## Expected Outputs\n- [ ] Validated New Hire Population\n- [ ] Validated Termination Population\n- [ ] Validated Pay Change Population",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "2. New Hire Testing",
+          "description": "Test authorization and timeliness for a sample of new hires.",
+          "instructions": "# New Hire Transactional Testing\n\n## Objective\nVerify that all new hires are authorized, accurately recorded, and processed timely.\n\n## Procedure\n1. **Sampling**: Select a sample of [X] from the New Hire population using a random or systematic method.\n2. **Attribute Testing**: For each selection, inspect the following:\n   - **Authorization**: Obtain the signed offer letter and verify approval by the designated hiring manager/HR director.\n   - **Timeliness**: Compare the 'Offer Accepted Date' to the 'System Entry Date.' Identify any lags exceeding 3 business days.\n   - **Accuracy**: Trace the starting salary in the offer letter to the first payroll run in the system.\n3. **Documentation**: Upload workpapers mapping Employee ID to testing results for each attribute.\n\n## Quality Criteria\n- 100% of samples must have a signed offer letter.\n- System entry should precede or match the start date.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Termination Testing",
+          "description": "Verify timely system removal and exit documentation for terminations.",
+          "instructions": "# Termination Transactional Testing\n\n## Objective\nEnsure terminated employees are removed from systems timely to prevent unauthorized access and overpayments.\n\n## Procedure\n1. **Sampling**: Select a sample of [X] from the Termination population.\n2. **Attribute Testing**:\n   - **Exit Documentation**: Inspect the resignation letter or termination notice.\n   - **Timeliness of Removal**: Compare the 'Last Day Worked' to the 'System Access Revocation Date.' \n   - **Criteria**: Access should be revoked within 24 hours of the last day worked.\n   - **Final Pay**: Verify the final payout includes accrued vacation/PTO as per company policy.\n\n## Key Considerations\n- Check for 'ghost employees' where termination was delayed in the system but the employee stopped working.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Pay Rate Change Testing",
+          "description": "Inspect approvals and payroll updates for pay rate changes.",
+          "instructions": "# Pay Rate Change Testing\n\n## Objective\nConfirm that all compensation adjustments are legitimate, approved, and correctly reflected in payroll.\n\n## Procedure\n1. **Sampling**: Select a sample of [X] from the Pay Change population.\n2. **Attribute Testing**:\n   - **Approval**: Inspect the Compensation Change Request (CCR) or digital workflow approval.\n   - **Logic**: Verify the change aligns with the annual merit cycle or a documented promotion.\n   - **Payroll Trace**: Trace the approved rate to the 'Gross Pay' field in the subsequent payroll register to ensure the system update was accurate.\n\n## Expected Outputs\n- [ ] Testing matrix with pass/fail results for approvals and payroll accuracy.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "5. Personnel File Review",
+          "description": "Verify personnel files for document completeness and compliance.",
+          "instructions": "# Personnel File Compliance Audit\n\n## Objective\nEnsure that personnel records are maintained in accordance with legal and internal policy requirements.\n\n## Procedure\n1. **Sampling**: Select a sample of [X] active employees across different departments.\n2. **Checklist**: Inspect the digital or physical personnel file for:\n   - Signed I-9 Form (Employment Eligibility Verification).\n   - Signed Confidentiality/Non-Compete Agreements.\n   - Annual Performance Evaluations (if applicable).\n   - Current W-4 and benefits enrollment forms.\n3. **Identify Gaps**: List any missing mandatory documents as exceptions.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 305
+        },
+        "data": {
+          "label": "6. Findings Summary",
+          "description": "Compile all testing exceptions into a final summary of findings.",
+          "instructions": "# Findings Summary & Reporting\n\n## Objective\nAggregate testing results to identify systemic issues or control failures within HR processes.\n\n## Procedure\n1. **Consolidate Exceptions**: Summarize all 'Fail' results from Steps 2 through 5.\n2. **Calculate Error Rates**: Determine the percentage of exceptions per population.\n3. **Root Cause Analysis**: For significant delays or missing approvals, interview HR managers to identify the process breakdown.\n4. **Report Drafting**: Draft findings including Risk, Condition, Cause, and Recommendation.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

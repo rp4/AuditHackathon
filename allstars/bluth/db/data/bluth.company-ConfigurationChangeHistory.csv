@@ -1,0 +1,11 @@
+ID,changeId,config_ID,changeDate,oldValue,newValue,changedBy,changeTicketRef,approvedBy,reason
+cch001,CCH-001,sc001,2023-06-15,false,true,Michael Bluth,CHG-SAP-0451,Wayne Jarvis,Implementing 3-way match control per audit recommendation
+cch002,CCH-002,sc009,2023-08-20,15,30,Michael Bluth,CHG-SAP-0467,Wayne Jarvis,Extending session timeout per user productivity request
+cch003,CCH-003,sc004,2024-02-10,12,8,Kitty Sanchez,CHG-SAP-0512,Lucille Bluth,Users complaining about password complexity requirements
+cch004,CCH-004,sc002,2024-06-15,true,false,GOB Bluth,,,Need to process urgent payments faster without approval bottleneck
+cch005,CCH-005,sc006,2024-04-20,10000,50000,GOB Bluth,CHG-SAP-0530,George Bluth Sr,Raising threshold to streamline payment processing
+cch006,CCH-006,sc005,2024-03-01,90,365,Kitty Sanchez,CHG-SAP-0520,Lucille Bluth,Annual password changes sufficient per industry practice
+cch007,CCH-007,sc007,2024-05-10,true,false,GOB Bluth,CHG-SAP-0535,GOB Bluth,Duplicate check causing delays in vendor onboarding
+cch008,CCH-008,sc008,2024-07-22,1000,25000,GOB Bluth,CHG-SAP-0548,George Bluth Sr,Need higher auto-approval for routine magic show expenses
+cch009,CCH-009,sc014,2023-09-01,false,true,Michael Bluth,CHG-SAP-0475,Wayne Jarvis,Enabling MFA for all remote access per security policy
+cch010,CCH-010,sc011,2023-07-10,false,true,Michael Bluth,CHG-SAP-0460,Wayne Jarvis,Enabling full audit logging per compliance requirements

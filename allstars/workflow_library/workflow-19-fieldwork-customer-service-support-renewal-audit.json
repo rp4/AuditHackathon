@@ -1,0 +1,199 @@
+{
+  "name": "Fieldwork: Customer Service & Support Renewal Audit",
+  "description": "Audit work program for Customer Service and Support Renewals, focusing on revenue recognition, pricing authorization, and contract compliance. Includes transactional testing procedures designed for data extraction and attribute-based sampling.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 140
+        },
+        "data": {
+          "label": "Data Acquisition & Population Integrity",
+          "description": "Extract and validate the full population of renewal transactions from the ERP/MCP.",
+          "instructions": "# Data Acquisition & Population Integrity\n\n## Objective\nEnsure the audit is performed on a complete and accurate dataset of all renewal transactions.\n\n## Prerequisites\n- Access to the Management Control Platform (MCP) or ERP (e.g., SAP, NetSuite).\n- Defined audit period (e.g., Fiscal Year 2023).\n\n## Procedure\n1. **Extract Population**: Use MCP to run a report of all \"Service/Support Renewal\" transactions.\n2. **Define Attributes**: Ensure the extract includes:\n   - Transaction ID / Renewal ID\n   - Customer Name & ID\n   - Renewal Date & Expiry Date\n   - Gross Amount & Net Amount\n   - Discount Applied (%)\n   - Authorized User ID\n   - Contract Reference Number\n3. **Data Validation**:\n   - Perform a \"Total Value\" reconciliation against the General Ledger (GL) for the period.\n   - Check for duplicate Transaction IDs.\n   - Verify date ranges are strictly within the scope.\n\n## Expected Outputs\n- [ ] Cleaned dataset (CSV/Excel) containing the full population.\n- [ ] Reconciliation report showing zero variance with GL.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 140
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 135
+        },
+        "data": {
+          "label": "Sampling Strategy & Selection",
+          "description": "Define judgmental sampling criteria for high-risk renewals.",
+          "instructions": "# Sampling Strategy & Selection\n\n## Objective\nSelect a high-risk, judgmental sample of renewals for detailed testing.\n\n## Procedure\n1. **Identify Risk Strata**:\n   - **Cut-off Risk**: Select all transactions occurring in the last 5 days of each quarter.\n   - **Value Risk**: Stratify the population and select the top 10% of renewals by dollar value.\n   - **Authorization Risk**: Identify transactions with discounts exceeding 15%.\n2. **Sample Selection**: Use a systematic judgmental approach to select X number of items (recommend minimum 25-40 based on materiality).\n3. **Document Rational**: Record why specific items were chosen.\n\n## Expected Outputs\n- [ ] Final Sample List with unique IDs.\n- [ ] Sampling methodology document.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "Contract Compliance & Authorization",
+          "description": "Inspect contracts for formal approvals, pricing, and discount authorization.",
+          "instructions": "# Contract Compliance & Authorization Testing\n\n## Objective\nVerify that renewal terms are authorized and compliant with company policy.\n\n## Procedure\n1. **Document Retrieval**: For each item in the sample, retrieve the executed Renewal Contract/Addendum.\n2. **Attribute Verification**:\n   - **Approval**: Verify the contract is signed by an employee with sufficient Delegation of Authority (DOA).\n   - **Pricing**: Compare the contract price to the Master Price List for that service tier.\n   - **Terms**: Ensure standard renewal terms (net 30, etc.) are applied unless an exception is documented.\n3. **Trace Attributes**: Record results in the testing matrix.\n\n## Quality Criteria\n- Signatory must match the authorized list for the transaction's dollar value.\n- Any pricing deviation must have a corresponding \"Pricing Exception Form\".\n\n## Expected Outputs\n- [ ] Completed Contract Testing Matrix.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "label": "Revenue Recognition & Billing Trace",
+          "description": "Trace renewals to billing records and verify revenue recognition timing.",
+          "instructions": "# Revenue Recognition & Billing Verification\n\n## Objective\nConfirm revenue is recorded in the correct period and matches billed amounts.\n\n## Procedure\n1. **Billing Trace**: Trace the sample item from the Contract to the generated Invoice in the billing system.\n2. **Timing Check**: Compare the Invoice Date and Service Period (Start/End) to the date the revenue was recognized in the GL.\n3. **Policy Alignment**: Verify that revenue recognition follows ASC 606/IFRS 15 (e.g., over the period of performance).\n4. **Accuracy**: Recalculate the pro-rata revenue for partial periods if applicable.\n\n## Expected Outputs\n- [ ] Revenue Recognition Testing Sheet showing \"Contract Date\" vs \"Recognition Date\".",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 220
+        },
+        "data": {
+          "label": "Discount Policy Compliance",
+          "description": "Targeted validation of discounted transactions against authorization policies.",
+          "instructions": "# Discount Policy Compliance Review\n\n## Objective\nEnsure all discounts are authorized and do not circumvent internal controls.\n\n## Procedure\n1. **Filter Population**: Isolate all transactions where `Discount Applied > 0`.\n2. **Policy Cross-Check**: Compare the discount percentage to the \"Discount Authorization Matrix\":\n   - 0-5%: Standard Sales Rep\n   - 5-15%: Sales Manager\n   - >15%: VP of Finance/Sales\n3. **Evidence Inspection**: Verify an email approval or system workflow stamp exists for the specific discount level.\n\n## Expected Outputs\n- [ ] Discount Exception Report identifying any unauthorized price reductions.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 135
+        },
+        "data": {
+          "label": "Audit Findings & Reporting",
+          "description": "Consolidate all testing results and draft the audit report.",
+          "instructions": "# Audit Findings & Reporting\n\n## Objective\nSummarize exceptions and provide management with actionable recommendations.\n\n## Procedure\n1. **Aggregate Exceptions**: Combine results from Contract, Revenue, and Discount testing.\n2. **Quantify Impact**: For revenue recognition errors, calculate the total over/understatement.\n3. **Draft Recommendations**: Propose control improvements (e.g., automated system blocks for unauthorized discounts).\n4. **Reporting**: Complete the audit findings template.\n\n## Expected Outputs\n- [ ] Final Audit Findings Report.\n- [ ] Management Letter Comments.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

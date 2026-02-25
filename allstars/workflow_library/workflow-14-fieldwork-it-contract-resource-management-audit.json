@@ -1,0 +1,255 @@
+{
+  "name": "Fieldwork: IT Contract Resource Management Audit",
+  "description": "Audit workflow for IT Contract Resource Management (ITCRM) with parallel planning steps. Includes parallel walkthroughs, policy review, and strategy assessment, followed by testing, financial reconciliation, and reporting.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-0",
+        "type": "step",
+        "data": {
+          "label": "1. Planning: Walkthroughs & Doc Gathering",
+          "description": "Gather foundational documentation and conduct walkthroughs with key stakeholders to confirm the ITCRM process.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 1. Planning: Walkthroughs & Doc Gathering\n\n## Objective\nTo gather foundational documentation and conduct walkthroughs with key stakeholders to establish a comprehensive understanding of the current ITCRM landscape, including key systems, actors, and workflows.\n\n## Prerequisites\n- List of key IT Procurement and Finance stakeholders.\n- Access to centralized document repositories (SharePoint, GRC tools, etc.).\n\n## Procedure\n### Step-by-step instructions\n1. **Request Initial Documentation**\n   - Obtain ITCRM-related policies, org charts, and process narratives.\n   - Request lists of active IT professional services vendors and recent contract resource lists.\n\n2. **Conduct Stakeholder Walkthroughs**\n   - Interview process owners for: Resource Requesting, Sourcing, Onboarding, and Invoicing.\n   - Document the flow of data across systems (e.g., VMS, ERP, Procurement tools).\n\n### Key considerations\n- Identify if \"shadow procurement\" occurs (teams hiring outside standard ITCRM flows).\n- Verify if the walkthrough matches the written documentation.\n\n## Expected Outputs\n- [ ] Preliminary Document Request List (DRL) fulfillment status\n- [ ] High-level process flow diagrams\n- [ ] List of key systems used in the ITCRM lifecycle\n\n## Quality Criteria\n- Walkthrough notes must be signed off or confirmed by the process owner.\n- System inventory should include all tools used for tracking resource hours and approvals."
+        },
+        "position": {
+          "y": 0,
+          "x": 0
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-1",
+        "data": {
+          "description": "Review policies and procedures to ensure they are current and reflect actual operational workflows.",
+          "label": "2. Planning: Policy & Process Review",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# Scope & Data Collection\n\n## Objective\nEstablish a complete and accurate population of legal expense invoices for the audit period to ensure the audit scope is comprehensive and reliable.\n\n## Prerequisites\n- Access to the legal billing system or Accounts Payable (AP) ledger.\n- Defined audit period (e.g., Fiscal Year 2023).\n- List of active law firms, expert witnesses, and court reporting agencies.\n\n## Procedure\n### Step-by-step instructions\n1. **Extract Invoice Data**\n   - Retrieve all legal-related invoices from the ERP or dedicated legal matter management system.\n   - Fields should include: Invoice ID, Date, Amount, Vendor Name, Matter/Claim ID, and Service Description.\n\n2. **Verify Completeness**\n   - Reconcile total invoice amounts to the General Ledger (GL) legal expense accounts to ensure no missing data.\n   - Cross-check against the vendor master file for any unknown legal service providers.\n\n### Key considerations\n- Ensure both defense counsel fees and \"ancillary\" costs (experts, depositions) are captured.\n- Watch for split invoices where one matter is billed across multiple line items.\n\n## Expected Outputs\n- [ ] Comprehensive population file (Excel/CSV)\n- [ ] GL reconciliation summary\n- [ ] List of firms/vendors in scope\n\n## Quality Criteria\n- Data integrity verified against financial records.\n- No gaps in the chronological invoice sequence for the audit period."
+        },
+        "type": "step",
+        "position": {
+          "y": 200,
+          "x": 0
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "position": {
+          "y": 400,
+          "x": 0
+        },
+        "data": {
+          "label": "3. Planning: Strategic Alignment Assessment",
+          "description": "Evaluate if the ITCRM strategy is aligned with business objectives and includes active monitoring.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 3. Planning: Strategic Alignment Assessment\n\n## Objective\nTo evaluate if the ITCRM strategy is aligned with broader business objectives and if it includes active monitoring mechanisms.\n\n## Prerequisites\n- ITCRM Strategy Document\n- Business Strategy / IT Roadmaps\n- Access to monitoring dashboards or reports\n\n## Procedure\n1. **Analyze Strategy Alignment**\n   - Compare ITCRM strategic goals against the organization's business and IT roadmaps.\n   - Verify if the strategy addresses cost optimization, quality of service, and risk management.\n\n2. **Identify Monitoring Controls**\n   - Review how leadership monitors strategic success.\n   - Check for defined milestones, KPIs (e.g., spend vs. budget), and success criteria.\n\n3. **Assess Maturity**\n   - Determine if the strategy is proactive (planned resource needs) or reactive (spot hiring).\n\n## Expected Outputs\n- [ ] Strategy alignment assessment matrix\n- [ ] List of identified monitoring controls and KPIs\n\n## Quality Criteria\n- Documentation shows clear linkage between ITCRM and business goals.\n- Monitoring controls are \"SMART\" (Specific, Measurable, Achievable, Relevant, Time-bound)."
+        },
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "data": {
+          "description": "Test a sample of engagements for adherence to strategic sourcing and clearly defined roles.",
+          "label": "4. Testing: Sourcing & Roles Compliance",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 4. Testing: Sourcing & Roles Compliance\n\n## Objective\nTo verify that IT resource engagements follow established strategic sourcing processes and that all personnel involved adhere to their defined roles and responsibilities to minimize the risk of misconduct or inefficient spending.\n\n## Prerequisites\n- Completed Step 1 & 2 (Process understanding and Policy review).\n- List of all IT Professional Services engagements approved during the audit period.\n- Strategic Sourcing Policy / Procurement Guidelines.\n- RACI matrix or documented roles for ITCRM.\n\n## Procedure\n### Step-by-step instructions\n1. **Sample Selection**\n   - Select a statistically significant sample of IT resource engagements from the provided list.\n   - Ensure the sample includes various vendor types, contract sizes, and IT departments.\n\n2. **Verify Strategic Sourcing Adherence**\n   - For each sample, obtain evidence of the sourcing process (e.g., RFP documents, bid comparisons, sole-source justifications).\n   - Confirm the engagement followed the standard path (e.g., preferred vendor list) or had a documented exception.\n\n3. **Validate Roles & Responsibilities**\n   - Identify the individuals who requested, reviewed, and approved the resource.\n   - Verify that these individuals match the roles defined in the ITCRM RACI matrix or Finance policy (e.g., Business Approver vs. Finance Approver).\n\n4. **Test Segregation of Duties (SoD)**\n   - Confirm that the person requesting the resource is not the same person performing the final procurement approval.\n\n### Key considerations\n- \"Emergency\" hires often bypass sourcing controls—check if these were later regularized.\n- Look for evidence of \"vendor favoritism\" where bids are consistently awarded to the same vendor without competitive justification.\n\n## Expected Outputs\n- [ ] Testing Workpaper / Sampling Matrix\n- [ ] Log of sourcing exceptions (e.g., missing bids, unapproved sole-sourcing)\n- [ ] SoD conflict report\n\n## Quality Criteria\n- Every sampled item must have a clear \"Pass/Fail\" result against the sourcing policy.\n- Testing must include verification of *actual* individuals against their *assigned* system roles."
+        },
+        "type": "step",
+        "position": {
+          "x": 400,
+          "y": 180
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 400,
+          "y": 180
+        },
+        "dragging": false
+      },
+      {
+        "data": {
+          "label": "5. Testing: Signature Authority Verification",
+          "description": "Verify that all sampled engagements were approved within the appropriate Signature Authority thresholds.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 5. Testing: Signature Authority Verification\n\n## Objective\nTo ensure all IT professional services engagements are reviewed and approved by personnel with the appropriate level of authority, preventing unauthorized spending or fraudulent activity.\n\n## Prerequisites\n- Organization’s Signature Authority Guidelines / Delegation of Authority (DoA) matrix.\n- Sample of approved engagements (from Step 4).\n- Approval logs or workflow history from procurement/ERP systems.\n\n## Procedure\n### Step-by-step instructions\n1. **Verify Approval Levels**\n   - For each sampled engagement, compare the total contract value (TCV) against the approver’s limit in the DoA matrix.\n   - Ensure both functional (IT) and financial (Procurement/Finance) approvals were obtained where required.\n\n2. **Check for \"Split\" Engagements**\n   - Look for multiple related purchase orders or contracts with the same vendor and project that individually fall under approval thresholds but collectively exceed them.\n\n3. **Validate Date Sequence**\n   - Confirm that the final approval was obtained *before* the contract start date or work commencement.\n\n### Key considerations\n- Special focus on emergency approvals—ensure they are properly justified and retroactively approved per policy.\n- Watch for approvals by subordinates on behalf of managers without formal delegation on file.\n\n## Expected Outputs\n- [ ] Exception log for authority violations\n- [ ] Comparison table: Contract Value vs. Approver Limit\n\n## Quality Criteria\n- 100% of the sample must be mapped to a specific clause in the Signature Authority Guidelines.\n- Evidence must clearly show the system timestamp of the approval."
+        },
+        "type": "step",
+        "position": {
+          "x": 800,
+          "y": 180
+        },
+        "id": "step-4",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 180
+        },
+        "dragging": false
+      },
+      {
+        "type": "step",
+        "data": {
+          "label": "6. Testing: Performance & Proof of Work",
+          "description": "Inspect vendor deliverables, proof of work, and performance metrics for the sampled engagements.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 6. Testing: Performance & Proof of Work\n\n## Objective\nTo verify that vendor resources are delivering the contracted value and that performance is actively monitored through objective metrics and documented proof of work (deliverables), ensuring company funds are used efficiently.\n\n## Prerequisites\n- Completed Step 4 (Sample of engagements).\n- Access to project management tools (Jira, ADO), timesheet systems, and deliverable repositories.\n- Vendor rate card agreements.\n\n## Procedure\n### Step-by-step instructions\n1. **Verify Deliverables (Proof of Work)**\n   - For each sampled engagement, obtain evidence of work performed (e.g., design documents, code commits, status reports, project milestones).\n   - Confirm deliverables match the Statement of Work (SOW) requirements.\n\n2. **Test Performance Monitoring**\n   - Review management’s periodic performance assessments or scorecards for the sampled resources.\n   - Verify that defined metrics (e.g., uptime, completion rate, defect density) are being tracked and reported.\n\n3. **Rate Card Reconciliation**\n   - Compare invoiced hourly rates against the approved vendor rate cards.\n   - Recalculate a sample of invoices (Hours x Rate) to ensure arithmetic accuracy.\n\n4. **Resource Onboarding Check**\n   - Verify that sampled resources were properly onboarded (e.g., signed NDA, background check confirmed, security training completed) before starting work.\n\n### Key considerations\n- Watch for \"Ghost Resources\"—billings for individuals who are no longer with the vendor or have no activity in company systems (e.g., zero logins/emails).\n- Ensure \"Expert\" rates are not being paid for \"Junior\" level work.\n\n## Expected Outputs\n- [ ] Deliverable verification log\n- [ ] Rate card variance report\n- [ ] Onboarding compliance checklist\n\n## Quality Criteria\n- Every dollar invoiced in the sample must be tied to a specific, verifiable deliverable or time entry.\n- Performance metrics must be objective and documented in a system of record."
+        },
+        "position": {
+          "x": 1220,
+          "y": 180
+        },
+        "id": "step-5",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1220,
+          "y": 180
+        },
+        "dragging": false
+      },
+      {
+        "position": {
+          "x": 1620,
+          "y": 180
+        },
+        "data": {
+          "description": "Reconcile GL spend for IT Professional Services against expected contract totals and categories.",
+          "label": "7. Financials: Spend Reconciliation",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 7. Financials: Spend Reconciliation\n\n## Objective\nTo ensure that all IT professional services expenditures are accurately recorded in the General Ledger (GL) and match the approved contract totals, and that financial categorization (CapEx vs. OpEx) is correct.\n\n## Prerequisites\n- General Ledger (GL) detail report for IT Professional Services accounts.\n- Sub-ledger or Vendor Management System (VMS) spend reports.\n- Approved contract list with total contract values (TCV).\n- Company Capitalization Policy.\n\n## Procedure\n### Step-by-step instructions\n1. **System-to-System Reconciliation**\n   - Reconcile total spend recorded in the VMS or procurement sub-ledger against the total spend in the General Ledger for the audit period.\n   - Identify and document any reconciling items (e.g., timing differences, accruals).\n\n2. **Categorization Testing (CapEx vs. OpEx)**\n   - Sample high-value transactions and verify they are recorded in the correct GL account (e.g., Capitalized Software vs. Maintenance Expense).\n   - Ensure \"run-the-business\" (RTB) activities are expensed and only qualifying \"change-the-business\" (CTB) project work is capitalized.\n\n3. **Contract-to-Actual Variance Analysis**\n   - Compare actual spend per vendor against the total contract value (TCV).\n   - Investigate any instances where actual spend exceeds the contract limit without a formal amendment.\n\n4. **Transaction Detail Review**\n   - Trace a sample of GL entries back to the original invoice and bank payment confirmation.\n   - Verify the GL coding matches the nature of the work described on the invoice.\n\n### Key considerations\n- Watch for \"spend leakage\"—costs hitting miscellaneous or \"other\" GL accounts to avoid budget scrutiny.\n- Ensure that taxes, travel expenses, and administrative fees are handled according to company policy and not just auto-approved.\n\n## Expected Outputs\n- [ ] GL to Sub-ledger reconciliation workpaper\n- [ ] CapEx/OpEx classification testing results\n- [ ] Variance analysis report (Actual vs. Contract)\n\n## Quality Criteria\n- Reconciling items must be fully explained and supported by documentation.\n- Classification testing must reference specific sections of the Company Capitalization Policy."
+        },
+        "type": "step",
+        "id": "step-6",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1620,
+          "y": 180
+        },
+        "dragging": false
+      },
+      {
+        "data": {
+          "label": "8. Financials: Efficiency & Savings Audit",
+          "description": "Analyze spend efficiency, cost-savings, and management’s use of efficiency analytics.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 8. Financials: Efficiency & Savings Audit\n\n## Objective\nTo evaluate the effectiveness of management’s monitoring over IT resource spend efficiency and to verify that cost-savings initiatives are properly tracked, justified, and realized.\n\n## Prerequisites\n- Completed Step 7 (Spend Reconciliation)\n- Access to ITCRM efficiency dashboards, spend trending reports, and cost-savings logs\n- Management-approved efficiency metrics and KPIs\n\n## Procedure\n### Step-by-step instructions\n1. **Analyze Spend Trending**\n   - Perform a horizontal analysis of IT professional services spend over the last 12–24 months.\n   - Identify significant spikes or deviations from the baseline and obtain management’s justification for these variances.\n\n2. **Evaluate Efficiency Metrics**\n   - Review the metrics used by management (e.g., cost-per-resource, utilization rates, vendor-to-staff ratios).\n   - Verify that these metrics are reviewed periodically and that corrective actions are taken when performance falls below thresholds.\n\n3. **Verify Cost-Savings Justifications**\n   - Sample cost-savings claims (e.g., rate renegotiations, volume discounts, resource consolidation).\n   - Recalculate savings based on actual invoice data and compare to reported savings to ensure accuracy and realization.\n\n### Key considerations\n- **Over-reliance on vendor data**: Ensure efficiency metrics are validated independently rather than relying solely on vendor-provided reporting.\n- **Budget vs. Efficiency**: High spend may be \"on budget\" but still inefficient; look for opportunities where cost could have been optimized regardless of budget availability.\n\n## Expected Outputs\n- [ ] Trend Analysis Report — Documented horizontal spend review\n- [ ] Efficiency Metric Assessment — Analysis of KPI effectiveness and management review frequency\n- [ ] Savings Validation Log — Verified list of cost-savings initiatives with recalculated totals\n\n## Quality Criteria\n- All variances >10% are investigated and documented.\n- Savings calculations are reperformed for a sample of initiatives.\n- Methodology for efficiency metrics is documented and deemed appropriate for the ITCRM strategy.\n\n## References\n- COSO: Monitoring Activities\n- Internal Finance Policy: Performance Reporting\n- ITCRM Strategy: Cost Optimization Targets"
+        },
+        "type": "step",
+        "position": {
+          "x": 2000,
+          "y": 180
+        },
+        "id": "step-7",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2000,
+          "y": 180
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-8",
+        "type": "step",
+        "data": {
+          "label": "9. Reporting: Compile Findings & Final Report",
+          "description": "Consolidate all fieldwork results and testing exceptions into a final audit report.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false,
+          "instructions": "# 9. Reporting: Compile Findings & Final Report\n\n## Objective\nTo consolidate all audit evidence, testing exceptions, and analytical results into a clear, actionable final report that informs leadership of control deficiencies, risks, and recommended improvements in the ITCRM process.\n\n## Prerequisites\n- Completion of all testing phases (Planning, Operational Testing, and Financial Reconciliation).\n- Documented and reviewed workpapers for steps 1 through 8.\n- List of confirmed exceptions and management justifications.\n\n## Procedure\n### Step-by-step instructions\n1. **Consolidate Findings**\n   - Review all testing workpapers to identify every exception (unauthorized approval, missing deliverable, reconciliation variance, etc.).\n   - Group related issues into thematic findings (e.g., \"Inconsistent Signature Authority Adherence\" or \"Lack of Performance Monitoring\").\n\n2. **Perform Root Cause Analysis (RCA)**\n   - For each finding, determine the underlying cause (e.g., lack of training, system limitation, policy ambiguity, or management override).\n   - Use the \"5 Whys\" technique to ensure the recommendation addresses the source of the problem, not just the symptom.\n\n3. **Assess Risk & Severity**\n   - Assign a severity level (Critical, High, Medium, Low) based on financial impact, regulatory risk, and operational disruption.\n   - Reference specific data points (e.g., \"Potential for $2M in unauthorized spend\") to illustrate the risk.\n\n4. **Develop SMART Recommendations**\n   - Draft recommendations that are **S**pecific, **M**easurable, **A**ctionable, **R**elevant, and **T**ime-bound.\n   - Ensure recommendations are cost-beneficial and practical for the IT environment.\n\n5. **Draft Final Report & Management Response**\n   - Prepare the report including an Executive Summary, Scope, Methodology, and Detailed Findings.\n   - Present the draft to process owners to obtain their Management Response and Action Plans (including remediation dates).\n\n### Key considerations\n- **Tone & Clarity**: Avoid jargon. State the finding and the impact clearly.\n- **Positive Assurance**: Mention areas where controls were operating effectively to provide a balanced view.\n\n## Expected Outputs\n- [ ] Final Audit Report (PDF/Word)\n- [ ] Management Action Plan (MAP) with assigned owners and dates\n- [ ] Final Workpaper File (fully referenced and archived)\n\n## Quality Criteria\n- Every finding in the report must be directly supported by evidence in the workpapers.\n- Recommendations must address the root cause identified during the RCA.\n- The report must be reviewed and signed off by Audit Leadership.\n\n## References\n- IIA Standards: 2400 – Communicating Results\n- GTAG: Auditing IT Outsourcing / Professional Services\n- Internal Audit Methodology: Reporting Templates"
+        },
+        "position": {
+          "x": 2400,
+          "y": 180
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 2400,
+          "y": 180
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e0-3",
+        "target": "step-3",
+        "source": "step-0"
+      },
+      {
+        "source": "step-1",
+        "target": "step-3",
+        "id": "e1-3"
+      },
+      {
+        "target": "step-3",
+        "source": "step-2",
+        "id": "e2-3"
+      },
+      {
+        "id": "e3-4",
+        "target": "step-4",
+        "source": "step-3"
+      },
+      {
+        "target": "step-5",
+        "source": "step-4",
+        "id": "e4-5"
+      },
+      {
+        "target": "step-6",
+        "source": "step-5",
+        "id": "e5-6"
+      },
+      {
+        "source": "step-6",
+        "target": "step-7",
+        "id": "e6-7"
+      },
+      {
+        "id": "e7-8",
+        "target": "step-8",
+        "source": "step-7"
+      }
+    ],
+    "metadata": {}
+  }
+}

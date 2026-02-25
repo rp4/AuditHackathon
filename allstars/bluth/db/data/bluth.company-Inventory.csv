@@ -1,0 +1,19 @@
+ID,itemNumber,description,category,location,quantityOnHand,unitCost,totalValue,reorderPoint,lastCountDate,lastCountQty,varianceQty,status
+inv001,INV-BAN001,Frozen Bananas,Food,Banana Stand - Balboa,2500,0.45,1125.00,500,2024-12-15,2450,50,Active
+inv002,INV-BAN002,Chocolate Coating Mix,Food,Banana Stand - Balboa,150,12.00,1800.00,25,2024-12-15,145,5,Active
+inv003,INV-BAN003,Wooden Sticks,Supplies,Banana Stand - Balboa,10000,0.02,200.00,2000,2024-12-15,9850,150,Active
+inv004,INV-BAN004,Banana Stand Cash Box Lining,Cash,Banana Stand - Balboa,1,250000.00,250000.00,1,2003-05-01,1,0,Active
+inv005,INV-CORN01,Cornballer Units - Mexico,Equipment,Cabo San Lucas Warehouse,500,85.00,42500.00,100,2024-12-01,485,15,Active
+inv006,INV-CORN02,Cornballer Units - US (ILLEGAL),Equipment,Secret Storage,75,85.00,6375.00,0,2024-06-01,75,0,Restricted
+inv007,INV-CORN03,Cornballer Replacement Parts,Parts,Mexico Warehouse,1200,5.50,6600.00,200,2024-12-01,1180,20,Active
+inv008,INV-SEG001,Segway Units,Equipment,Bluth HQ Garage,12,6500.00,78000.00,2,2024-11-01,11,1,Active
+inv009,INV-BEE001,Queen Bees,Livestock,Bees Unlimited Storage,25,350.00,8750.00,5,2024-09-01,18,7,Active
+inv010,INV-BEE002,Bee Swarm Boxes,Supplies,Yacht Lucille,8,150.00,1200.00,2,2024-10-01,8,0,Active
+inv011,INV-MAG001,Forget-Me-Now Pills,Pharmaceuticals,Unknown Location,500,25.00,12500.00,100,2024-01-01,450,50,Restricted
+inv012,INV-MAG002,Lighter Fluid,Supplies,GOB Storage Unit,50,8.00,400.00,10,2024-12-01,48,2,Active
+inv013,INV-MAG003,Throwing Stars,Props,GOB Storage Unit,200,15.00,3000.00,20,2024-12-01,195,5,Active
+inv014,INV-MAG004,Dove Cages,Equipment,GOB Storage Unit,6,250.00,1500.00,1,2024-12-01,5,1,Active
+inv015,INV-CON001,Construction Materials - Phase 1,Materials,Sudden Valley Site,0,0.00,0.00,0,2024-12-15,0,0,Depleted
+inv016,INV-CON002,Construction Materials - Phase 2,Materials,Sudden Valley Site,450000,1.00,450000.00,0,2024-12-15,450000,0,Idle
+inv017,INV-STAIR01,Stair Car,Vehicle,Bluth HQ Parking,1,12000.00,12000.00,1,2024-12-01,1,0,Active
+inv018,INV-YACHT01,Yacht Seaward,Vehicle,Newport Harbor,1,850000.00,850000.00,1,2024-12-01,1,0,Active

@@ -1,0 +1,227 @@
+{
+  "name": "Fieldwork: Firewall Configuration & Transactional Audit",
+  "description": "A comprehensive fieldwork workflow for auditing firewall configurations, change management, and log monitoring based on transactional testing of rules and logs.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "fw-step-1",
+        "position": {
+          "y": 305,
+          "x": 50
+        },
+        "type": "step",
+        "data": {
+          "label": "1. Firewall Rule Population Extraction",
+          "instructions": "# Firewall Rule Population Extraction\n\n## Objective\nTo obtain a complete, accurate, and current listing of all active firewall rules to serve as the population for attribute testing.\n\n## Prerequisites\n- Access to the Management Control Plane (MCP) or specific logging tools (e.g., Splunk, Palo Alto Panorama).\n- Defined scope of firewall appliances to be audited.\n\n## Procedure\n1. **Identify Data Source**: Access the network proxy or firewall management console.\n2. **Query Population**: Use MCP to run a query extracting all 'Active' rules. \n   - *Query Hint*: `SELECT rule_id, source_ip, destination_ip, service, action, description, created_date, last_modified_date FROM firewall_rules WHERE status = 'Active'`\n3. **Data Integrity Check**: Reconcile the total count of rules against the system dashboard to ensure no records were dropped during extraction.\n4. **Export**: Save the results as a CSV/Excel file named `Firewall_Rule_Population_[Date].csv`.\n\n## Expected Outputs\n- [ ] Complete population of firewall rules (CSV/Excel)\n- [ ] Data integrity reconciliation memo\n\n## Quality Criteria\n- Data contains all required attributes: Source, Destination, Port/Service, Action, and Justification.\n- Population matches the system of record as of the audit cutoff date.",
+          "description": "Extract the full population of firewall rules and configurations from the network proxy or management console via MCP.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "position": {
+          "x": 460,
+          "y": 60
+        },
+        "type": "step",
+        "id": "fw-step-2",
+        "data": {
+          "label": "2. Rule Justification & Approval Testing",
+          "instructions": "# Attribute Testing: Rule Justification & Approval\n\n## Objective\nVerify that every firewall rule is supported by a documented business need and has been formally approved by authorized personnel.\n\n## Prerequisites\n- Completed 'Firewall Rule Population' from Step 1.\n- Access to the internal ticketing system (e.g., ServiceNow, Jira).\n\n## Procedure\n1. **Sampling**: Select a statistically valid sample (e.g., 25 rules) or a risk-based sample (e.g., all 'Allow All' or 'Any' rules).\n2. **Ticket Matching**: For each sampled rule, locate the corresponding change request ticket.\n3. **Attribute Verification**: Inspect the following for each sample:\n   - **Business Justification**: Is there a clear reason why this traffic is allowed?\n   - **Authorized Approval**: Was the request approved by the system owner or IT Security?\n   - **Recertification**: Is there evidence the rule was reviewed within the last 12 months?\n4. **Exception Logging**: Record any rules lacking documentation or approval in the findings tracker.\n\n## Expected Outputs\n- [ ] Completed Attribute Testing Worksheet\n- [ ] List of exceptions (rules without justification/approval)\n\n## Quality Criteria\n- Sample size is defensible based on the total population.\n- Each test result is linked to specific evidence (ticket numbers).",
+          "description": "Select a sample of rules and inspect for business justification, approval, and periodic review documentation.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "data": {
+          "label": "3. Change Management Reconciliation",
+          "instructions": "# Transactional Testing: Change Management Reconciliation\n\n## Objective\nEnsure that all changes made to the firewall configuration followed the formal change management process and were not performed ad-hoc or without authorization.\n\n## Procedure\n1. **Identify Change Logs**: Extract a log of all configuration change events from the firewall management console for the audit period.\n2. **Sample Selection**: Select a sample of 15-25 change events from the system logs.\n3. **Vouching to Tickets**: Trace each system-generated change event back to an approved change ticket.\n   - **Check for Approval**: Ensure approval was granted *before* the change timestamp in the log.\n   - **Check for Testing**: Verify that post-implementation testing was documented in the ticket.\n4. **Unauthorized Change Check**: Identify any configuration changes in the logs that do not have a corresponding ticket (potential \"unauthorized changes\").\n\n## Expected Outputs\n- [ ] Change Reconciliation Matrix\n- [ ] Summary of unauthorized or unapproved changes\n\n## Quality Criteria\n- 100% reconciliation for the selected sample.\n- Clear identification of the 'who, what, and when' for every change.",
+          "description": "Sample firewall changes from logs and reconcile them to approved change management tickets.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "id": "fw-step-3",
+        "position": {
+          "y": 220,
+          "x": 450
+        },
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "fw-step-4",
+        "position": {
+          "y": 390,
+          "x": 450
+        },
+        "type": "step",
+        "data": {
+          "instructions": "# Transactional Testing: Log Monitoring & Review\n\n## Objective\nVerify that firewall logs are actively monitored for security threats and that identified anomalies are investigated.\n\n## Procedure\n1. **Obtain Monitoring Evidence**: Request the 'Log Review Sign-off' records or SOC dashboard alerts for a sample of days/weeks.\n2. **Sample Log Review**:\n   - Inspect evidence that a human or automated system (SIEM) reviewed the logs.\n   - For a sample of 5-10 high-severity alerts, trace the alert to its resolution or an incident ticket.\n3. **Retention Check**: Verify that logs are retained for the period required by policy (e.g., 90 days online, 1 year offline).\n\n## Expected Outputs\n- [ ] Log Review Inspection Memo\n- [ ] Sampled Alert Resolution Evidence\n\n## Quality Criteria\n- Evidence must show proactive review, not just passive storage.\n- All sampled high-severity alerts must have a documented outcome.",
+          "description": "Review firewall logs and monitoring records to ensure regular review and follow-up on security anomalies.",
+          "label": "4. Log Monitoring & Retention Review",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "data": {
+          "instructions": "# Technical Configuration: Patch & Version Management\n\n## Objective\nVerify that firewall firmware is current and that security patches are applied in a timely manner to prevent exploitation of known vulnerabilities.\n\n## Procedure\n1. **Identify Current Version**: Extract the current firmware/OS version from each firewall appliance.\n2. **Benchmark against Vendor**: Access the vendor's support portal (e.g., Cisco, Fortinet, Palo Alto) to identify the latest stable and recommended security release.\n3. **Analyze Gap**:\n   - Compare the current version against the recommended version.\n   - Identify if any 'Critical' or 'High' security advisories apply to the current version.\n4. **Verify Patch Process**: If a patch was recently applied, inspect the change ticket to ensure it followed the standard process.\n\n## Expected Outputs\n- [ ] Firewall Patch Status Report\n- [ ] Vulnerability Gap Analysis\n\n## Quality Criteria\n- All firewall appliances must be on a vendor-supported version.\n- Critical patches should be applied within the organization's defined SLAs (e.g., 30 days).",
+          "description": "Inspect patch levels and firmware versions to ensure the firewall is protected against known vulnerabilities.",
+          "label": "5. Patch & Version Management",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "id": "fw-step-5",
+        "position": {
+          "y": 560,
+          "x": 450
+        },
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "data": {
+          "instructions": "# Audit Findings Compilation & Reporting\n\n## Objective\nTo aggregate all testing results, quantify the impact of exceptions, and document formal audit findings for management review.\n\n## Prerequisites\n- Completed workpapers and evidence from Steps 2 through 5.\n- Findings tracker or exception log.\n\n## Procedure\n1. **Aggregate Results**: Collect all exception logs from the four testing areas (Justification, Changes, Logging, Patching).\n2. **Root Cause Analysis**: For each exception, identify the root cause (e.g., process breakdown, lack of oversight, technical failure).\n3. **Quantify Impact**: Determine the risk impact (Low, Medium, High, Critical) based on the severity and frequency of the findings.\n4. **Draft Finding Statements**: Write clear findings using the '5 C's' model:\n   - **Condition**: What was found (the exception).\n   - **Criteria**: What should be (policy/standard).\n   - **Cause**: Why it happened.\n   - **Consequence**: The risk (unauthorized access, compliance breach).\n   - **Corrective Action**: Recommendation for remediation.\n5. **Report Generation**: Compile the findings into the final Firewall Audit Report.\n\n## Expected Outputs\n- [ ] Compiled Audit Findings Table\n- [ ] Draft Firewall Audit Report\n\n## Quality Criteria\n- Findings are supported by specific transactional evidence from previous steps.\n- Risk ratings are consistent with the organization's risk framework.\n- Recommendations are actionable and address the root cause.",
+          "description": "Compile all identified exceptions and observations from the transactional testing steps into a final audit report.",
+          "label": "6. Audit Findings Compilation & Reporting",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "id": "fw-step-6",
+        "position": {
+          "y": 305,
+          "x": 850
+        },
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "type": "deletable",
+        "style": {
+          "strokeWidth": 2,
+          "stroke": "#6366f1",
+          "strokeDasharray": "5,5"
+        },
+        "animated": true,
+        "target": "fw-step-2",
+        "source": "fw-step-1"
+      },
+      {
+        "animated": true,
+        "target": "fw-step-3",
+        "source": "fw-step-1",
+        "type": "deletable",
+        "id": "e1-3",
+        "style": {
+          "strokeWidth": 2,
+          "stroke": "#6366f1",
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "style": {
+          "strokeDasharray": "5,5",
+          "stroke": "#6366f1",
+          "strokeWidth": 2
+        },
+        "id": "e1-4",
+        "type": "deletable",
+        "source": "fw-step-1",
+        "animated": true,
+        "target": "fw-step-4"
+      },
+      {
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "id": "e1-5",
+        "type": "deletable",
+        "source": "fw-step-1",
+        "animated": true,
+        "target": "fw-step-5"
+      },
+      {
+        "animated": true,
+        "target": "fw-step-6",
+        "source": "fw-step-2",
+        "id": "e2-6",
+        "type": "deletable",
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "type": "deletable",
+        "id": "e3-6",
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "animated": true,
+        "target": "fw-step-6",
+        "source": "fw-step-3"
+      },
+      {
+        "source": "fw-step-4",
+        "animated": true,
+        "target": "fw-step-6",
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "id": "e4-6",
+        "type": "deletable"
+      },
+      {
+        "source": "fw-step-5",
+        "animated": true,
+        "target": "fw-step-6",
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "type": "deletable",
+        "id": "e5-6"
+      }
+    ],
+    "metadata": {}
+  }
+}

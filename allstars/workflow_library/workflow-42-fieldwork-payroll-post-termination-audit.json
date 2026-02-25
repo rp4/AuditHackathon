@@ -1,0 +1,227 @@
+{
+  "name": "Fieldwork: Payroll Post-Termination Audit",
+  "description": "Audit workflow to identify and validate payments made to employees after their termination date.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "HR Termination Data Extraction",
+          "description": "Extract the list of employees terminated during the audit period, including their termination dates and employee IDs.",
+          "instructions": "1. Access HR Information System (HRIS).\n2. Filter for all employees with a termination status or termination date within the specified audit period.\n3. Export data including: Employee ID, Full Name, Termination Date, and Reason for Termination.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "data": {
+          "label": "Payroll Data Extraction",
+          "description": "Extract the full payroll register for the audit period.",
+          "instructions": "1. Access the Payroll System.\n2. Export the payroll register for the audit period.\n3. Ensure the data includes: Employee ID, Pay Period End Date, Gross Pay, Net Pay, and Pay Type (Regular, Bonus, Severance, etc.).",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 135
+        },
+        "data": {
+          "label": "Data Joining & Reconciliation",
+          "description": "Join HR termination data with the payroll register using Employee ID.",
+          "instructions": "1. Use a join operation (e.g., SQL JOIN or Excel VLOOKUP/Power Query) to combine the two datasets on the Employee ID field.\n2. Retain only records for employees found in the termination list.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 135
+        },
+        "data": {
+          "label": "Identify Post-Termination Payments",
+          "description": "Filter the joined dataset to identify payments where the pay period end date is after the termination date.",
+          "instructions": "1. Apply a filter: [Pay Period End Date] > [Termination Date].\n2. Calculate the number of days between termination and payment.\n3. Flag all records that meet this criteria for further review.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1260,
+          "y": 140
+        },
+        "data": {
+          "label": "Validation of Payments",
+          "description": "Validate flagged payments against valid reasons like severance or final vacation payouts.",
+          "instructions": "1. Review the 'Pay Type' or 'Reason for Termination' for flagged records.\n2. Determine if the payment is a standard final payout (e.g., accrued leave, severance) or a regular payroll cycle payment that should have stopped.\n3. Document valid justifications for each payment.",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": 1260,
+          "y": 140
+        }
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 1650,
+          "y": 135
+        },
+        "data": {
+          "label": "Exception Investigation",
+          "description": "Perform a deep-dive investigation into any unexplained or suspicious payments.",
+          "instructions": "1. Contact payroll and HR administrators for missing documentation.\n2. Review system logs for manual overrides or changes to termination dates.\n3. Identify root causes for any overpayments (e.g., processing delays, system errors).",
+          "completed": true,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 2050,
+          "y": 135
+        },
+        "data": {
+          "label": "Audit Reporting",
+          "description": "Compile findings into an audit report with recommendations for process improvements.",
+          "instructions": "1. Summarize total number and value of post-termination overpayments.\n2. Detail root causes identified.\n3. Recommend controls to prevent future occurrences (e.g., automated triggers between HRIS and Payroll).",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-3",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-4",
+        "source": "step-3",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

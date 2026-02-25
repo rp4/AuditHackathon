@@ -1,0 +1,500 @@
+{
+  "name": "Fieldwork: ISO/IEC 42001 AI Management System Audit",
+  "description": "Comprehensive fieldwork workflow for auditing an AI Management System per ISO/IEC 42001:2023. Covers operational planning and control verification, AI risk assessment testing, AI risk treatment evaluation, AI system impact assessment review, and control testing across Annex A domains including data management, AI system lifecycle, and third-party relationships.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "scope-context-review",
+        "type": "artifact",
+        "position": {
+          "x": -100,
+          "y": 20
+        },
+        "data": {
+          "label": "Review AIMS Scope and Context",
+          "description": "Verify documented scope, organizational context, and role determinations for the AI management system",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Review the organization's documented AIMS scope (Section 4.3), context analysis (Section 4.1), and interested party requirements (Section 4.2). Verify that the organization has determined its roles with respect to AI systems (provider, producer, customer, partner). Examine evidence that climate change relevance has been assessed. Output a markdown file containing: a scope adequacy checklist, context assessment findings table with columns (Requirement, Evidence Reviewed, Conformity Status, Gap Notes), and a summary of the organization's AI system role determinations. Reference ISO/IEC 42001 Clauses 4.1-4.4."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -100,
+          "y": 20
+        },
+        "dragging": false
+      },
+      {
+        "id": "policy-objectives-testing",
+        "type": "artifact",
+        "position": {
+          "x": -100,
+          "y": 260
+        },
+        "data": {
+          "label": "Test AI Policy and Objectives",
+          "description": "Evaluate AI policy alignment with organizational strategy and verify measurable AI objectives",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Review the documented AI policy for compliance with Section 5.2 requirements including appropriateness to purpose, framework for objectives, commitment to requirements, and continual improvement. Verify AI objectives meet criteria in Section 6.2 (consistent with policy, measurable, monitored, communicated). Interview personnel to confirm awareness per Section 7.3. Output a markdown file with: AI policy compliance matrix against A.2 controls, AI objectives evaluation table showing (Objective, Measurable Criteria, Monitoring Method, Communication Evidence), and awareness interview findings summary. Reference ISO/IEC 42001 Sections 5.2, 6.2, 7.3, and Annex A.2/B.2."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -100,
+          "y": 260
+        },
+        "dragging": false
+      },
+      {
+        "id": "risk-criteria-assessment",
+        "type": "artifact",
+        "position": {
+          "x": 450,
+          "y": 175
+        },
+        "data": {
+          "label": "Assess AI Risk Criteria Framework",
+          "description": "Evaluate the organization's established AI risk criteria and risk assessment methodology",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the scope and context review findings and the policy/objectives testing results from the previous steps, evaluate the organization's AI risk criteria established under Section 6.1.1. Verify criteria support distinguishing acceptable from non-acceptable risks, performing risk assessments, conducting risk treatment, and assessing impacts. Review the risk assessment process design per Section 6.1.2 for consistency, validity, and comparability. Output a markdown file containing: risk criteria adequacy assessment against 6.1.1 requirements, risk assessment methodology evaluation table, and findings on alignment between risk criteria and organizational AI objectives. Reference ISO/IEC 42001 Sections 6.1.1-6.1.2 and ISO/IEC 23894."
+        },
+        "width": 320,
+        "height": 165
+      },
+      {
+        "id": "operational-risk-assessment",
+        "type": "artifact",
+        "position": {
+          "x": 800,
+          "y": 60
+        },
+        "data": {
+          "label": "Test Operational Risk Assessments",
+          "description": "Verify AI risk assessments are performed per documented process at planned intervals",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the AI risk criteria framework assessment from the previous step, test actual AI risk assessments performed per Section 8.2. Select a sample of AI systems within scope and verify: risk assessments follow the defined process (6.1.2), assessments performed at planned intervals or when significant changes occur, documented results are retained. Evaluate whether assessments properly identify risks, analyze consequences and likelihood, and prioritize for treatment. Output a markdown file with: sample selection rationale, risk assessment testing matrix (AI System, Assessment Date, Process Compliance, Consequence Analysis, Likelihood Analysis, Risk Level Determination, Documentation Status), and nonconformity findings. Reference ISO/IEC 42001 Sections 6.1.2 and 8.2."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 60
+        },
+        "dragging": false
+      },
+      {
+        "id": "risk-treatment-testing",
+        "type": "artifact",
+        "position": {
+          "x": 800,
+          "y": 280
+        },
+        "data": {
+          "label": "Evaluate Risk Treatment Implementation",
+          "description": "Verify AI risk treatment plans are implemented effectively and residual risks accepted",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the AI risk criteria framework assessment from the previous step, evaluate AI risk treatment implementation per Sections 6.1.3 and 8.3. Review the Statement of Applicability for necessary controls and exclusion justifications. Verify: treatment options appropriately selected, controls compared against Annex A, additional controls identified where needed, management approval obtained for treatment plans and residual risks. Test treatment effectiveness and review evidence of revalidation when treatments are ineffective. Output a markdown file containing: Statement of Applicability review findings, risk treatment plan evaluation table (Risk ID, Treatment Option, Controls Selected, Annex A Mapping, Effectiveness Evidence, Residual Risk Acceptance), and identified gaps in treatment implementation. Reference ISO/IEC 42001 Sections 6.1.3, 8.3, and Annex A."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 280
+        },
+        "dragging": false
+      },
+      {
+        "id": "impact-assessment-review",
+        "type": "artifact",
+        "position": {
+          "x": 1220,
+          "y": 180
+        },
+        "data": {
+          "label": "Review AI System Impact Assessments",
+          "description": "Verify impact assessment process addresses consequences to individuals, groups, and societies",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the operational risk assessment and risk treatment testing results from the previous steps, review AI system impact assessments per Sections 6.1.4 and 8.4. Verify the process assesses consequences for individuals, groups, and societies from AI system development, provision, or use. Evaluate whether assessments consider: legal position and life opportunities, physical/psychological well-being, human rights, societal impacts. Test that assessments performed at planned intervals, documented results retained, and results feed into risk assessments. Output a markdown file with: impact assessment process evaluation against A.5 controls, sample testing results table (AI System, Impact Categories Assessed, Individual Impacts, Societal Impacts, Documentation Quality, Integration with Risk Assessment), and findings on stakeholder communication of results. Reference ISO/IEC 42001 Sections 6.1.4, 8.4, and Annex A.5/B.5."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1220,
+          "y": 180
+        },
+        "dragging": false
+      },
+      {
+        "id": "resource-documentation-testing",
+        "type": "artifact",
+        "position": {
+          "x": -100,
+          "y": 500
+        },
+        "data": {
+          "label": "Test AI Resource Documentation",
+          "description": "Verify documentation of data, tooling, system, computing, and human resources for AI systems",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Test compliance with Annex A.4 resource documentation requirements. Verify the organization has documented: data resources including provenance, categories, quality requirements, and bias considerations (A.4.3); tooling resources including algorithms, models, and development tools (A.4.4); system and computing resources including location and environmental impact (A.4.5); human resources with competencies for AI system lifecycle activities (A.4.6). Output a markdown file containing: resource documentation compliance matrix against A.4 controls, data resource inventory assessment findings, tooling and computing resource evaluation, human resource competency verification results, and gaps identified in resource documentation. Reference ISO/IEC 42001 Section 7.1 and Annex A.4/B.4."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -100,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "data-management-testing",
+        "type": "artifact",
+        "position": {
+          "x": 480,
+          "y": 500
+        },
+        "data": {
+          "label": "Test Data Management Controls",
+          "description": "Verify data acquisition, quality, provenance, and preparation processes for AI systems",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the AI resource documentation testing results from the previous step, perform detailed testing of Annex A.7 data controls. Verify: data management processes for development/enhancement (A.7.2), data acquisition documentation including sources and rights (A.7.3), data quality requirements and measurement (A.7.4), data provenance recording processes (A.7.5), data preparation criteria and methods (A.7.6). Select sample datasets and trace through the data lifecycle. Output a markdown file with: data management control testing matrix, sample data quality assessment results, provenance traceability findings table (Dataset, Source, Acquisition Method, Quality Metrics, Preparation Applied, Provenance Records), and nonconformities identified. Reference ISO/IEC 42001 Annex A.7/B.7 and ISO/IEC 5259 series."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 480,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "lifecycle-controls-testing",
+        "type": "artifact",
+        "position": {
+          "x": 900,
+          "y": 500
+        },
+        "data": {
+          "label": "Test AI System Lifecycle Controls",
+          "description": "Verify controls across design, development, deployment, operation, and monitoring phases",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the data management testing results from the previous step, test Annex A.6 AI system lifecycle controls. Verify: objectives for responsible development documented and integrated (A.6.1.2), design/development processes defined (A.6.1.3), requirements and specifications documented (A.6.2.2), system design documented (A.6.2.3), verification and validation measures defined with criteria (A.6.2.4), deployment plans with pre-deployment requirements (A.6.2.5), operation and monitoring elements including performance monitoring (A.6.2.6), technical documentation for interested parties (A.6.2.7), event logging at appropriate phases (A.6.2.8). Select sample AI systems for walkthrough testing. Output a markdown file with: lifecycle control compliance matrix, sample system walkthrough findings (AI System, Development Documentation, V&V Evidence, Deployment Records, Monitoring Capabilities, Event Logging Status), and control deficiencies identified. Reference ISO/IEC 42001 Annex A.6/B.6 and ISO/IEC 5338."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 900,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "third-party-controls-testing",
+        "type": "artifact",
+        "position": {
+          "x": 1300,
+          "y": 500
+        },
+        "data": {
+          "label": "Test Third-Party Relationship Controls",
+          "description": "Verify supplier management, responsibility allocation, and customer consideration controls",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the lifecycle controls testing results from the previous step, evaluate Annex A.10 third-party and customer relationship controls. Verify: responsibilities allocated between organization, partners, suppliers, customers, and third parties (A.10.2); supplier management process ensures alignment with responsible AI approach (A.10.3); customer expectations and needs considered (A.10.4). Review supplier contracts, SLAs, and due diligence records. Test integration documentation for third-party AI components. Output a markdown file with: third-party control compliance matrix, supplier assessment findings table (Supplier, AI Component Provided, Responsibility Allocation, Due Diligence Evidence, Alignment with AI Policy), customer relationship evaluation results, and gaps in responsibility allocation or supplier oversight. Reference ISO/IEC 42001 Annex A.10/B.10."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1300,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "information-controls-testing",
+        "type": "artifact",
+        "position": {
+          "x": 1320,
+          "y": 820
+        },
+        "data": {
+          "label": "Test Information and Reporting Controls",
+          "description": "Verify user documentation, external reporting capabilities, and incident communication",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Test Annex A.8 information controls for interested parties. Verify: system documentation and user information provided (A.8.2), external reporting capabilities for adverse impacts (A.8.3), incident communication plan documented (A.8.4), obligations to interested parties documented (A.8.5). Review user-facing documentation for completeness. Test the reporting mechanism for concerns (A.3.3) including confidentiality provisions, staffing, escalation, and response timeframes. Output a markdown file with: information controls compliance matrix, user documentation assessment (AI System, Documentation Provided, Clarity Score, Completeness Score, Accessibility), reporting mechanism evaluation findings, incident communication plan assessment, and gaps in stakeholder information provision. Reference ISO/IEC 42001 Annex A.8/B.8 and A.3.3/B.3.3."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1320,
+          "y": 820
+        },
+        "dragging": false
+      },
+      {
+        "id": "operational-control-verification",
+        "type": "artifact",
+        "position": {
+          "x": 1720,
+          "y": 500
+        },
+        "data": {
+          "label": "Verify Operational Planning Controls",
+          "description": "Test operational planning, change control, and external process management per Section 8.1",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the information controls testing and third-party controls testing results from the previous steps, verify Section 8.1 operational planning and control requirements. Test: process criteria establishment and control implementation, effectiveness monitoring with corrective action consideration, planned change control and unintended change review, external process/product/service control. Verify controls from risk treatment are implemented for AI system operations. Output a markdown file with: operational planning compliance checklist, process control verification results table (Process, Criteria Defined, Control Evidence, Effectiveness Monitored, Corrective Actions), change control assessment findings, external provision control evaluation, and operational nonconformities identified. Reference ISO/IEC 42001 Section 8.1."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1720,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "use-controls-testing",
+        "type": "artifact",
+        "position": {
+          "x": 2120,
+          "y": 500
+        },
+        "data": {
+          "label": "Test Responsible Use Controls",
+          "description": "Verify processes and objectives for responsible AI system use including human oversight",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Using the operational control verification results from the previous step, test Annex A.9 responsible use controls. Verify: processes for responsible use defined and documented (A.9.2), objectives for responsible use including fairness, accountability, transparency, explainability, reliability, safety, robustness, privacy, security, accessibility (A.9.3), AI systems used according to intended use and documentation (A.9.4). Evaluate human oversight implementation including reviewer authority, monitoring, and concern reporting. Test evidence of alignment between actual use and documented intended use. Output a markdown file with: responsible use control compliance matrix, use objectives achievement assessment, human oversight evaluation table (AI System, Oversight Role Defined, Review Authority, Monitoring Evidence, Concern Reporting Mechanism), intended use compliance findings, and responsible use gaps identified. Reference ISO/IEC 42001 Annex A.9/B.9."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2120,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "documented-info-testing",
+        "type": "artifact",
+        "position": {
+          "x": 2500,
+          "y": 500
+        },
+        "data": {
+          "label": "Test Documented Information Controls",
+          "description": "Verify creation, updating, and control of AIMS documented information",
+          "instructions": "You are an ISO 42001 auditor conducting fieldwork. Test Section 7.5 documented information requirements. Verify: required documented information exists per this standard and organization needs (7.5.1), appropriate identification, format, review and approval for creation/updates (7.5.2), control ensuring availability, protection, distribution, access, storage, retention, and disposition (7.5.3). Sample documentation across AIMS elements to verify version control, accessibility, and protection. Review external documentation identification and control. Output a markdown file with: documented information requirements compliance checklist, documentation control assessment table (Document Type, Identification Adequate, Version Controlled, Access Controlled, Retention Defined, Protection Measures), sample testing results, and document control nonconformities. Reference ISO/IEC 42001 Section 7.5."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2500,
+          "y": 500
+        },
+        "dragging": false
+      },
+      {
+        "id": "fieldwork-synthesis",
+        "type": "artifact",
+        "position": {
+          "x": 2840,
+          "y": 180
+        },
+        "data": {
+          "label": "Synthesize Fieldwork Findings",
+          "description": "Consolidate all testing results into comprehensive fieldwork findings summary",
+          "instructions": "You are a senior ISO 42001 auditor. Using all testing results from the previous steps including: scope/context review, policy/objectives testing, risk criteria assessment, operational risk assessments, risk treatment testing, impact assessment review, resource documentation, data management, lifecycle controls, third-party controls, information controls, operational planning, responsible use, and documented information testing, synthesize comprehensive fieldwork findings. Categorize findings by: conformities, observations (opportunities for improvement), minor nonconformities, and major nonconformities. Map all findings to specific ISO 42001 clauses and Annex A controls. Output a markdown file containing: executive fieldwork summary, consolidated findings register table (Finding ID, Category, ISO 42001 Reference, Description, Evidence, Risk Rating), conformity heat map by clause, root cause analysis for significant nonconformities, and recommended reporting priorities. Include total control coverage statistics and areas requiring additional follow-up. Reference ISO/IEC 42001 full standard and ISO 19011 audit evidence requirements."
+        },
+        "width": 320,
+        "height": 165,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2840,
+          "y": 180
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-scope-riskcriteria",
+        "source": "scope-context-review",
+        "target": "risk-criteria-assessment",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-policy-riskcriteria",
+        "source": "policy-objectives-testing",
+        "target": "risk-criteria-assessment",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-riskcriteria-oprisk",
+        "source": "risk-criteria-assessment",
+        "target": "operational-risk-assessment",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-riskcriteria-treatment",
+        "source": "risk-criteria-assessment",
+        "target": "risk-treatment-testing",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-oprisk-impact",
+        "source": "operational-risk-assessment",
+        "target": "impact-assessment-review",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-treatment-impact",
+        "source": "risk-treatment-testing",
+        "target": "impact-assessment-review",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-resource-data",
+        "source": "resource-documentation-testing",
+        "target": "data-management-testing",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-data-lifecycle",
+        "source": "data-management-testing",
+        "target": "lifecycle-controls-testing",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-lifecycle-thirdparty",
+        "source": "lifecycle-controls-testing",
+        "target": "third-party-controls-testing",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-info-operational",
+        "source": "information-controls-testing",
+        "target": "operational-control-verification",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-thirdparty-operational",
+        "source": "third-party-controls-testing",
+        "target": "operational-control-verification",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-operational-use",
+        "source": "operational-control-verification",
+        "target": "use-controls-testing",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-use-docinfo",
+        "source": "use-controls-testing",
+        "target": "documented-info-testing",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-impact-synthesis",
+        "source": "impact-assessment-review",
+        "target": "fieldwork-synthesis",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e-docinfo-synthesis",
+        "source": "documented-info-testing",
+        "target": "fieldwork-synthesis",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

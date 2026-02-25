@@ -1,0 +1,161 @@
+{
+  "name": "Fieldwork: Supplier Change Approval & SoD Review",
+  "description": "A workflow to verify that changes to the supplier master file are properly approved and that there is adequate segregation of duties between the requestor and the approver.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 135
+        },
+        "data": {
+          "label": "1. Obtain Change Logs",
+          "description": "Extract or request the audit trail of all changes made to the supplier master file for the review period.",
+          "instructions": "Ensure the log includes the change date, field changed, old value, new value, user ID of the requestor, and user ID of the approver. Ensure the population is complete for the period under review.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 135
+        },
+        "data": {
+          "label": "2. Sample Selection",
+          "description": "Select a representative sample of supplier changes for testing.",
+          "instructions": "Use a risk-based approach or statistical sampling. Prioritize changes to high-risk fields like bank account details, payment terms, or supplier names. Select at least 25 samples for a standard control test.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "3. Verify Approval",
+          "description": "Confirm that each sampled change was approved by an authorized individual.",
+          "instructions": "Inspect supporting documentation (e.g., system workflow logs, signed forms, or email approvals) to verify that the approver has the appropriate authority level per the delegation of authority matrix.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "4. SoD Testing",
+          "description": "Verify that the individual who requested/entered the change is different from the individual who approved it.",
+          "instructions": "Compare the 'Created By' and 'Approved By' user IDs for each sample. Flag any instances where the requestor and approver are the same individual. Investigate if any 'super-user' overrides were used.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 1250,
+          "y": 135
+        },
+        "data": {
+          "label": "5. Summarize Findings",
+          "description": "Compile results and identify any control failures.",
+          "instructions": "Document all exceptions related to missing approvals or SoD violations. Quantify the potential impact and prepare a summary of findings for the audit report.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 309,
+        "height": 100
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2",
+        "source": "step-2",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3",
+        "source": "step-2",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4",
+        "source": "step-3",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

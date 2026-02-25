@@ -1,0 +1,273 @@
+{
+  "name": "Fieldwork: ITGC: Access to Programs and Data Audit (Multi-node Execution)",
+  "description": "Comprehensive IT Audit workflow for testing logical access controls including user provisioning, terminations, access reviews, and segregation of duties using transactional data extraction.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 60,
+          "y": 380
+        },
+        "data": {
+          "label": "Data Extraction & Validation",
+          "description": "Extract and validate populations for all access-related testing.",
+          "instructions": "# Data Extraction & Population Validation\n\n## Objective\nTo obtain and validate the completeness and accuracy of the populations required for ITGC access testing.\n\n## Prerequisites\n- Access to the Master Control Program (MCP) or system back-end.\n- HR records (Hire/Termination reports).\n\n## Procedure\n1. **Extract Primary Populations**:\n   - **Active User Listing (AUL)**: Extract all active users with access to in-scope applications as of the testing date.\n   - **Provisioning Log**: Extract all users added or modified during the audit period.\n   - **Termination Log**: Extract all employees/contractors terminated during the audit period.\n2. **Reconciliation**:\n   - Compare the AUL against the HR active headcount to ensure no \"ghost\" accounts.\n   - Perform a row-count reconciliation between the extracted dataset and the MCP system logs.\n3. **Data Formatting**:\n   - Standardize date formats (MM/DD/YYYY) and ensure unique identifiers (Employee ID) are present for join operations.\n\n## Expected Outputs\n- [ ] Validated Active User Listing\n- [ ] Validated New Hire/Modification Population\n- [ ] Validated Termination Population\n- [ ] Reconciliation Summary Report",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 60,
+          "y": 380
+        },
+        "dragging": false
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "Access Appropriateness Testing",
+          "description": "Verify that user access rights align with job responsibilities.",
+          "instructions": "# User Access Appropriateness Testing\n\n## Objective\nTo ensure that logical access is granted based on approved requests and is commensurate with job responsibilities.\n\n## Procedure\n1. **Sample Selection**: Select a sample of X users from the Active User Listing (Step 1).\n2. **Attribute Testing**:\n   - Obtain the Job Description or Role Profile for each sampled user.\n   - Inspect the MCP permissions (roles, groups, profiles) assigned to the user.\n   - **Attribute**: Verify that the assigned access matches the \"least privilege\" requirement for their job function.\n3. **Documentation**: Note any users with access exceeding their departmental needs.\n\n## Expected Outputs\n- [ ] Completed Testing Worksheet (Appropriateness)\n- [ ] List of Access Discrepancies",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "Provisioning Testing",
+          "description": "Test the authorization and timing of new or modified access.",
+          "instructions": "# New/Modified User Provisioning Testing\n\n## Objective\nVerify that access is granted only after formal approval and is provisioned timely.\n\n## Procedure\n1. **Sample Selection**: Select a sample of X records from the Provisioning Log (Step 1).\n2. **Attribute Testing**:\n   - **Authorization**: Inspect the ticketing system or MCP logs for a documented approval from the data owner or manager PRIOR to the provisioning date.\n   - **Accuracy**: Compare requested access levels in the ticket vs. actual access granted in the system.\n   - **Timeliness**: Verify access was granted within the defined SLA (e.g., within 24-48 hours of hire/request).\n\n## Expected Outputs\n- [ ] Completed Testing Worksheet (Provisioning)\n- [ ] Evidence of Management Approvals",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "Termination Testing",
+          "description": "Verify that access is removed timely upon termination.",
+          "instructions": "# Terminated User Access Removal Testing\n\n## Objective\nTo ensure that access is removed or modified timely (e.g., within 24 hours) upon termination or role change.\n\n## Procedure\n1. **Sample Selection**: Select a sample of X terminated employees from the Termination Log (Step 1).\n2. **Attribute Testing**:\n   - **Removal Date**: Identify the employee's official termination date from HR records.\n   - **System Disable Date**: Identify the \"Last Login\" or \"Disabled Date\" from the MCP/System logs.\n   - **Timeliness Attribute**: Verify that the account was disabled within [X] hours/days of the termination date.\n3. **Exception Handling**: If an account remained active, check for activity (logins) post-termination.\n\n## Expected Outputs\n- [ ] Completed Testing Worksheet (Terminations)\n- [ ] Post-Termination Activity Analysis (if applicable)",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "Access Review Testing",
+          "description": "Inspect evidence of periodic user access reviews.",
+          "instructions": "# Periodic User Access Review Testing\n\n## Objective\nTo verify that management performs and documents periodic reviews of user access to ensure continued appropriateness.\n\n## Procedure\n1. **Obtain Evidence**: Request the most recent User Access Review (UAR) report and sign-off.\n2. **Attribute Testing**:\n   - **Completeness**: Verify the review covered the entire population of users for the application.\n   - **Approval**: Inspect evidence of review and approval by the designated supervisor or data owner.\n   - **Remediation**: If access changes were identified during the review, select a sub-sample and verify the access was actually removed/updated in the system logs.\n\n## Expected Outputs\n- [ ] UAR Evidence Package\n- [ ] Validation of Remediation Actions",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 100,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 730
+        },
+        "data": {
+          "label": "SoD Testing",
+          "description": "Identify and test for Segregation of Duties conflicts.",
+          "instructions": "# SoD & Elevated Privileges Testing\n\n## Objective\nIdentify and mitigate segregation-of-duties (SoD) conflicts and ensure elevated privileges are justified.\n\n## Procedure\n1. **Identify High-Risk Roles**: From the Active User Listing, filter for users with Administrator, Superuser, or Security Manager roles.\n2. **SoD Analysis**:\n   - Cross-reference the user list against an SoD Matrix (e.g., User cannot both \"Initiate Payment\" and \"Approve Payment\").\n   - **Attribute**: Verify no single user has end-to-end control over a financial transaction.\n3. **Mitigating Controls**: If a conflict exists, inspect evidence of a documented mitigating control (e.g., independent review of audit logs).\n\n## Expected Outputs\n- [ ] SoD Conflict Report\n- [ ] Review of Admin/Elevated Access Rights",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "step-7",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 390
+        },
+        "data": {
+          "label": "Reporting & Consolidation",
+          "description": "Consolidate all findings into the final audit report.",
+          "instructions": "# Audit Reporting & Issue Consolidation\n\n## Objective\nSynthesize the results of all testing steps into a formal audit report.\n\n## Procedure\n1. **Aggregate Exceptions**: Consolidate findings from Steps 2 through 6.\n2. **Root Cause Analysis**: For each exception (e.g., late termination), identify the underlying cause (process gap, system error, or human oversight).\n3. **Risk Rating**: Assign severity (High, Medium, Low) based on the potential impact of the risk.\n4. **Draft Report**: Prepare the final summary including objectives, scope, findings, and management action plans.\n\n## Expected Outputs\n- [ ] Draft Audit Report\n- [ ] Final Issue Tracker",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 314,
+        "height": 100
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-6",
+        "source": "step-1",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-7",
+        "source": "step-2",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-7",
+        "source": "step-3",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-7",
+        "source": "step-4",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-7",
+        "source": "step-5",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e6-7",
+        "source": "step-6",
+        "target": "step-7",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

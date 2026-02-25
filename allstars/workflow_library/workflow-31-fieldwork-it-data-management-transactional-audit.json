@@ -1,0 +1,173 @@
+{
+  "name": "Fieldwork: IT Data Management Transactional Audit",
+  "description": "Transactional audit workflow for IT Data Management focusing on access controls, backup integrity, and data security using MCP-extracted populations.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "data": {
+          "label": "1. Data Extraction & Population Validation (MCP)",
+          "description": "Identify and extract the full populations for users, backup jobs, and data repositories from the MCP system.",
+          "instructions": "# Data Extraction & Population Validation\n\n## Objective\nTo obtain complete and accurate populations from the Master Control Program (MCP) for subsequent sampling and testing.\n\n## Procedure\n1. **Identify Data Sources**: Connect to the MCP database or reporting module.\n2. **Extract Populations**:\n   - **User Access List**: All users with access to production systems/sensitive data (Fields: UserID, Name, Dept, Access Level, Provisioning Date).\n   - **Backup Logs**: All backup jobs for the audit period (Fields: JobID, System, Backup Type, Date, Status/Result).\n   - **Repository Inventory**: List of all database instances and file shares (Fields: Name, Owner, Classification, Environment).\n3. **Verify Completeness**: Reconcile record counts against system summaries to ensure no data loss during extraction.\n\n## Expected Outputs\n- Population CSV/Excel files for Users, Backups, and Repositories.\n- Reconciliation memo confirming completeness.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "2. User Access Transactional Test",
+          "description": "Test user access controls by sampling the population and verifying authorization attributes.",
+          "instructions": "# User Access Control Testing\n\n## Objective\nVerify that access to sensitive data is restricted to authorized personnel and properly approved.\n\n## Procedure\n1. **Sample Selection**: From the MCP User List, select a sample of X users (using a risk-based or statistical approach).\n2. **Attribute Verification**:\n   - **Approval**: Inspect the ticketing system or HR records for formal sign-off by the Business Owner.\n   - **Least Privilege**: Verify the current access level in MCP matches the approved request.\n   - **Timeliness**: Ensure the provisioning date in MCP is after the approval date.\n3. **Document Findings**: Note any unauthorized or unapproved access.\n\n## Quality Criteria\n- Each sample must have a linked approval record.\n- Discrepancies between MCP roles and approval forms must be logged as exceptions.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Backup & Restore Integrity Test",
+          "description": "Inspect backup completion logs and restore test evidence for data integrity.",
+          "instructions": "# Backup & Recovery Transactional Test\n\n## Objective\nEnsure that data is regularly backed up and can be recovered in the event of a failure.\n\n## Procedure\n1. **Backup Sample**: Select a sample of backup jobs from the MCP Backup Log population.\n2. **Success Verification**:\n   - Inspect job logs for a \"Success\" or \"Completed\" status code.\n   - For any \"Warning\" or \"Failed\" logs, verify that a ticket was raised and the job was re-run successfully.\n3. **Restore Testing**:\n   - Obtain evidence of the most recent periodic restore test.\n   - Verify that the test was successful and covered critical data repositories identified in Step 1.\n\n## Expected Outputs\n- Testing matrix showing Job IDs, Status, and Follow-up actions.\n- Inspection notes for Restore Test reports.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Data Classification Review",
+          "description": "Verify that data repositories are properly classified and secured according to policy.",
+          "instructions": "# Data Classification & Repository Security Review\n\n## Objective\nConfirm that data repositories are classified according to sensitivity and that security controls are enforced.\n\n## Procedure\n1. **Repository Sample**: Select a sample of data repositories (databases/shares) from the MCP Inventory.\n2. **Classification Check**:\n   - Compare the classification tag (e.g., Confidential, Internal) against the Data Security Policy requirements.\n   - Verify the owner is accurately assigned in MCP.\n3. **Access Enforcement**:\n   - Perform a \"spot check\" of the Access Control List (ACL) for the sample.\n   - Ensure only authorized groups (per Step 2 logic) have write/delete permissions.\n\n## Key Considerations\n- Look for \"Public\" or \"Open\" shares containing sensitive PII/SPI data.\n- Verify encryption attributes are enabled for \"High\" sensitivity repositories.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 220
+        },
+        "data": {
+          "label": "5. Findings Summary & Reporting",
+          "description": "Summarize findings and prepare the final audit report.",
+          "instructions": "# Audit Reporting & Findings\n\n## Objective\nCompile all transactional testing results into a cohesive report for management.\n\n## Procedure\n1. **Summarize Exceptions**: Aggregrate all failures from steps 2, 3, and 4.\n2. **Determine Root Cause**: Interview process owners for systematic issues (e.g., lack of automated alerting for failed backups).\n3. **Draft Report**: Include Risk, Control, Test Result, and Recommendation for each finding.\n4. **Final Review**: Ensure all working papers are cross-referenced to the MCP data extracts.\n\n## Expected Outputs\n- Draft Audit Report.\n- Completed Testing Workbook.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-5",
+        "source": "step-2",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-5",
+        "source": "step-3",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-5",
+        "source": "step-4",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "name": "Fieldwork: Pricing and Discounts Audit Program (with Reporting)",
+  "description": "Audit work program for Pricing and Discounts, including MCP data extraction, transactional testing, and findings reporting.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "id": "step-1",
+        "type": "step",
+        "position": {
+          "x": 50,
+          "y": 305
+        },
+        "data": {
+          "label": "1. MCP Data Extraction (Pricing/Discounts)",
+          "description": "Extract the full population of pricing changes and discounted transactions from the MCP.",
+          "instructions": "# MCP Data Extraction: Pricing & Discounts\n\n## Objective\nExtract comprehensive datasets from the Master Control Program (MCP) to support downstream transactional testing.\n\n## Procedure\n1. **Identify Data Sources**: Connect to MCP and identify the following tables:\n   - `Pricing_Master`: Current and historical price lists.\n   - `Pricing_Change_Log`: Audit trail of all modifications to the master file.\n   - `Sales_Order_Header` / `Sales_Order_Detail`: Transactional records.\n   - `Discount_Schedules`: Approved discount tiers and rules.\n2. **Define Attributes**: Ensure the extract includes:\n   - `Price_UID`, `Effective_Date`, `Approved_By_ID`, `Old_Price`, `New_Price`.\n   - `Transaction_ID`, `Customer_ID`, `Gross_Amount`, `Discount_Applied`, `Net_Amount`.\n3. **Execute Extraction**: Run queries to pull populations for the audit period.\n\n## Expected Outputs\n- Population of Pricing Changes (CSV/Table)\n- Population of Discounted Transactions (CSV/Table)",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-2",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 50
+        },
+        "data": {
+          "label": "2. Testing Pricing Change Approvals",
+          "description": "Verify that all pricing changes in the sample were properly approved.",
+          "instructions": "# Testing Pricing Change Approvals\n\n## Objective\nDetermine if pricing modifications were authorized by management prior to implementation.\n\n## Procedure\n1. **Sampling**: Select a statistically valid sample (e.g., 25-40 items) from the `Pricing_Change_Log` population.\n2. **Attribute Verification**:\n   - Trace `Approved_By_ID` to the Authorized Signatory Matrix.\n   - Verify `Approval_Date` is prior to or on the `Effective_Date`.\n   - Inspect supporting documentation (emails, system tickets) for rationale.\n3. **Document Results**: Record any instances where approval is missing or performed by an unauthorized individual.\n\n## Expected Outputs\n- Testing sheet with pass/fail results for each sampled change.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "label": "3. Testing Discounted Sales Transactions",
+          "description": "Audit discounted sales transactions against authorized schedules.",
+          "instructions": "# Testing Discounted Sales Transactions\n\n## Objective\nVerify that discounts applied to sales orders comply with established company policy and contractual limits.\n\n## Procedure\n1. **Sampling**: Select a sample of transactions from `Sales_Order_Detail` where `Discount_Applied > 0`.\n2. **Attribute Verification**:\n   - Cross-reference the `Discount_Applied` against the `Discount_Schedules` for the specific `Customer_ID` or `Product_Category`.\n   - Verify that any \"Exception Discounts\" have a corresponding manual approval flag.\n3. **Quantification**: For any over-discounts, calculate the revenue leakage.\n\n## Expected Outputs\n- Exception list of unauthorized or excessive discounts.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-4",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "label": "4. Master File Access & Communication",
+          "description": "Review master file access controls and communication logs.",
+          "instructions": "# Master File Access & Communication\n\n## Objective\nEnsure only authorized personnel can edit pricing and that changes are communicated to sales channels.\n\n## Procedure\n1. **Access Review**: Inspect the user access list for the `Pricing_Master` table. Identify any users outside of the Finance/Pricing department.\n2. **Communication Trace**: Select a sample of 5 major price updates and inspect the `Communication_Log` or email archives to verify sales teams were notified within 24 hours of the change.\n\n## Expected Outputs\n- List of unauthorized access users.\n- Communication timeliness assessment.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-5",
+        "type": "step",
+        "position": {
+          "x": 450,
+          "y": 560
+        },
+        "data": {
+          "label": "5. Price Reconciliation (Approved vs. Invoiced)",
+          "description": "Reconcile approved price lists to actual invoiced amounts.",
+          "instructions": "# Price Reconciliation (Approved vs. Invoiced)\n\n## Objective\nVerify the integrity of the pricing system by ensuring invoiced prices match the approved master list.\n\n## Procedure\n1. **Data Join**: Perform a system-wide join between `Sales_Order_Detail` and `Pricing_Master` based on `Product_ID` and `Transaction_Date`.\n2. **Variance Analysis**: Identify any rows where `Invoiced_Price` <> `Master_Price` (excluding known discounts).\n3. **Investigation**: Research the top 10 highest-value variances for system glitches or manual overrides.\n\n## Expected Outputs\n- Variance report highlighting pricing inaccuracies.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "position": {
+          "x": 850,
+          "y": 305
+        },
+        "data": {
+          "label": "6. Identify Findings and Issue Report",
+          "description": "Consolidate findings and draft the final audit report.",
+          "instructions": "# Identify Findings and Issue Report\n\n## Objective\nSynthesize the results of all transactional tests into a clear, actionable audit report.\n\n## Procedure\n1. **Exception Consolidation**: Aggregate all failures identified in steps 2, 3, 4, and 5.\n2. **Root Cause Analysis**: For each issue (e.g., unauthorized discounts), determine if it is a process failure, system bug, or human error.\n3. **Impact Assessment**: Quantify the total financial impact (revenue loss) and risk exposure.\n4. **Drafting Management Recommendations**: Propose controls to prevent recurrence.\n5. **Final Report**: Compile the findings into the standard Audit Report template.\n\n## Expected Outputs\n- Draft Audit Report with prioritized findings.\n- Management action plan summary.",
+          "completed": false,
+          "executing": false,
+          "pendingReview": false
+        },
+        "width": 320,
+        "height": 116
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "step-1",
+        "target": "step-2",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-3",
+        "source": "step-1",
+        "target": "step-3",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-4",
+        "source": "step-1",
+        "target": "step-4",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e1-5",
+        "source": "step-1",
+        "target": "step-5",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e2-6",
+        "source": "step-2",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e3-6",
+        "source": "step-3",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e4-6",
+        "source": "step-4",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "id": "e5-6",
+        "source": "step-5",
+        "target": "step-6",
+        "type": "deletable",
+        "animated": true,
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      }
+    ],
+    "metadata": {}
+  }
+}

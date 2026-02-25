@@ -1,0 +1,16 @@
+ID,inventoryId,vendorName,productName,version,ownerDepartment,hasAICapability,aiAssessmentDate,riskAssessmentComplete,contractRef,annualCost,userCount,dataClassification
+vsi001,vsi001,SAP,S/4HANA,2023.02,Finance,true,2024-03-15,true,CON-SAP-2022,485000.00,120,Restricted
+vsi002,vsi002,Microsoft,Microsoft 365,E5,All Departments,false,,,CON-MS-2023,312000.00,450,Internal
+vsi003,vsi003,Salesforce,Sales Cloud,Enterprise,Sales,false,,,CON-SF-2023,96000.00,35,Confidential
+vsi004,vsi004,Slack,Slack Business,Plus,All Departments,false,,,CON-SLK-2023,54000.00,450,Internal
+vsi005,vsi005,Zoom,Zoom Workplace,Business,All Departments,false,,,CON-ZM-2023,36000.00,450,Internal
+vsi006,vsi006,DocuSign,DocuSign eSignature,Business Pro,Legal,true,2024-06-01,true,CON-DS-2022,24000.00,25,Confidential
+vsi007,vsi007,Workday,Workday HCM,2024.R1,HR,false,,,CON-WD-2023,180000.00,15,Restricted
+vsi008,vsi008,ServiceNow,ServiceNow ITSM,Utah,IT,false,,,CON-SN-2023,120000.00,40,Internal
+vsi009,vsi009,SAP,Concur Expense,Professional,Finance,true,2024-04-10,true,CON-CON-2022,42000.00,200,Confidential
+vsi010,vsi010,BlackLine,BlackLine Recon,Enterprise,Finance,false,,,CON-BL-2023,78000.00,12,Confidential
+vsi011,vsi011,Atlassian,Jira Software,Premium,Technology,false,,,CON-ATL-2023,28000.00,60,Internal
+vsi012,vsi012,Adobe,Acrobat Pro,2024,All Departments,false,,,CON-ADB-2023,18000.00,150,Internal
+vsi013,vsi013,Bluth Internal,Banana Stand POS,3.1,Operations,false,,,INT-BSPOS-2020,0.00,5,Internal
+vsi014,vsi014,Bluth Internal,Cornballer.com,1.0,Sales,false,,,INT-CORN-2019,0.00,3,Public
+vsi015,vsi015,Microsoft,Power BI,Pro,Finance,false,,,CON-PBI-2023,60000.00,30,Confidential

@@ -1,0 +1,251 @@
+{
+  "name": "Fieldwork: Healthcare Insurance Claims Transactional Audit",
+  "description": "A comprehensive audit work program for reviewing healthcare insurance claims, focusing on duplicate detection, payment accuracy, and authorization limits using data-driven transactional testing.",
+  "diagramJson": {
+    "nodes": [
+      {
+        "data": {
+          "completed": false,
+          "label": "1. Data Extraction & Validation (MCP)",
+          "executing": false,
+          "description": "Extract the full population of paid claims for the audit period using MCP and validate for completeness.",
+          "pendingReview": false,
+          "instructions": "# Extract Paid Claims Population\n\n## Objective\nTo obtain a complete and accurate population of all healthcare claims paid during the review period to serve as the basis for transactional testing.\n\n## Prerequisites\n- Access to the Master Control Program (MCP) data extraction tool.\n- Confirmation of the audit period (e.g., Fiscal Year 2023).\n\n## Procedure\n1. **Define Extraction Parameters**\n   - Configure MCP to extract all records from the 'Paid Claims' table.\n   - Required Attributes: Claim ID, Member ID, Provider ID, Date of Service, Date of Payment, Procedure Code (CPT/HCPCS), Diagnosis Code (ICD-10), Billed Amount, Allowed Amount, Paid Amount, Copay/Deductible, and Approver ID.\n2. **Execute Extraction**\n   - Run the MCP query and export the dataset to a secure audit environment.\n3. **Validate Completeness**\n   - Perform a record count and sum the 'Paid Amount' field.\n   - Reconcile the total paid amount in the extract to the General Ledger (GL) or Financial Reporting system for the same period.\n   - Investigate any variance exceeding 1%.\n\n## Expected Outputs\n- [ ] Full population dataset (CSV/Parquet)\n- [ ] GL Reconciliation Working Paper\n\n## Quality Criteria\n- Data integrity check (no nulls in critical fields like Claim ID).\n- Reconciliation variance is documented and within tolerance."
+        },
+        "position": {
+          "y": 305,
+          "x": 50
+        },
+        "id": "step-1",
+        "type": "step",
+        "height": 116,
+        "width": 320
+      },
+      {
+        "id": "step-2",
+        "height": 116,
+        "width": 320,
+        "type": "step",
+        "data": {
+          "completed": false,
+          "label": "2. Duplicate Claim Identification",
+          "executing": false,
+          "pendingReview": false,
+          "description": "Perform automated data analytics to identify potential duplicate or fraudulent claim patterns.",
+          "instructions": "# Test for Duplicate Claims\n\n## Objective\nTo identify claims that may have been paid multiple times for the same service or exhibit fraudulent patterns.\n\n## Prerequisites\n- Validated population dataset from Step 1.\n\n## Procedure\n1. **Run Duplicate Logic Query**\n   - Execute an analytic script on the population to identify records where the following attributes match exactly:\n     - Member ID\n     - Provider ID\n     - Date of Service\n     - Procedure Code (CPT/HCPCS)\n     - Paid Amount\n2. **Filter Results**\n   - Exclude legitimate corrected claims or reversals (often identified by specific 'Claim Type' or 'Status' codes).\n3. **Analyze Fraud Indicators**\n   - Check for \"split billing\" where multiple claims are submitted by the same provider for the same member on the same day with different procedure codes that should be bundled.\n\n## Expected Outputs\n- [ ] Listing of potential duplicate claims.\n- [ ] Narrative of findings for duplicate system edits.\n\n## Quality Criteria\n- Clear identification of 'False Positives' vs. 'Actual Duplicates'.\n- Quantification of the financial impact of identified duplicates."
+        },
+        "position": {
+          "x": 450,
+          "y": 50
+        }
+      },
+      {
+        "id": "step-3",
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "data": {
+          "completed": false,
+          "label": "3. Sample Selection for Testing",
+          "executing": false,
+          "description": "Select a statistically significant sample of claims for substantive recalculation and testing.",
+          "pendingReview": false,
+          "instructions": "# Select Statistical Sample\n\n## Objective\nTo select a representative sample of claims from the population for detailed recalculation and attribute testing.\n\n## Prerequisites\n- Validated population dataset from Step 1.\n- Agreed-upon sampling parameters (Confidence Level, Expected Deviation Rate, Tolerable Error).\n\n## Procedure\n1. **Determine Sample Size**\n   - Use a statistical sampling tool (or MCP sampling module) to calculate the required sample size (e.g., $X$ items).\n2. **Execute Random Selection**\n   - Generate a random seed and select the sample items from the population.\n3. **Document Sample Selection**\n   - Record the methodology and the specific list of Claim IDs selected for testing.\n\n## Expected Outputs\n- [ ] Statistical Sample Listing.\n- [ ] Sampling Methodology Documentation.\n\n## Quality Criteria\n- Sample is random and provides sufficient coverage of the population.\n- Methodology is repeatable."
+        },
+        "position": {
+          "x": 450,
+          "y": 220
+        }
+      },
+      {
+        "data": {
+          "executing": false,
+          "label": "4. Claim Payment Recalculation",
+          "instructions": "# Recalculate Claim Payments\n\n## Objective\nTo verify that claims were calculated correctly according to policy terms, fee schedules, and member benefits.\n\n## Prerequisites\n- Statistical sample of Claim IDs from Step 3.\n- Access to Provider Fee Schedules and Member Benefit Plans.\n\n## Procedure\n1. **Extract Detailed Attributes**\n   - For the sampled items, use MCP to pull the specific 'Contract ID' and 'Benefit Plan ID' associated with the claim.\n2. **Perform Recalculation**\n   - Apply the fee schedule (e.g., 80% of Medicare) to the 'Billed Amount'.\n   - Subtract Member Cost Share (Copay/Deductible) based on the Benefit Plan.\n   - Compare the 'Audit Recalculated Amount' to the 'System Paid Amount'.\n3. **Investigate Variances**\n   - Document any variance exceeding $0.01 and determine the root cause (e.g., system configuration error, manual override).\n\n## Expected Outputs\n- [ ] Completed Recalculation Testing Matrix.\n- [ ] List of payment errors.\n\n## Quality Criteria\n- Every sampled item has a clear 'Pass/Fail' result.\n- Recalculation logic is clearly documented.",
+          "pendingReview": false,
+          "description": "Recalculate the payment for the selected sample based on policy terms and system logic.",
+          "completed": false
+        },
+        "position": {
+          "y": 220,
+          "x": 850
+        },
+        "id": "step-4",
+        "width": 320,
+        "height": 116,
+        "type": "step"
+      },
+      {
+        "height": 116,
+        "width": 320,
+        "type": "step",
+        "id": "step-5",
+        "position": {
+          "x": 450,
+          "y": 390
+        },
+        "data": {
+          "completed": false,
+          "pendingReview": false,
+          "description": "Verify that high-dollar claims were approved by authorized personnel within their designated limits.",
+          "instructions": "# Verify Claim Approvals\n\n## Objective\nTo ensure claims exceeding system auto-adjudication thresholds were reviewed and approved by authorized personnel.\n\n## Prerequisites\n- Validated population dataset from Step 1.\n- Authorized Signatory List (ASL) or Approval Matrix.\n\n## Procedure\n1. **Identify High-Value Claims**\n   - Filter the population for all claims where 'Paid Amount' > [Threshold, e.g., $10,000].\n2. **Extract Approval Evidence**\n   - Use MCP to pull the 'Approver User ID' and 'Approval Timestamp' for these claims.\n3. **Cross-Reference Authority**\n   - Compare the 'Approver User ID' against the ASL to ensure the individual had the authority to approve that amount at that time.\n4. **Test for Segregation of Duties**\n   - Verify that the individual who entered/processed the claim is not the same person who approved it.\n\n## Expected Outputs\n- [ ] Approval Authority Exception Report.\n\n## Quality Criteria\n- 100% of claims above the threshold are checked or a sample is justified.\n- Exceptions clearly identify the unauthorized approver.",
+          "label": "5. Authorization & Approval Testing",
+          "executing": false
+        }
+      },
+      {
+        "id": "step-6",
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "data": {
+          "label": "6. Exception & Refund Review",
+          "executing": false,
+          "pendingReview": false,
+          "description": "Review system exception reports and refund logs to ensure identified errors were remediated.",
+          "instructions": "# Review Exceptions & Refunds\n\n## Objective\nTo verify that system-generated exceptions and identified overpayments were appropriately managed and recovered.\n\n## Prerequisites\n- Exception reports and Refund/Recovery logs for the audit period.\n\n## Procedure\n1. **Analyze Exception Reports**\n   - Obtain reports from MCP showing claims flagged by system edits (e.g., \"Invalid Diagnosis Code\", \"Member Ineligible\").\n   - Inspect a sample of these flags to ensure they were investigated and not simply overridden without cause.\n2. **Trace Refunds**\n   - Select a sample of refund entries from the recovery log.\n   - Trace the refund back to the original claim and verify the 'Paid Amount' was reduced or a credit was issued.\n3. **Evaluate Resolution Time**\n   - Assess whether exceptions are resolved within the corporate standard (e.g., 30 days).\n\n## Expected Outputs\n- [ ] Exception Management Working Paper.\n- [ ] Refund Traceability Matrix.\n\n## Quality Criteria\n- Evidence of independent review for system overrides.\n- Verification that refunds were actually processed in the financial system.",
+          "completed": false
+        },
+        "position": {
+          "y": 560,
+          "x": 450
+        }
+      },
+      {
+        "type": "step",
+        "width": 320,
+        "height": 116,
+        "id": "step-7",
+        "position": {
+          "x": 1420,
+          "y": 200
+        },
+        "data": {
+          "instructions": "# Final Aggregate Issues and Findings\n\n## Objective\nTo synthesize all transactional testing results into a cohesive summary of audit findings, quantifying the financial impact and identifying systemic control weaknesses.\n\n## Prerequisites\n- Completed results from Duplicate Claim Identification (Step 2).\n- Results from Payment Recalculation (Step 4).\n- Exceptions from Authorization Testing (Step 5).\n- Insights from Exception & Refund Review (Step 6).\n\n## Procedure\n1. **Consolidate Results**\n   - Import all exception listings and error matrices from the preceding steps.\n2. **Quantify Financial Impact**\n   - Calculate the total 'Known Error' (actual errors found).\n   - Project the error rate from the statistical sample (Step 4) to the entire population to determine the 'Projected Error'.\n3. **Categorize Findings**\n   - Group findings by risk area: Financial Accuracy, Compliance/Authorization, and Operational Efficiency.\n4. **Draft Findings Statements**\n   - For each significant issue, document:\n     - **Condition**: What was found?\n     - **Criteria**: What should have happened?\n     - **Cause**: Why did it happen?\n     - **Effect**: What is the risk/financial exposure?\n     - **Recommendation**: How should it be fixed?\n\n## Expected Outputs\n- [ ] Comprehensive Findings Matrix.\n- [ ] Draft Audit Report Section.\n\n## Quality Criteria\n- All findings are supported by the transactional data extracted in Step 1.\n- Financial impact calculations are double-checked for accuracy.\n- Recommendations address the root cause of the identified issues.",
+          "description": "Consolidate all identified anomalies, payment errors, and control failures into a final audit report.",
+          "pendingReview": false,
+          "executing": false,
+          "label": "7. Final Aggregate Issues and Findings for Report",
+          "completed": false
+        },
+        "selected": true,
+        "positionAbsolute": {
+          "x": 1420,
+          "y": 200
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "animated": true,
+        "source": "step-1",
+        "id": "e1-2",
+        "target": "step-2",
+        "type": "deletable",
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "type": "deletable",
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "target": "step-3",
+        "id": "e1-3",
+        "animated": true,
+        "source": "step-1"
+      },
+      {
+        "source": "step-3",
+        "animated": true,
+        "id": "e3-4",
+        "target": "step-4",
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "type": "deletable"
+      },
+      {
+        "source": "step-1",
+        "animated": true,
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "type": "deletable",
+        "target": "step-5",
+        "id": "e1-5"
+      },
+      {
+        "type": "deletable",
+        "style": {
+          "strokeDasharray": "5,5",
+          "strokeWidth": 2,
+          "stroke": "#6366f1"
+        },
+        "target": "step-6",
+        "id": "e1-6",
+        "animated": true,
+        "source": "step-1"
+      },
+      {
+        "source": "step-2",
+        "animated": true,
+        "id": "e2-7",
+        "target": "step-7",
+        "style": {
+          "stroke": "#6366f1",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "type": "deletable"
+      },
+      {
+        "animated": true,
+        "source": "step-4",
+        "id": "e4-7",
+        "target": "step-7",
+        "type": "deletable",
+        "style": {
+          "strokeWidth": 2,
+          "stroke": "#6366f1",
+          "strokeDasharray": "5,5"
+        }
+      },
+      {
+        "type": "deletable",
+        "style": {
+          "strokeWidth": 2,
+          "stroke": "#6366f1",
+          "strokeDasharray": "5,5"
+        },
+        "target": "step-7",
+        "id": "e5-7",
+        "animated": true,
+        "source": "step-5"
+      },
+      {
+        "source": "step-6",
+        "animated": true,
+        "style": {
+          "strokeWidth": 2,
+          "stroke": "#6366f1",
+          "strokeDasharray": "5,5"
+        },
+        "type": "deletable",
+        "id": "e6-7",
+        "target": "step-7"
+      }
+    ],
+    "metadata": {}
+  }
+}
